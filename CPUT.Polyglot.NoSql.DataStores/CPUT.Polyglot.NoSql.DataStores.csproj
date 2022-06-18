@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CassandraCSharpDriver" Version="3.16.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.11.5" />
+    <PackageReference Include="Neo4jClient" Version="4.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Repos\Columnar\Cassandra\" />
+    <Folder Include="Repos\Graph\Neo\" />
+    <Folder Include="Repos\Document\MongoDB\" />
+    <Folder Include="Repos\KeyStore\" />
+    <Folder Include="Repos\KeyStore\Redis\" />
+    <Folder Include="Repos\Columnar\" />
+    <Folder Include="Repos\Document\" />
+    <Folder Include="Repos\Graph\" />
+  </ItemGroup>
+
+</Project>

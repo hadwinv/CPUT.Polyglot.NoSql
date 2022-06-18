@@ -1,0 +1,60 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.API", "CPUT.Polyglot.NoSql.API\CPUT.Polyglot.NoSql.API.csproj", "{82A2C27A-512B-4872-B13D-40ECCCC7A40C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Interface", "CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj", "{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.DataStores", "CPUT.Polyglot.NoSql.DataStores\CPUT.Polyglot.NoSql.DataStores.csproj", "{F61E4CAE-7E03-411F-A36D-F97171AF50A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Tests", "CPUT.Polyglot.NoSql.Tests\CPUT.Polyglot.NoSql.Tests.csproj", "{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Logic", "CPUT.Polyglot.NoSql.Logic\CPUT.Polyglot.NoSql.Logic.csproj", "{9018DB9A-CAA2-4D85-A080-673CEC179B12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{7DD7796B-630E-426E-8116-8106EB54A4DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Middleware", "CPUT.Polyglot.NoSql.Middleware\CPUT.Polyglot.NoSql.Middleware.csproj", "{8468EB96-6B4F-4369-A44B-0819EDE70A39}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82A2C27A-512B-4872-B13D-40ECCCC7A40C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82A2C27A-512B-4872-B13D-40ECCCC7A40C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82A2C27A-512B-4872-B13D-40ECCCC7A40C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82A2C27A-512B-4872-B13D-40ECCCC7A40C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F61E4CAE-7E03-411F-A36D-F97171AF50A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F61E4CAE-7E03-411F-A36D-F97171AF50A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F61E4CAE-7E03-411F-A36D-F97171AF50A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F61E4CAE-7E03-411F-A36D-F97171AF50A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9018DB9A-CAA2-4D85-A080-673CEC179B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9018DB9A-CAA2-4D85-A080-673CEC179B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9018DB9A-CAA2-4D85-A080-673CEC179B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9018DB9A-CAA2-4D85-A080-673CEC179B12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8468EB96-6B4F-4369-A44B-0819EDE70A39} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {97113459-6367-4474-BFA1-E1453ED206B6}
+	EndGlobalSection
+EndGlobal
