@@ -1,0 +1,778 @@
+[
+	{
+		"code": "IT",
+		"name": "Information & Communication Technology",
+		"faculty": "Informatics & Design",
+		"subject": [
+			{
+				"name": "Applications Development Foundations",
+				"short_code": "ADF",
+				"cost": "4180"
+			},
+			{
+				"name": "Business Practice",
+				"short_code": "BPR",
+				"cost": "2090"
+			},
+			{
+				"name": "Communications Networks Foundations",
+				"short_code": "CNF",
+				"cost": "4180"
+			},
+			{
+				"name": "ICT Fundamentals",
+				"short_code": "ICF",
+				"cost": "3140"
+			},
+			{
+				"name": "Multimedia Foundations",
+				"short_code": "MUF",
+				"cost": "4180"
+			},
+			{
+				"name": "Professional Communications",
+				"short_code": "PRC",
+				"cost": "2090"
+			},
+			{
+				"name": "Programming",
+				"short_code": "PRG",
+				"cost": "3140"
+			},
+			{
+				"name": "Project",
+				"short_code": "PRT",
+				"cost": "2090"
+			}
+		]
+	},
+	{
+		"code": "AGVM",
+		"name": "Agriculture and Veterinary Medicine",
+		"faculty": "Engineering Sciences",
+		"subject": [
+			{
+				"name": "Agriculture",
+				"short_code": "AGR",
+				"cost": "4380"
+			},
+			{
+				"name": "Farm Management",
+				"short_code": "FMGMT",
+				"cost": "1090"
+			},
+			{
+				"name": "Horticulture",
+				"short_code": "HCUL",
+				"cost": "3180"
+			},
+			{
+				"name": "Plant and Crop Sciences",
+				"short_code": "PCSC",
+				"cost": "4140"
+			},
+			{
+				"name": "Veterinary Medicine",
+				"short_code": "VMED",
+				"cost": "5180"
+			}
+		]
+	},
+	{
+		"code": "APSC",
+		"name": "Applied and Pure Sciences",
+		"faculty": "Applied Sciences",
+		"subject": [
+			{
+				"name": "Astronomy",
+				"short_code": "AST",
+				"cost": "4585"
+			},
+			{
+				"name": "Biology",
+				"short_code": "BIO",
+				"cost": "2590"
+			},
+			{
+				"name": "Biomedical Sciences",
+				"short_code": "BIOSC",
+				"cost": "1500"
+			},
+			{
+				"name": "Chemistry",
+				"short_code": "CHE",
+				"cost": "2140"
+			},
+			{
+				"name": "Earth Sciences",
+				"short_code": "ES",
+				"cost": "3780"
+			},
+			{
+				"name": "Environmental Sciences",
+				"short_code": "ESCI",
+				"cost": "3580"
+			},
+			{
+				"name": "Food Science and Technology",
+				"short_code": "FSCIETEC",
+				"cost": "3500"
+			},
+			{
+				"name": "Forensic Science",
+				"short_code": "FSCIE",
+				"cost": "4180"
+			}
+		]
+	},
+	{
+		"code": "ARCO",
+		"name": "Architecture and Construction",
+		"faculty": "Engineering Sciences",
+		"subject": [
+			{
+				"name": "Architecture",
+				"short_code": "ARC",
+				"cost": "2380"
+			},
+			{
+				"name": "Built Environment",
+				"short_code": "BENV",
+				"cost": "1590"
+			},
+			{
+				"name": "Construction",
+				"short_code": "CON",
+				"cost": "2130"
+			},
+			{
+				"name": "Maintenance Services",
+				"short_code": "MNSER",
+				"cost": "1140"
+			},
+			{
+				"name": "Planning",
+				"short_code": "PLN",
+				"cost": "1180"
+			},
+			{
+				"name": "Property Management",
+				"short_code": "PMNGMT",
+				"cost": "3180"
+			},
+			{
+				"name": "Surveying",
+				"short_code": "SURV",
+				"cost": "3180"
+			}
+		]
+	},
+	{
+		"code": "BMGMT",
+		"name": "Business and Management",
+		"faculty": "Business & Management Sciences",
+		"subject": [
+			{
+				"name": "Accounting",
+				"short_code": "ACC",
+				"cost": "3380"
+			},
+			{
+				"name": "Business Studies",
+				"short_code": "BSTU",
+				"cost": "1190"
+			},
+			{
+				"name": "E-Commerce",
+				"short_code": "ECOM",
+				"cost": "4180"
+			},
+			{
+				"name": "Entrepreneurship",
+				"short_code": "ENTP",
+				"cost": "2040"
+			},
+			{
+				"name": "Finance",
+				"short_code": "FIN",
+				"cost": "2180"
+			},
+			{
+				"name": "Human Resource Management",
+				"short_code": "HRMNGMT",
+				"cost": "1180"
+			},
+			{
+				"name": "Management",
+				"short_code": "MNGMT",
+				"cost": "1150"
+			},
+			{
+				"name": "Marketing",
+				"short_code": "MKTG",
+				"cost": "2280"
+			},
+			{
+				"name": "Office Administration",
+				"short_code": "OADMIN",
+				"cost": "2580"
+			},
+			{
+				"name": "Quality Management",
+				"short_code": "QMNGMT",
+				"cost": "1180"
+			},
+			{
+				"name": "Retail",
+				"short_code": "RET",
+				"cost": "2280"
+			},
+			{
+				"name": "Transportation and Logistics",
+				"short_code": "TLOG",
+				"cost": "3180"
+			}
+		]
+	},
+	{
+		"code": "CAD",
+		"name": "Creative Arts and Design",
+		"faculty": "Engineering Sciences",
+		"subject": [
+			{
+				"name": "Art",
+				"short_code": "AR",
+				"cost": "2380"
+			},
+			{
+				"name": "Art Administration",
+				"short_code": "ARAD",
+				"cost": "1190"
+			},
+			{
+				"name": "Crafts",
+				"short_code": "CRFT",
+				"cost": "1580"
+			},
+			{
+				"name": "Dance",
+				"short_code": "DNC",
+				"cost": "1140"
+			},
+			{
+				"name": "Fashion and Textile Design",
+				"short_code": "FTDE",
+				"cost": "1180"
+			},
+			{
+				"name": "Graphic Design",
+				"short_code": "GRDE",
+				"cost": "1200"
+			},
+			{
+				"name": "Industrial Design",
+				"short_code": "INDE",
+				"cost": "2750"
+			},
+			{
+				"name": "Interior Design",
+				"short_code": "ITDE",
+				"cost": "2350"
+			},
+			{
+				"name": "Music",
+				"short_code": "MSC",
+				"cost": "1380"
+			},
+			{
+				"name": "Non-industrial Design",
+				"short_code": "NIDE",
+				"cost": "2150"
+			},
+			{
+				"name": "Theatre and Drama Studies",
+				"short_code": "TDSU",
+				"cost": "3550"
+			}
+		]
+	},
+	{
+		"code": "EDUT",
+		"name": "Education and Training",
+		"faculty": "Education",
+		"subject": [
+			{
+				"name": "Adult Education",
+				"short_code": "AEDU",
+				"cost": "4380"
+			},
+			{
+				"name": "CPD",
+				"short_code": "CPD",
+				"cost": "1090"
+			},
+			{
+				"name": "Career Advice",
+				"short_code": "CAAD",
+				"cost": "3180"
+			},
+			{
+				"name": "Coaching",
+				"short_code": "COA",
+				"cost": "4140"
+			},
+			{
+				"name": "Education Management",
+				"short_code": "EDUMGMT",
+				"cost": "5180"
+			},
+			{
+				"name": "Education Research",
+				"short_code": "EDUR",
+				"cost": "5180"
+			},
+			{
+				"name": "Educational Psychology",
+				"short_code": "EPSY",
+				"cost": "5180"
+			},
+			{
+				"name": "Pedagogy",
+				"short_code": "PED",
+				"cost": "5180"
+			},
+			{
+				"name": "Special Education",
+				"short_code": "SEDU",
+				"cost": "5180"
+			},
+			{
+				"name": "Education Learning",
+				"short_code": "EDUL",
+				"cost": "5180"
+			},
+			{
+				"name": "Teacher Training",
+				"short_code": "TTRN",
+				"cost": "5180"
+			}
+		]
+	},
+	{
+		"code": "ENG",
+		"name": "Engineering",
+		"faculty": "Engineering Sciences",
+		"subject": [
+			{
+				"name": "Aerospace Engineering",
+				"short_code": "AEEN",
+				"cost": "2380"
+			},
+			{
+				"name": "Biomedical Engineering",
+				"short_code": "BIOEN",
+				"cost": "1090"
+			},
+			{
+				"name": "Chemical and Materials Engineering",
+				"short_code": "CMEN",
+				"cost": "3180"
+			},
+			{
+				"name": "Civil Engineering",
+				"short_code": "CEN",
+				"cost": "4140"
+			},
+			{
+				"name": "Electrical Engineering",
+				"short_code": "ELEN",
+				"cost": "5180"
+			},
+			{
+				"name": "Electronic Engineering",
+				"short_code": "ELECEN",
+				"cost": "4180"
+			},
+			{
+				"name": "Environmental Engineering",
+				"short_code": "ENENG",
+				"cost": "2580"
+			},
+			{
+				"name": "General Engineering and Technology",
+				"short_code": "GENGT",
+				"cost": "2220"
+			},
+			{
+				"name": "Manufacturing and Production",
+				"short_code": "MPROD",
+				"cost": "5150"
+			},
+			{
+				"name": "Marine Engineering",
+				"short_code": "MAENG",
+				"cost": "1180"
+			},
+			{
+				"name": "Mechanical Engineering",
+				"short_code": "MENG",
+				"cost": "2180"
+			},
+			{
+				"name": "Metallurgy",
+				"short_code": "MET",
+				"cost": "1550"
+			},
+			{
+				"name": "Mining and Oil & Gas Operations",
+				"short_code": "MOGO",
+				"cost": "2580"
+			},
+			{
+				"name": "Power and Energy Engineering",
+				"short_code": "PEE",
+				"cost": "1550"
+			},
+			{
+				"name": "Quality Control",
+				"short_code": "QC",
+				"cost": "2380"
+			},
+			{
+				"name": "Structural Engineering",
+				"short_code": "SENG",
+				"cost": "5180"
+			},
+			{
+				"name": "Telecommunications",
+				"short_code": "TELC",
+				"cost": "3580"
+			},
+			{
+				"name": "Vehicle Engineering",
+				"short_code": "VENG",
+				"cost": "5180"
+			}
+		]
+	},
+	{
+		"code": "HMED",
+		"name": "Health and Medicine",
+		"faculty": "Health Sciences",
+		"subject": [
+			{
+				"name": "Complementary Health",
+				"short_code": "CHTH",
+				"cost": "2380"
+			},
+			{
+				"name": "Counselling",
+				"short_code": "CNSL",
+				"cost": "1190"
+			},
+			{
+				"name": "Dentistry",
+				"short_code": "DTRY",
+				"cost": "4180"
+			},
+			{
+				"name": "Health Studies",
+				"short_code": "HLTHS",
+				"cost": "1140"
+			},
+			{
+				"name": "Health and Safety",
+				"short_code": "HLTHSF",
+				"cost": "1180"
+			},
+			{
+				"name": "Medicine",
+				"short_code": "MED",
+				"cost": "2180"
+			},
+			{
+				"name": "Midwifery",
+				"short_code": "MIDW",
+				"cost": "1180"
+			},
+			{
+				"name": "Nursing",
+				"short_code": "NUR",
+				"cost": "1180"
+			},
+			{
+				"name": "Nutrition and Health",
+				"short_code": "NHTH",
+				"cost": "3340"
+			},
+			{
+				"name": "Ophthalmology",
+				"short_code": "OPHY",
+				"cost": "2280"
+			},
+			{
+				"name": "Pharmacology",
+				"short_code": "PHLY",
+				"cost": "5180"
+			},
+			{
+				"name": "Physiology",
+				"short_code": "PHSL",
+				"cost": "5180"
+			},
+			{
+				"name": "Physiotherapy",
+				"short_code": "PHLT",
+				"cost": "5180"
+			},
+			{
+				"name": "Psychology",
+				"short_code": "PCLY",
+				"cost": "5180"
+			},
+			{
+				"name": "Public Health",
+				"short_code": "PHLTH",
+				"cost": "2250"
+			}
+		]
+	},
+	{
+		"code": "HUM",
+		"name": "Humanities",
+		"faculty": "Social Arts and Sciences",
+		"subject": [
+			{
+				"name": "Archaeology",
+				"short_code": "ARCH",
+				"cost": "4380"
+			},
+			{
+				"name": "Classics",
+				"short_code": "CLS",
+				"cost": "1090"
+			},
+			{
+				"name": "Cultural Studies",
+				"short_code": "CUST",
+				"cost": "3180"
+			},
+			{
+				"name": "English Studies",
+				"short_code": "ENST",
+				"cost": "2230"
+			},
+			{
+				"name": "General Studies",
+				"short_code": "GST",
+				"cost": "2580"
+			},
+			{
+				"name": "History",
+				"short_code": "HST",
+				"cost": "1550"
+			},
+			{
+				"name": "Languages",
+				"short_code": "LANG",
+				"cost": "2225"
+			},
+			{
+				"name": "Literature",
+				"short_code": "LIT",
+				"cost": "1000"
+			},
+			{
+				"name": "Museum Studies",
+				"short_code": "MST",
+				"cost": "1050"
+			},
+			{
+				"name": "Philosophy",
+				"short_code": "PHYLS",
+				"cost": "1050"
+			},
+			{
+				"name": "Regional Studies",
+				"short_code": "RSTU",
+				"cost": "1050"
+			},
+			{
+				"name": "Religious Studies",
+				"short_code": "RELS",
+				"cost": "1050"
+			}
+		]
+	},
+	{
+		"code": "LA",
+		"name": "Law",
+		"faculty": "Law Studies",
+		"subject": [
+			{
+				"name": "Civil Law",
+				"short_code": "CLA",
+				"cost": "4380"
+			},
+			{
+				"name": "Criminal Law",
+				"short_code": "CRLA",
+				"cost": "4090"
+			},
+			{
+				"name": "International Law",
+				"short_code": "INLA",
+				"cost": "6180"
+			},
+			{
+				"name": "Legal Advice",
+				"short_code": "LADV",
+				"cost": "4140"
+			},
+			{
+				"name": "Legal Studies",
+				"short_code": "LSTU",
+				"cost": "5150"
+			},
+			{
+				"name": "Public Law",
+				"short_code": "PBLA",
+				"cost": "5180"
+			}
+		]
+	},
+	{
+		"code": "SSM",
+		"name": "Social Studies and Media",
+		"faculty": "Social Arts and Sciences",
+		"subject": [
+			{
+				"name": "Anthropology",
+				"short_code": "ANTY",
+				"cost": "3380"
+			},
+			{
+				"name": "Economics",
+				"short_code": "ECON",
+				"cost": "2090"
+			},
+			{
+				"name": "Environmental Management",
+				"short_code": "EMGMT",
+				"cost": "1180"
+			},
+			{
+				"name": "Film & Television",
+				"short_code": "FTEL",
+				"cost": "5140"
+			},
+			{
+				"name": "Human Geography",
+				"short_code": "HGEO",
+				"cost": "1770"
+			},
+			{
+				"name": "International Development",
+				"short_code": "IDEV",
+				"cost": "2250"
+			},
+			{
+				"name": "International Relations",
+				"short_code": "IREL",
+				"cost": "3180"
+			},
+			{
+				"name": "Journalism",
+				"short_code": "JNLS",
+				"cost": "2180"
+			},
+			{
+				"name": "Library Studies",
+				"short_code": "LIBSTU",
+				"cost": "1180"
+			},
+			{
+				"name": "Linguistics",
+				"short_code": "LING",
+				"cost": "1180"
+			},
+			{
+				"name": "Media",
+				"short_code": "MDA",
+				"cost": "3330"
+			},
+			{
+				"name": "Photography",
+				"short_code": "PHGY",
+				"cost": "3180"
+			},
+			{
+				"name": "Politics",
+				"short_code": "PLTC",
+				"cost": "2180"
+			},
+			{
+				"name": "Public Administration",
+				"short_code": "PBAD",
+				"cost": "1110"
+			},
+			{
+				"name": "Social Sciences",
+				"short_code": "SSC",
+				"cost": "1110"
+			},
+			{
+				"name": "Social Work",
+				"short_code": "SWK",
+				"cost": "1110"
+			},
+			{
+				"name": "Writing",
+				"short_code": "WRT",
+				"cost": "2110"
+			}
+		]
+	},
+	{
+		"code": "TRHO",
+		"name": "Travel and Hospitality",
+		"faculty": "Tourism",
+		"subject": [
+			{
+				"name": "Aviation",
+				"short_code": "AVTN",
+				"cost": "6380"
+			},
+			{
+				"name": "Catering",
+				"short_code": "CTG",
+				"cost": "2090"
+			},
+			{
+				"name": "Food and Drink Production",
+				"short_code": "FDPD",
+				"cost": "3180"
+			},
+			{
+				"name": "Hospitality",
+				"short_code": "HOSP",
+				"cost": "3140"
+			},
+			{
+				"name": "Hotel Management",
+				"short_code": "HMGMT",
+				"cost": "4180"
+			},
+			{
+				"name": "Leisure Management",
+				"short_code": "LMGMT",
+				"cost": "3180"
+			},
+			{
+				"name": "Travel and Tourism",
+				"short_code": "TLTM",
+				"cost": "5180"
+			}
+		]
+	}
+]

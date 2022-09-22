@@ -1,11 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.11.5" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.17.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Adaptor\CPUT.Polyglot.NoSql.Adaptor.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.DataStores\CPUT.Polyglot.NoSql.DataStores.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Logic\CPUT.Polyglot.NoSql.Logic.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Middleware\CPUT.Polyglot.NoSql.Middleware.csproj" />
   </ItemGroup>
 
 

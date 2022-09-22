@@ -6,13 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="CassandraCSharpDriver" Version="3.16.1" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.11.5" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.17.1" />
     <PackageReference Include="Neo4jClient" Version="4.0.3" />
     <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Stores\MongoDb\" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
   </ItemGroup>
 
 </Project>

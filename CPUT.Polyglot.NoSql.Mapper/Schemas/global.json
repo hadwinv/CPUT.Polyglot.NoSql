@@ -1,0 +1,133 @@
+{
+	"schemas": {
+		"view": [
+			{
+				"faculty": {
+					"name": "string:type",
+					"code": "string:type",
+					"departmenthead": "string:type",
+					"departmentassistance": "string:type",
+					"relations": [
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "contact"
+						},
+						{
+							"type": "model",
+							"label": "One-To-Many",
+							"reference": "course"
+						}
+					]
+				}
+			},
+			{
+				"course": {
+					"name": "string:type",
+					"code": "string:type",
+					"duration": "string:type"
+				}
+			},
+			{
+				"subject": {
+					"name": "string:type",
+					"code": "string:type",
+					"cost": "decimal:type",
+					"duration": "double:type",
+					"credits": "double:type"
+				}
+			},
+			{
+				"student": {
+					"title": "string:type",
+					"initial": "string:type",
+					"name": "string:type",
+					"surname": "string:type",
+					"idnumber": "string:type",
+					"dateofbirth": "datetime:type",
+					"address": "address:type",
+					"contact": "contact:type",
+					"registration": "registration:type",
+					"transcript": "transcript:type",
+					"relations": [
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "address"
+						},
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "contact"
+						},
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "registration"
+						},
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "transcript"
+						}
+					]
+				}
+			},
+			{
+				"address": {
+					"streetno": "string:type",
+					"street": "string:type",
+					"suburb": "string:type",
+					"city": "string:type",
+					"postalcode": "string:type",
+					"province": "string:type",
+					"country": "string:type"
+				}
+			},
+			{
+				"contact": {
+					"email": "string:type",
+					"cellnumber": "string:type",
+					"homenumber": "string:type",
+					"preferredcommunication": "string[]:type"
+				}
+			},
+			{
+				"registration": {
+					"description": "string:type",
+					"studentnumber": "string:type",
+					"username": "string:type",
+					"password": "string:type",
+					"enrollmenttype": "string:type",
+					"registrationdate": "datetime:type",
+					"relations": [
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "course"
+						},
+						{
+							"type": "model",
+							"label": "One-To-Many",
+							"reference": "subject"
+						}
+					]
+				}
+			},
+			{
+				"academic": {
+					"marks": "double:type",
+					"percentage": "double:type",
+					"gradedsymbol": "string:type",
+					"relations": [
+						{
+							"type": "model",
+							"label": "One-To-One",
+							"reference": "subject"
+						}
+					]
+				}
+			}
+		]
+	}
+}

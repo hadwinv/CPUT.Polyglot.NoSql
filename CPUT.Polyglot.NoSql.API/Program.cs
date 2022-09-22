@@ -1,11 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CPUT.Polyglot.NoSql.API
 {
@@ -31,6 +25,37 @@ namespace CPUT.Polyglot.NoSql.API
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    //.UseUrls("http://*:8080")
+                    //.UseSetting("https_port", "8080")
+                    //.UseIIS()
+                    //.UseIISIntegration()
+                    //.Build();
                 });
     }
+    //var config = new ConfigurationBuilder()
+    //        .SetBasePath(Directory.GetCurrentDirectory())
+    //        .Build();
+
+    //        return WebHost.CreateDefaultBuilder(args)
+    //            .UseConfiguration(config)
+    //            .UseKestrel(options => { options.Limits.KeepAliveTimeout = new System.TimeSpan(0, 5, 0); })
+    //            .ConfigureLogging(logConfig =>
+    //            {
+    //    logConfig.ClearProviders();
+    //})
+    //            .ConfigureAppConfiguration((hostingContext, conf) =>
+    //            {
+
+    //    conf.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+    //    conf.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true);
+    //    conf.AddJsonFile($"version.json", optional: true, reloadOnChange: true);
+    //    conf.SetBasePath(Directory.GetCurrentDirectory());
+    //    conf.AddEnvironmentVariables();
+    //})
+    //            .UseStartup<Startup>()
+    //            .UseUrls("http://*:8080")
+    //            .UseSetting("https_port", "8080")
+    //            .UseIIS()
+    //            .UseIISIntegration()
+    //            .Build();
 }

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="_test\**" />
+    <EmbeddedResource Remove="_test\**" />
+    <None Remove="_test\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Parsers\Operators\Operators.cs" />
+    <Compile Remove="Syntax\GroupedExpr.cs" />
+    <Compile Remove="Syntax\NestedExpr.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ExhaustiveMatching.Analyzer" Version="0.5.0" />
+    <PackageReference Include="Superpower" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Common\CPUT.Polyglot.NoSql.Common.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
+  </ItemGroup>
+
+</Project>

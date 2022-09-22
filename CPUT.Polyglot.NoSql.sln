@@ -1,21 +1,39 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30711.63
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.API", "CPUT.Polyglot.NoSql.API\CPUT.Polyglot.NoSql.API.csproj", "{82A2C27A-512B-4872-B13D-40ECCCC7A40C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.API", "CPUT.Polyglot.NoSql.API\CPUT.Polyglot.NoSql.API.csproj", "{82A2C27A-512B-4872-B13D-40ECCCC7A40C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Interface", "CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj", "{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Interface", "CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj", "{16DB1B5A-63CD-4486-9BE9-5CA395DAE251}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.DataStores", "CPUT.Polyglot.NoSql.DataStores\CPUT.Polyglot.NoSql.DataStores.csproj", "{F61E4CAE-7E03-411F-A36D-F97171AF50A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.DataStores", "CPUT.Polyglot.NoSql.DataStores\CPUT.Polyglot.NoSql.DataStores.csproj", "{F61E4CAE-7E03-411F-A36D-F97171AF50A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Tests", "CPUT.Polyglot.NoSql.Tests\CPUT.Polyglot.NoSql.Tests.csproj", "{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Tests", "CPUT.Polyglot.NoSql.Tests\CPUT.Polyglot.NoSql.Tests.csproj", "{0C2ED7F8-43ED-4B27-9BF6-478393B8FCD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Logic", "CPUT.Polyglot.NoSql.Logic\CPUT.Polyglot.NoSql.Logic.csproj", "{9018DB9A-CAA2-4D85-A080-673CEC179B12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Logic", "CPUT.Polyglot.NoSql.Logic\CPUT.Polyglot.NoSql.Logic.csproj", "{9018DB9A-CAA2-4D85-A080-673CEC179B12}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{7DD7796B-630E-426E-8116-8106EB54A4DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Middleware", "CPUT.Polyglot.NoSql.Middleware\CPUT.Polyglot.NoSql.Middleware.csproj", "{8468EB96-6B4F-4369-A44B-0819EDE70A39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Middleware", "CPUT.Polyglot.NoSql.Middleware\CPUT.Polyglot.NoSql.Middleware.csproj", "{8468EB96-6B4F-4369-A44B-0819EDE70A39}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Parser", "CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj", "{65E23982-E519-48A2-81B5-B87C913E18A8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Delegator", "CPUT.Polyglot.NoSql.Delegator\CPUT.Polyglot.NoSql.Delegator.csproj", "{8D9F2D92-D32A-4043-B854-82A2B4C83801}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Translator", "CPUT.Polyglot.NoSql.Translator\CPUT.Polyglot.NoSql.Translator.csproj", "{E5EA9703-FA35-4F8D-B3CE-8AF5B8A86D56}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Adaptor", "CPUT.Polyglot.NoSql.Adaptor\CPUT.Polyglot.NoSql.Adaptor.csproj", "{A696937D-D443-408A-B514-463233694D9C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Mapper", "CPUT.Polyglot.NoSql.Mapper\CPUT.Polyglot.NoSql.Mapper.csproj", "{9476C80D-1445-4140-96BC-AAF2BA83F780}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Storage", "Storage", "{84C3B7AF-6E64-4E6E-B386-CD3B6F43E2B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{103AF2F0-A761-456C-82E8-0809A8437164}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CPUT.Polyglot.NoSql.Schema", "CPUT.Polyglot.NoSql.Schema\CPUT.Polyglot.NoSql.Schema.csproj", "{C440C1F7-B348-44D1-A003-390E4F0359A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPUT.Polyglot.NoSql.Common", "CPUT.Polyglot.NoSql.Common\CPUT.Polyglot.NoSql.Common.csproj", "{2DEFD564-3C14-4F75-8E84-3B143479DC90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,12 +65,48 @@ Global
 		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8468EB96-6B4F-4369-A44B-0819EDE70A39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65E23982-E519-48A2-81B5-B87C913E18A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65E23982-E519-48A2-81B5-B87C913E18A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65E23982-E519-48A2-81B5-B87C913E18A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65E23982-E519-48A2-81B5-B87C913E18A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D9F2D92-D32A-4043-B854-82A2B4C83801}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D9F2D92-D32A-4043-B854-82A2B4C83801}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D9F2D92-D32A-4043-B854-82A2B4C83801}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D9F2D92-D32A-4043-B854-82A2B4C83801}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5EA9703-FA35-4F8D-B3CE-8AF5B8A86D56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5EA9703-FA35-4F8D-B3CE-8AF5B8A86D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5EA9703-FA35-4F8D-B3CE-8AF5B8A86D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5EA9703-FA35-4F8D-B3CE-8AF5B8A86D56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A696937D-D443-408A-B514-463233694D9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A696937D-D443-408A-B514-463233694D9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A696937D-D443-408A-B514-463233694D9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A696937D-D443-408A-B514-463233694D9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9476C80D-1445-4140-96BC-AAF2BA83F780}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9476C80D-1445-4140-96BC-AAF2BA83F780}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9476C80D-1445-4140-96BC-AAF2BA83F780}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9476C80D-1445-4140-96BC-AAF2BA83F780}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C440C1F7-B348-44D1-A003-390E4F0359A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C440C1F7-B348-44D1-A003-390E4F0359A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C440C1F7-B348-44D1-A003-390E4F0359A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C440C1F7-B348-44D1-A003-390E4F0359A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DEFD564-3C14-4F75-8E84-3B143479DC90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DEFD564-3C14-4F75-8E84-3B143479DC90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DEFD564-3C14-4F75-8E84-3B143479DC90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DEFD564-3C14-4F75-8E84-3B143479DC90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{F61E4CAE-7E03-411F-A36D-F97171AF50A3} = {84C3B7AF-6E64-4E6E-B386-CD3B6F43E2B8}
 		{8468EB96-6B4F-4369-A44B-0819EDE70A39} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
+		{65E23982-E519-48A2-81B5-B87C913E18A8} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
+		{8D9F2D92-D32A-4043-B854-82A2B4C83801} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
+		{E5EA9703-FA35-4F8D-B3CE-8AF5B8A86D56} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
+		{A696937D-D443-408A-B514-463233694D9C} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
+		{9476C80D-1445-4140-96BC-AAF2BA83F780} = {103AF2F0-A761-456C-82E8-0809A8437164}
+		{C440C1F7-B348-44D1-A003-390E4F0359A4} = {103AF2F0-A761-456C-82E8-0809A8437164}
+		{2DEFD564-3C14-4F75-8E84-3B143479DC90} = {7DD7796B-630E-426E-8116-8106EB54A4DE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {97113459-6367-4474-BFA1-E1453ED206B6}
