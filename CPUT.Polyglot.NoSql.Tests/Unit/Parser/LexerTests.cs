@@ -1,4 +1,4 @@
-using CPUT.Polyglot.NoSql.Parser;
+using CPUT.Polyglot.NoSql.Common.Parsers;
 using CPUT.Polyglot.NoSql.Parser.Tokenizers;
 using FluentAssertions;
 using NUnit.Framework;
@@ -10,8 +10,33 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
     [TestFixture]
     public class LexerTests
     {
+        #region Fetch
+
         [Test]
         public void Fetch_SingleProperty_ReturnTokens()
+        {
+            var input = @" FETCH { property }
+                            DATA_MODEL { data }
+                            TARGET { storage_type }"
+                        ;
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.PROPERTY,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //target model
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR
+            );
+        }
+
+        [Test]
+        public void Fetch_PropertyWithRestrict_ReturnTokens()
         {
             var input = @" FETCH { property }
                             DATA_MODEL { data }
@@ -602,6 +627,93 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                 Lexicons.NAMED_VENDOR);
         }
 
+
+        [Test]
+        public void Fetch_SinglePropertyOrderBy_ReturnTokens()
+        {
+            var input = @" FETCH { property }
+                            DATA_MODEL { data }
+                            ORDER_BY { property }
+                            TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.PROPERTY,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //order
+                Lexicons.ORDER_BY,
+                Lexicons.PROPERTY,
+                //target model
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR
+            );
+        }
+
+        [Test]
+        public void Fetch_SinglePropertyOrderByAsc_ReturnTokens()
+        {
+            var input = @" FETCH { property }
+                            DATA_MODEL { data }
+                            ORDER_BY { property ASC }
+                            TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.PROPERTY,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //order
+                Lexicons.ORDER_BY,
+                Lexicons.PROPERTY,
+                Lexicons.ASC,
+                //target model
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR
+            );
+        }
+
+
+        [Test]
+        public void Fetch_SinglePropertyOrderByDesc_ReturnTokens()
+        {
+            var input = @" FETCH { property }
+                            DATA_MODEL { data }
+                            ORDER_BY { property DESC }
+                            TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.PROPERTY,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //order
+                Lexicons.ORDER_BY,
+                Lexicons.PROPERTY,
+                Lexicons.DESC,
+                //target model
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR
+            );
+        }
+
+
+        #endregion
+
+        #region Add
+
         [Test]
         public void Add_SingleRowWithOneProperty_ReturnTokens()
         {
@@ -1177,6 +1289,10 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.NAMED_VENDOR);
         }
 
+        #endregion
+
+        #region Modify
+
         [Test]
         public void Modify_SingleRowWithMoreThanOneProperty_ReturnTokens()
         {
@@ -1726,5 +1842,19 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
         }
+
+        #endregion
+
+        #region Describe
+
+        #endregion
+
+        #region Create
+
+        #endregion
+
+        #region Alter
+
+        #endregion
     }
 }

@@ -1,9 +1,12 @@
-﻿namespace CPUT.Polyglot.NoSql.Interface.Logic
+﻿
+using CPUT.Polyglot.NoSql.Models;
+
+namespace CPUT.Polyglot.NoSql.Interface.Logic
 {
     public interface IServiceLogic
     {
-        string LoadMockData();
+        void DataLoad();
 
-        string Query(string statement);
+        Result Query(string statement);
     }
 }

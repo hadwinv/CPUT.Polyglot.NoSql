@@ -1,6 +1,9 @@
-﻿using CPUT.Polyglot.NoSql.Interface.Repos;
-using CPUT.Polyglot.NoSql.Schema._data.prep;
-using CPUT.Polyglot.NoSql.Schema.Local.Redis;
+﻿using CPUT.Polyglot.NoSql.Interface.Delegator;
+using CPUT.Polyglot.NoSql.Interface.Repos;
+using CPUT.Polyglot.NoSql.Models._data.prep;
+using CPUT.Polyglot.NoSql.Models.Native.Redis;
+using CPUT.Polyglot.NoSql.Models.Translator;
+using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
@@ -10,38 +13,66 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
 {
     public class RedisRepo : IRedisRepo
     {
-        private IConnectionMultiplexer _connector;
-        private IDataLoader _dataLoader;
+        private IRedisBridge _connector;
 
-        public RedisRepo(IConnectionMultiplexer connector)
+        public RedisRepo(IRedisBridge connector)
         {
             _connector = connector;
+           
         }
 
-        public void CreateKeyValueDB(List<UDataset> dataset)
+        public Models.Result Execute(Constructs construct)
         {
-            UserModel user = null;
+            RedisResult result;
+
             try
             {
-                var redis = _connector.GetDatabase(1);
+                var redis = _connector.Connect();
+
+                if(construct.Query != null)
+                {
+                    //var redisCmd = (RedisExecutor)construct.Query;
+
+                    //result = redis.Execute(redisCmd.Key, redisCmd.Value);
+                }
+                
+                int i = 0;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Exception - {ex.Message}");
+            }
+            return null;
+        }
+        ////Create \update
+        //var tests = redis.GetDatabase(1).Execute("SET", new []{ "createwithvalue", "update" } );
+
+        #region Data Load
+
+        public void Load(List<UDataset> dataset)
+        {
+            UserModel user = null;
+            int count = 0;
+
+            try
+            {
+                var redis = _connector.Connect();
 
                 //clear all keys
-                _connector.GetServer("127.0.0.1:6379").FlushDatabase(1);
-
-                int count = 0;
+                _connector.Flush();
 
                 foreach (var student in dataset[0].Students)
                 {
                     if (count > 1000)
                         break;
-        
+
                     user = new UserModel
                     {
                         identity_number = student.IdNumber,
                         first_name = student.Name,
                         last_name = student.Surname,
                         preferred_name = student.Name,
-                        user_name = student.Name + student.Surname.Substring(0,1),
+                        user_name = student.Name + student.Surname.Substring(0, 1),
                         ip_address = student.Profile.IPAddress,
                         device = student.Name,
                         session_id = Guid.NewGuid().ToString(),
@@ -56,17 +87,23 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
                     count++;
                 }
             }
-            // Capture any errors along with the query and data for traceability
             catch (RedisException ex)
             {
-                //Console.WriteLine($"{query} - {ex}");
+                Console.WriteLine($"RedisException - {ex.Message}");
                 throw;
             }
             catch (Exception ex)
             {
-                //Console.WriteLine($"{query} - {ex}");
+                Console.WriteLine($"Exception - {ex.Message}");
                 throw;
             }
+            finally
+            {
+                if (_connector != null)
+                    _connector.Disconnect();
+            }
         }
+
+        #endregion
     }
 }

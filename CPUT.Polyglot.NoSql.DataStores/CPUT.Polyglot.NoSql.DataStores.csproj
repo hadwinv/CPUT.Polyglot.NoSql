@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Repos\DataFactory.cs" />
+    <Compile Remove="Repos\DataLoader.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Repos\_data\00_template_faculty_course_subject.json" />
     <None Remove="Repos\_data\01_template_student_add_loc.json" />
     <None Remove="Repos\_data\exclude\01_template_student_add_loc.json" />
@@ -31,9 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Adaptor\CPUT.Polyglot.NoSql.Adaptor.csproj" />
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
-    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Schema\CPUT.Polyglot.NoSql.Schema.csproj" />
   </ItemGroup>
 
 </Project>

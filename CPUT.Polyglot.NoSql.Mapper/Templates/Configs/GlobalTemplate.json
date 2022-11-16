@@ -1,0 +1,287 @@
+[
+	{
+		"model": {
+			"name": "faculty",
+			"properties": [
+				{
+					"property": "code",
+					"type": "string"
+				},
+				{
+					"property": "name",
+					"type": "string"
+				},
+				{
+					"property": "departmenthead",
+					"type": "string"
+				},
+				{
+					"property": "departmentassistance",
+					"type": "string"
+				}
+			],
+			"relations": [
+				{
+					"type": "model",
+					"cardinality": "One-To-One",
+					"reference": "contact"
+				},
+				{
+					"type": "model",
+					"cardinality": "One-To-Many",
+					"reference": "course"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "course",
+			"properties": [
+				{
+					"property": "code",
+					"type": "string"
+				},
+				{
+					"property": "name",
+					"type": "string"
+				},
+				{
+					"property": "duration",
+					"type": "string"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "subject",
+			"properties": [
+				{
+					"property": "code",
+					"type": "string"
+				},
+				{
+					"property": "name",
+					"type": "string"
+				},
+				{
+					"property": "cost",
+					"type": "decimal"
+				},
+				{
+					"property": "duration",
+					"type": "double"
+				},
+				{
+					"property": "credits",
+					"type": "double"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "student",
+			"properties": [
+				{
+					"property": "id",
+					"type": "int"
+				},
+				{
+					"property": "title",
+					"type": "string"
+				},
+				{
+					"property": "initial",
+					"type": "string"
+				},
+				{
+					"property": "name",
+					"type": "string"
+				},
+				{
+					"property": "surname",
+					"type": "string"
+				},
+				{
+					"property": "idnumber",
+					"type": "string"
+				},
+				{
+					"property": "dateofbirth",
+					"type": "datetime"
+				},
+				{
+					"property": "address",
+					"type": "address"
+				},
+				{
+					"property": "contact",
+					"type": "contact"
+				},
+				{
+					"property": "registration",
+					"type": "registration"
+				},
+				{
+					"property": "transcript",
+					"type": "transcript"
+				}
+			],
+			"relations": [
+				{
+					"type": "model",
+					"cardinality": "One-To-One",
+					"reference": "address"
+				},
+				{
+					"type": "model",
+					"cardinality": "One-To-One",
+					"reference": "contact"
+				},
+				{
+					"type": "model",
+					"cardinality": "One-To-One",
+					"reference": "registration"
+				},
+				{
+					"type": "model",
+					"cardinality": "One-To-Many",
+					"reference": "transcript"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "address",
+			"properties": [
+				{
+					"property": "streetno",
+					"type": "string"
+				},
+				{
+					"property": "street",
+					"type": "string"
+				},
+				{
+					"property": "suburb",
+					"type": "string"
+				},
+				{
+					"property": "city",
+					"type": "string"
+				},
+				{
+					"property": "postalcode",
+					"type": "string"
+				},
+				{
+					"property": "province",
+					"type": "string"
+				},
+				{
+					"property": "country",
+					"type": "string"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "contact",
+			"properties": [
+				{
+					"property": "email",
+					"type": "string"
+				},
+				{
+					"property": "cellnumber",
+					"type": "string"
+				},
+				{
+					"property": "homenumber",
+					"type": "string"
+				},
+				{
+					"property": "preferredcommunication",
+					"type": "string[]"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "registration",
+			"properties": [
+				{
+					"property": "studentnumber",
+					"type": "string"
+				},
+				{
+					"property": "username",
+					"type": "string"
+				},
+				{
+					"property": "password",
+					"type": "string"
+				},
+				{
+					"property": "enrollmenttype",
+					"type": "string"
+				},
+				{
+					"property": "registrationdate",
+					"type": "datetime"
+				}
+			],
+			"relations": [
+				{
+					"type": "model",
+					"cardinality": "One-To-One",
+					"reference": "course"
+				},
+				{
+					"type": "model",
+					"cardinality": "One-To-Many",
+					"reference": "subject"
+				}
+			]
+		}
+	},
+	{
+		"model": {
+			"name": "transcript",
+			"properties": [
+				{
+					"property": "id",
+					"type": "int"
+				},
+				{
+					"property": "marks",
+					"type": "double"
+				},
+				{
+					"property": "percentage",
+					"type": "double"
+				},
+				{
+					"property": "gradedsymbol",
+					"type": "string"
+				},
+				{
+					"property": "student_id",
+					"type": "int"
+				}
+			],
+			"relations": [
+				{
+					"type": "model",
+					"cardinality": "One-To-One",
+					"reference": "subject"
+				}
+			]
+		}
+	}
+]

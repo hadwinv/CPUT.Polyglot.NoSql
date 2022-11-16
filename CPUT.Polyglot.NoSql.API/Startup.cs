@@ -43,7 +43,7 @@ namespace CPUT.Polyglot.NoSql.API
 
             // services
             services.AddTransient<IServiceLogic, ServiceLogic>();
-
+            //
             //commands
             services.AddTransient<IPolyCommand, PolyCommand>();
             

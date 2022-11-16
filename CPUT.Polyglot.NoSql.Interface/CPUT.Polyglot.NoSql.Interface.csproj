@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Repos\IDataFactory.cs" />
+    <Compile Remove="Repos\IDataLoader.cs" />
+    <Compile Remove="Translator\ISchemaMapper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CassandraCSharpDriver" Version="3.16.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.17.1" />
     <PackageReference Include="Neo4jClient" Version="4.0.3" />
@@ -13,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Schema\CPUT.Polyglot.NoSql.Schema.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Models\CPUT.Polyglot.NoSql.Models.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
   </ItemGroup>
 
 </Project>

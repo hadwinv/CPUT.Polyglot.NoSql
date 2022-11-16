@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Common\CPUT.Polyglot.NoSql.Common.csproj" />
-    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
   </ItemGroup>
 
 </Project>

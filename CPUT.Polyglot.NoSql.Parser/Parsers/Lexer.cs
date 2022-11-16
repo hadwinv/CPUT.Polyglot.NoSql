@@ -1,9 +1,9 @@
-﻿using CPUT.Polyglot.NoSql.Parser.Parsers.Operators;
+﻿using CPUT.Polyglot.NoSql.Common.Parsers;
+using CPUT.Polyglot.NoSql.Parser.Parsers.Operators;
 using Superpower;
 using Superpower.Model;
 using Superpower.Parsers;
 using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 
 namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
 {
@@ -16,19 +16,15 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
             if (!next.HasValue)
                 yield break;
 
+            var keywordTracking = new List<string>();
             var bracketsOpen = false;
             var parenDepth = 0;
             var textOpen = false;
-
-            var keywordTracking = new List<string>();
-            var binaryOperators = new List<string>();
-
             var lhs = false;
 
             do
             {
-                var word = string.Empty;
-                var symbol = string.Empty;
+                var text = string.Empty;
 
                 if (char.IsLetter(next.Value))
                 {
@@ -36,129 +32,72 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
 
                     do
                     {
-                        word += next.Value;
+                        text += next.Value;
                         next = next.Remainder.ConsumeChar();
 
-                    } while (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_'));
+                    } while (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_') || char.IsDigit(next.Value));
 
-                    if (KeywordsToTokens.ContainsKey(word))
+                    if (Keywords.ContainsKey(text))
                     {
-                        if (!(word == "AND") && !(word == "OR"))
-                            keywordTracking.Add(word);
+                        if (!(text == "AND") && !(text == "OR"))
+                            keywordTracking.Add(text);
 
-                        yield return Result.Value(KeywordsToTokens[word], wordStart, next.Location);
+                        yield return Result.Value(Keywords[text], wordStart, next.Location);
                     }
                     else
                     {
                         if (keywordTracking[keywordTracking.Count - 1] == "FETCH")
-                        {
-                            yield return Result.Value(PropertyOrFunction.Parse(word), wordStart, next.Location);
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "ADD")
-                        {
+                            yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+                        else if (keywordTracking[keywordTracking.Count - 1] == "ADD" 
+                            || keywordTracking[keywordTracking.Count - 1] == "MODIFY"
+                            || keywordTracking[keywordTracking.Count - 1] == "DATA_MODEL")
                             yield return Result.Value(Lexicons.DATA, wordStart, next.Location);
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "MODIFY")
-                        {
-                            yield return Result.Value(Lexicons.DATA, wordStart, next.Location);
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "PROPERTIES")
+                        else if (keywordTracking[keywordTracking.Count - 1] == "PROPERTIES" 
+                            || keywordTracking[keywordTracking.Count - 1] == "LINK_ON"
+                            || keywordTracking[keywordTracking.Count - 1] == "FILTER_ON")
                         {
                             if (!lhs)
-                            {
                                 lhs = true;
-                                yield return Result.Value(TermOrFunction.Parse(word), wordStart, next.Location);
-                            }
                             else
-                            {
                                 lhs = false;
-                                yield return Result.Value(TermOrFunction.Parse(word), wordStart, next.Location);
-                            }
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "DATA_MODEL")
-                        {
-                            yield return Result.Value(Lexicons.DATA, wordStart, next.Location);
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "LINK_ON")
-                        {
-                            if (!lhs)
-                            {
-                                lhs = true;
-                                yield return Result.Value(Lexicons.TERM, wordStart, next.Location);
-                            }
-                            else
-                            {
-                                lhs = false;
-                                yield return Result.Value(Lexicons.TERM, wordStart, next.Location);
-                            }
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "FILTER_ON")
-                        {
-                            if (!lhs)
-                            {
-                                lhs = true;
-                                yield return Result.Value(Lexicons.TERM, wordStart, next.Location);
 
-                            }
-                            else
-                            {
-                                lhs = false;
-                                yield return Result.Value(Lexicons.TERM, wordStart, next.Location);
-                            }
+                            yield return Result.Value(TermOrFunction.Parse(text), wordStart, next.Location);
                         }
                         else if (keywordTracking[keywordTracking.Count - 1] == "GROUP_BY")
-                        {
                             yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
-                        }
+                        else if (keywordTracking[keywordTracking.Count - 1] == "ORDER_BY")
+                            yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
                         else if (keywordTracking[keywordTracking.Count - 1] == "TARGET")
-                        {
                             yield return Result.Value(Lexicons.NAMED_VENDOR, wordStart, next.Location);
-                        }
                         else
-                        {
                             yield return Result.Empty<Lexicons>(next.Location, $"unrecognized `{next.Value}`");
-                        }
                     }
                 }
                 else if (char.IsSymbol(next.Value))
                 {
+                    var wordStart = next.Location;
+
                     do
                     {
-                        symbol += next.Value;
+                        text += next.Value;
                         next = next.Remainder.ConsumeChar();
 
                     } while (next.HasValue && char.IsSymbol(next.Value));
 
-                    if (symbol == "=")
-                    {
-                        yield return Result.Value(Lexicons.EQL, next.Location, next.Remainder);
-                        next = next.Remainder.ConsumeChar();
-                    }
-                    else if (symbol == "<")
-                    {
+                    if (text == "=")
+                        yield return Result.Value(Lexicons.EQL, wordStart, next.Location);
+                    else if (text == "<")
                         yield return Result.Value(Lexicons.LSS, next.Location, next.Remainder);
-                        next = next.Remainder.ConsumeChar();
-                    }
-                    else if (symbol == ">")
-                    {
+                    else if (text == ">")
                         yield return Result.Value(Lexicons.GTR, next.Location, next.Remainder);
-                        next = next.Remainder.ConsumeChar();
-                    }
-                    else if (symbol == ">=")
-                    {
+                    else if (text == ">=")
                         yield return Result.Value(Lexicons.GTE, next.Location, next.Remainder);
-                        next = next.Remainder.ConsumeChar();
-                    }
-                    else if (symbol == "<=")
-                    {
+                    else if (text == "<=")
                         yield return Result.Value(Lexicons.LTE, next.Location, next.Remainder);
-                        next = next.Remainder.ConsumeChar();
-                    }
                     else
-                    {
                         yield return Result.Empty<Lexicons>(next.Location, $"unrecognized `{next.Value}`");
-                        next = next.Remainder.ConsumeChar(); // Skip the character anyway
-                    }
+
+                    next = next.Remainder.ConsumeChar(); // Skip the character anyway
                 }
                 else if (next.Value == '{')
                 {
@@ -217,29 +156,28 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                             lhs = false;
 
                         textOpen = true;
+                        //word += next.Value;
+                        next = next.Remainder.ConsumeChar();
+
+                        var wordStart = next.Location;
+
                         do
                         {
-                            word += next.Value;
                             next = next.Remainder.ConsumeChar();
-
-                            //extract string literal
-                            if(next.Value == Convert.ToChar("'"))
+                            
+                            if (next.Value == Convert.ToChar("'"))
                             {
-                                word += next.Value;
                                 textOpen = false;
                                 break;
                             }
 
                         } while (next.HasValue);
 
-                        if(!textOpen)
-                        {
-                            yield return Result.Value(Lexicons.STRING, next.Location, next.Remainder);
-                        }
+                        if (!textOpen)
+                            yield return Result.Value(Lexicons.STRING, wordStart, next.Location);
                         else
-                        {
                             yield return Result.Empty<Lexicons>(next.Location, $"unrecognized `{next.Value}`");
-                        }
+                        
                         next = next.Remainder.ConsumeChar();
                     }
                     else
@@ -277,7 +215,6 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                 return Lexicons.PROPERTY;
             });
 
-
         private TextParser<Lexicons> TermOrFunction { get; set; } = Span.MatchedBy(
          Character.Letter.Or(Character.In('_', ':')).IgnoreThen(Character.LetterOrDigit.Or(Character.In('_', ':')).Many()))
           .Select(x =>
@@ -301,33 +238,25 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
               return Lexicons.TERM;
           });
 
-
-        private static Dictionary<string, Lexicons> KeywordsToTokens = new(StringComparer.OrdinalIgnoreCase)
+        private static Dictionary<string, Lexicons> Keywords = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["data_model"] = Lexicons.DATA_MODEL,
+            ["describe"] = Lexicons.DESCRIBE,
             ["fetch"] = Lexicons.FETCH,
             ["modify"] = Lexicons.MODIFY,
             ["add"] = Lexicons.ADD,
-            ["target"] = Lexicons.TARGET,
-            ["precedence"] = Lexicons.PRECEDENCE,
             ["properties"] = Lexicons.PROPERTIES,
+            ["data_model"] = Lexicons.DATA_MODEL,
+            ["link_on"] = Lexicons.LINK_ON,
             ["filter_on"] = Lexicons.FILTER_ON,
             ["group_by"] = Lexicons.GROUP_BY,
+            ["order_by"] = Lexicons.ORDER_BY,
+            ["asc"] = Lexicons.ASC,
+            ["desc"] = Lexicons.DESC,
             ["restrict_to"] = Lexicons.RESTRICT_TO,
-            ["link_on"] = Lexicons.LINK_ON,
-            ["describe"] = Lexicons.DESCRIBE,
-            ["combine"] = Lexicons.COMBINE,
-            ["on"] = Lexicons.ON,
-            ["as"] = Lexicons.AS,
-            // Operands
+            ["target"] = Lexicons.TARGET,
+            ["precedence"] = Lexicons.PRECEDENCE,
             ["and"] = Lexicons.LAND,
             ["or"] = Lexicons.LOR
-
-            //["sum"] = Lexicons.SUM,
-            //["or"] = Lexicons.AVG
-            //["and"] = Lexicons.COUNT,
-            //["or"] = Lexicons.MIN,
-            //["or"] = Lexicons.MAX
         };
 
         private static ImmutableDictionary<string, AggregateOperator> Aggregates { get; set; } = new[]

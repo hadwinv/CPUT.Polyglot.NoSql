@@ -4,16 +4,11 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
 {
     public class RestrictExpr : BaseExpr
     {
-        public BaseExpr Value { get; set; }
+        public int Value { get; set; }
 
-        public RestrictExpr(BaseExpr value)
+        public RestrictExpr(int value)
         {
             Value = value;
-        }
-
-        public override string ToString()
-        {
-            return $"FetchExpression {{ Value = {Value} }}";
         }
     }
 }

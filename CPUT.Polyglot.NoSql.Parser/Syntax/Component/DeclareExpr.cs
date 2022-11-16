@@ -4,20 +4,11 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
 {
     public class DeclareExpr : BaseExpr
     {
-        public BaseExpr[] Expressions { get; set; }
-
-        public DeclareExpr()
-        {
-        }
+        public BaseExpr[] Value { get; set; }
 
         public DeclareExpr(BaseExpr[] value)
         {
-            Expressions = value;
-        }
-        
-        public override string ToString()
-        {
-            return $"FetchExpr {{ Value = {Expressions} }}";
+            Value = value;
         }
     }
 }

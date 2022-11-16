@@ -6,4 +6,46 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="GaV.cs" />
+    <Compile Remove="LaV.cs" />
+    <Compile Remove="Mappers.cs" />
+    <Compile Remove="Templates\Link.cs" />
+    <Compile Remove="Templates\Model.cs" />
+    <Compile Remove="Templates\Properties.cs" />
+    <Compile Remove="Templates\Relations.cs" />
+    <Compile Remove="Templates\Resources.cs" />
+    <Compile Remove="Templates\Schemas.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Superpower" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Templates\Configs\GlobalTemplate.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\Configs\MapperTemplate.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\Configs\Native\ColumnarTemplate.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\Configs\Native\DocumentTemplate.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\Configs\Native\GraphTemplate.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Templates\Configs\Native\KeyValueTemplate.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

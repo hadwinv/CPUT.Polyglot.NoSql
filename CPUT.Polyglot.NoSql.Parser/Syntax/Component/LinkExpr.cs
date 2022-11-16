@@ -6,14 +6,13 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
     {
         public BaseExpr[] Value { get; set; }
 
+        public LinkExpr()
+        {
+        }
+
         public LinkExpr(BaseExpr[] value)
         {
             Value = value;
-        }
-
-        public override string ToString()
-        {
-            return $"LinkExpr {{ Value = {Value} }}";
         }
     }
 }

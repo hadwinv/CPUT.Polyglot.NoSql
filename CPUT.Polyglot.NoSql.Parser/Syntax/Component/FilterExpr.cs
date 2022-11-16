@@ -10,10 +10,5 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
         {
             Value = value;
         }
-
-        public override string ToString()
-        {
-            return $"FilterExpr {{ Value = {Value} }}";
-        }
     }
 }

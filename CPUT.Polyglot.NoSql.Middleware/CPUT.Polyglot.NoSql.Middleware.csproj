@@ -15,4 +15,8 @@
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Stores\" />
+  </ItemGroup>
+
 </Project>

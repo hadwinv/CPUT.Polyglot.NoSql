@@ -7,14 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Neo4j\" />
-    <Folder Include="MongoDB\" />
-    <Folder Include="Cassandra\" />
-    <Folder Include="Redis\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
   </ItemGroup>
 
 </Project>

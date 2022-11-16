@@ -13,24 +13,24 @@ namespace CPUT.Polyglot.NoSql.Tests.Integration
             _serviceLogic = serviceLogic;
         }
 
-        [Test]
-        public void GetStudentWithFilter()
-        {
-            string input = string.Empty;
+        //[Test]
+        //public void GetStudentWithFilter()
+        //{
+        //    string input = string.Empty;
 
-            try
-            {
-                input = @"";
+        //    try
+        //    {
+        //        input = @"";
 
-                _serviceLogic.Query(input);
+        //        _serviceLogic.Query(input);
 
-                Assert.Pass();
-            }
-            catch(Exception ex)
-            {
-                Assert.Fail();
-            }
+        //        Assert.Pass();
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Assert.Fail();
+        //    }
             
-        }
+        //}
     }
 }

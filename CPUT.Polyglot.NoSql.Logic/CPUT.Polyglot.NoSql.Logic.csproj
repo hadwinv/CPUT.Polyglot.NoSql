@@ -5,11 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Mappers\" />
+    <PackageReference Include="Microsoft.Toolkit" Version="7.1.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Mapper\CPUT.Polyglot.NoSql.Mapper.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Models\CPUT.Polyglot.NoSql.Models.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Translator\CPUT.Polyglot.NoSql.Translator.csproj" />
   </ItemGroup>
 
 </Project>

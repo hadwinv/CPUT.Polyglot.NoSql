@@ -1,0 +1,592 @@
+ [
+		{
+			"name": "faculty",
+			"resources": [
+				{
+					"source": "code",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "code",
+							"type": "direct",
+							"reference": "Faculty"
+						}
+					]
+				},
+				{
+					"source": "name",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "name",
+							"type": "direct",
+							"reference": "Faculty"
+						},
+						{
+							"target": "mongodb",
+							"property": "name",
+							"type": "direct",
+							"reference": "faculties"
+						}
+					]
+				},
+				{
+					"source": "departmenthead",
+					"link": [
+						{
+							"target": "mongodb",
+							"property": "head",
+							"type": "direct",
+							"reference": "faculties"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "course",
+			"resources": [
+				{
+					"source": "code",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "code",
+							"type": "direct",
+							"reference": "Course"
+						}
+					]
+				},
+				{
+					"source": "name",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "name",
+							"type": "direct",
+							"reference": "Course"
+						},
+						{
+							"target": "mongodb",
+							"property": "name",
+							"type": "direct",
+							"reference": "course"
+						},
+						{
+							"target": "cassandra",
+							"property": "course",
+							"type": "direct",
+							"reference": "enrollment"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "subject",
+			"resources": [
+				{
+					"source": "code",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "code",
+							"type": "direct",
+							"reference": "Subject"
+						},
+						{
+							"target": "cassandra",
+							"property": "code",
+							"type": "direct",
+							"reference": "subject"
+						}
+					]
+				},
+				{
+					"source": "name",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "name",
+							"type": "direct",
+							"reference": "Subject"
+						},
+						{
+							"target": "mongodb",
+							"property": "name",
+							"type": "direct",
+							"reference": "faculties"
+						},
+						{
+							"target": "cassandra",
+							"property": "name",
+							"type": "direct",
+							"reference": "subject"
+						}
+					]
+				},
+				{
+					"source": "cost",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "cost",
+							"type": "direct",
+							"reference": "Subject"
+						},
+						{
+							"target": "mongodb",
+							"property": "cost",
+							"type": "direct",
+							"reference": "subject"
+						}
+					]
+				},
+				{
+					"source": "duration",
+					"link": [
+						{
+							"target": "mongodb",
+							"property": "duration",
+							"type": "direct",
+							"reference": "subject"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "student",
+			"resources": [
+				{
+					"source": "title",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "title",
+							"type": "direct",
+							"reference": "Pupil"
+						}
+					]
+				},
+				{
+					"source": "initial",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "initial",
+							"type": "direct",
+							"reference": "pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "init",
+							"type": "direct",
+							"reference": "students"
+						},
+						{
+							"target": "cassandra",
+							"property": "initials",
+							"type": "direct",
+							"reference": "students"
+						}
+					]
+				},
+				{
+					"source": "name",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "name",
+							"type": "direct",
+							"reference": "Pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "name",
+							"type": "direct",
+							"reference": "students"
+						},
+						{
+							"target": "cassandra",
+							"property": "firstname",
+							"type": "indirect",
+							"reference": "person"
+						},
+						{
+							"target": "redis",
+							"property": "first_name",
+							"type": "direct",
+							"reference": "user"
+						}
+					]
+				},
+				{
+					"source": "surname",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "surname",
+							"type": "direct",
+							"reference": "Pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "surname",
+							"type": "direct",
+							"reference": "students"
+						},
+						{
+							"target": "cassandra",
+							"property": "lastname",
+							"type": "indirect",
+							"reference": "person"
+						},
+						{
+							"target": "redis",
+							"property": "last_name",
+							"type": "direct",
+							"reference": "user"
+						}
+					]
+				},
+				{
+					"source": "idnumber",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "idnumber",
+							"type": "direct",
+							"reference": "Pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "id_number",
+							"type": "direct",
+							"reference": "students"
+						},
+						{
+							"target": "cassandra",
+							"property": "idno",
+							"type": "direct",
+							"reference": "student"
+						},
+						{
+							"target": "redis",
+							"property": "identity_number",
+							"type": "direct",
+							"reference": "user"
+						}
+					]
+				},
+				{
+					"source": "dateofbirth",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "dob",
+							"type": "direct",
+							"reference": "Pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "date_of_birth",
+							"type": "direct",
+							"reference": "students"
+						},
+						{
+							"target": "cassandra",
+							"property": "dob",
+							"type": "indirect",
+							"reference": "person"
+						}
+					]
+				},
+				{
+					"source": "address",
+					"link": [
+						{
+							"property": "address",
+							"type": "direct"
+						}
+					]
+				},
+				{
+					"source": "contact",
+					"link": [
+						{
+							"property": "contact",
+							"type": "direct"
+						}
+					]
+				},
+				{
+					"source": "registration",
+					"link": [
+						{
+							"property": "registration",
+							"type": "direct"
+						}
+					]
+				},
+				{
+					"source": "transcript",
+					"link": [
+						{
+							"property": "transcript",
+							"type": "direct"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "address",
+			"resources": [
+				{
+					"source": "streetno",
+					"link": [
+						{
+							"target": "cassandra",
+							"property": "streetno",
+							"type": "indirect",
+							"reference": "addressdetail"
+						}
+					]
+				},
+				{
+					"source": "street",
+					"link": [
+						{
+							"target": "cassandra",
+							"property": "streetname",
+							"type": "indirect",
+							"reference": "addressdetail"
+						},
+						{
+							"target": "mongodb",
+							"property": "street",
+							"type": "indirect",
+							"reference": "address"
+						}
+					]
+				},
+				{
+					"source": "suburb",
+					"link": [
+						{
+							"target": "cassandra",
+							"property": "suburb",
+							"type": "indirect",
+							"reference": "addressdetail"
+						}
+					]
+				},
+				{
+					"source": "city",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "name",
+							"type": "direct",
+							"reference": "City"
+						},
+						{
+							"target": "mongodb",
+							"property": "city",
+							"type": "indirect",
+							"reference": "address"
+						},
+						{
+							"target": "cassandra",
+							"property": "city",
+							"type": "indirect",
+							"reference": "addressdetail"
+						}
+					]
+				},
+				{
+					"source": "postalcode",
+					"link": [
+						{
+							"target": "mongodb",
+							"property": "code",
+							"type": "direct",
+							"reference": "address"
+						},
+						{
+							"target": "cassandra",
+							"property": "postalcode",
+							"type": "indirect",
+							"reference": "addressdetail"
+						}
+					]
+				},
+				{
+					"source": "country",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "name",
+							"type": "direct",
+							"reference": "Country"
+						},
+						{
+							"target": "mongodb",
+							"property": "country",
+							"type": "indirect",
+							"reference": "address"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "contact",
+			"resources": [
+				{
+					"source": "email",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "email",
+							"type": "direct",
+							"reference": "Pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "email",
+							"type": "direct",
+							"reference": "contact"
+						},
+						{
+							"target": "cassandra",
+							"property": "email",
+							"type": "indirect",
+							"reference": "person"
+						}
+					]
+				},
+				{
+					"source": "cellnumber",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "mobile",
+							"type": "direct",
+							"reference": "Pupil"
+						},
+						{
+							"target": "mongodb",
+							"property": "phone",
+							"type": "direct",
+							"reference": "contact"
+						},
+						{
+							"target": "cassandra",
+							"property": "cellnumber",
+							"type": "direct",
+							"reference": "person"
+						}
+					]
+				},
+				{
+					"source": "homenumber",
+					"link": [
+						{
+							"target": "cassandra",
+							"property": "homenumber",
+							"type": "direct",
+							"reference": "person"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "registration",
+			"resources": [
+				{
+					"source": "studentnumber",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "studentno",
+							"type": "direct",
+							"reference": "Progress"
+						},
+						{
+							"target": "cassandra",
+							"property": "studentno",
+							"type": "direct",
+							"reference": "student"
+						}
+					]
+				},
+				{
+					"source": "username",
+					"link": [
+						{
+							"target": "redis",
+							"property": "user_name",
+							"type": "direct",
+							"reference": "user"
+						}
+					]
+				},
+				{
+					"source": "registrationdate",
+					"link": [
+						{
+							"target": "mongodb",
+							"property": "registration_date",
+							"type": "indirect",
+							"reference": "register"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "transcript",
+			"resources": [
+				{
+					"source": "marks",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "Score",
+							"reference": "Progress",
+							"reference_type": "json",
+							"reference_property": "marks"
+						},
+						{
+							"target": "cassandra",
+							"property": "marks",
+							"type": "direct",
+							"reference": "academicresult"
+						}
+					]
+				},
+				{
+					"source": "gradedsymbol",
+					"link": [
+						{
+							"target": "neo4j",
+							"property": "Grade",
+							"reference": "Progress",
+							"reference_type": "json",
+							"reference_property": "marks"
+						},
+						{
+							"target": "cassandra",
+							"property": "grade",
+							"type": "direct",
+							"reference": "academicresult"
+						}
+						
+					]
+				}
+			]
+		}
+	]
