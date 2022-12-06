@@ -11,6 +11,7 @@ using CPUT.Polyglot.NoSql.Translator;
 using CPUT.Polyglot.NoSql.Translator.Events;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts;
 using FluentAssertions;
+using MongoDB.Driver;
 using Moq;
 using Neo4jClient.Cypher;
 using NUnit.Framework;
@@ -18,6 +19,7 @@ using StackExchange.Redis;
 using Superpower;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static System.Formats.Asn1.AsnWriter;
@@ -1212,6 +1214,47 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
+
+        [Test]
+        public void MongoDB_FetchSum_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+                    DATA_MODEL { student}
+                    FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' OR idnumber = '624083061344'}
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").find({\"$or\" : [{\"id_number\" : \"624083061344\"}],\"$and\" : [{\"id_number\" : \"624083061345\"},{\"id_number\" : \"62408306136\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+            );
+   //         db.getCollection("students")
+   // .aggregate([
+   //  {
+   //    $group:
+   //             {
+   //             _id: "$register.status", 
+   //        count: {$sum: "$register._id"}
+   //             }
+   //         }
+   //])
+        }
+
         #endregion
 
         #region Neo4j
@@ -1665,7 +1708,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { gradedsymbol, sum(marks) }
+            var input = @"FETCH { gradedsymbol, nsum(marks) }
                             DATA_MODEL { transcript}
                             TARGET {  neo4j }";
 
@@ -1835,14 +1878,13 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-
         [Test]
         public void Neo4j_FetchMoreThanOneRelation_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { title, name, surname, gradedsymbol, name, max(marks) }
-                            DATA_MODEL { student, transcript, course}
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, max(t.marks) }
+                            DATA_MODEL { student AS s, transcript AS t, course AS c}
                             RESTRICT_TO { 10 }
                             TARGET {  neo4j }";
 
@@ -1862,9 +1904,69 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH (cou:Course)<-[:ENROLLED_IN]-(pup:Pupil)-[:TRANSCRIPT]->(pro:Progress) UNWIND apoc.convert.fromJsonList( pro.marks) as ma RETURN pup.title, pup.name, pup.surname, ma.Grade, cou.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course) UNWIND apoc.convert.fromJsonList( t.marks) as ma RETURN s.title, s.name, s.surname, ma.Grade, c.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
             );
         }
+
+        [Test]
+        public void Neo4j_FetchMoreThanThreeRelation_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, su.name, max(t.marks) }
+                            DATA_MODEL { student AS s, transcript AS t, course AS c, subject AS su}
+                            RESTRICT_TO { 10 }
+                            TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)OPTIONAL MATCH (c)-[:CONTAINS]->(su:Subject) UNWIND apoc.convert.fromJsonList( t.marks) as ma RETURN s.title, s.name, s.surname, ma.Grade, c.name, su.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
+            );
+        }
+
+        //[Test]
+        //public void Neo4j_FetchMoreThanThreeRelation_ReturnExecutableQuery()
+        //{
+        //    List<Constructs> results = null;
+
+        //    var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, su.name, max(t.marks) }
+        //                    DATA_MODEL { student AS s, transcript AS t, course AS c, subject AS su}
+        //                    RESTRICT_TO { 10 }
+        //                    TARGET {  neo4j }";
+
+        //    var tokens = new Lexer().Tokenize(input);
+
+        //    //generate abstract syntax tree
+        //    var syntaxExpr = Expressions.Select.Parse(tokens);
+
+        //    var transformed = _translate.Convert(
+        //                   new ConstructPayload
+        //                   {
+        //                       BaseExpr = syntaxExpr,
+        //                       Command = Utils.Command.FETCH
+        //                   });
+
+
+        //    results = transformed.Result;
+
+        //    results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+        //        ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)OPTIONAL MATCH (c)-[:CONTAINS]->(su:Subject) UNWIND apoc.convert.fromJsonList( t.marks) as ma RETURN s.title, s.name, s.surname, ma.Grade, c.name, su.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
+        //    );
+        //}
 
         #endregion
 

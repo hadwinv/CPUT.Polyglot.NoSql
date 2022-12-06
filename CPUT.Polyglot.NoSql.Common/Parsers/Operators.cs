@@ -9,7 +9,12 @@
             Count,
             Avg,
             Max,
-            Min
+            Min,
+            NSum,
+            NCount,
+            NAvg,
+            NMax,
+            NMin
         }
 
         public enum OperatorType

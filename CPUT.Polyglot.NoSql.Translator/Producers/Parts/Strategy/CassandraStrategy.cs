@@ -114,16 +114,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> propertyParts = new List<IExpression>();
 
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var DataModelExpr = (Component.DataModelExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DataModelExpr)));
-            var LinkExpr = (Component.LinkExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.LinkExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            var GroupByExpr = (Component.GroupByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.GroupByExpr)));
-            var RestrictExpr = (Component.RestrictExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.RestrictExpr)));
-            var OrderByExpr = (Component.OrderByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.OrderByExpr)));
-
-            //get all linked properties, model, etc
             var mapperLinks = mapper
                   .Where(x => DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
                   .Select(s => s)
@@ -145,12 +135,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 if (FilterExpr != null)
                     targetModel.Add(new ConditionPart(GetLogicalPart(FilterExpr, mapperLinks, schemas)));
 
-                if (OrderByExpr != null)
+                if (this.OrderByExpr != null)
                 {
-                    var mappedProperty = GetMappedProperty(mapperLinks, OrderByExpr.Value, "cassandra");
+                    var mappedProperty = GetMappedProperty(mapperLinks, this.OrderByExpr, "cassandra");
 
                     if (mappedProperty != null)
-                        targetModel.Add(new OrderByPart( mappedProperty.Property, "", new DirectionPart(OrderByExpr.Direction)));
+                        targetModel.Add(new OrderByPart( mappedProperty, this.OrderByExpr));
                 }
 
                 if (RestrictExpr != null)
@@ -166,11 +156,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> queryParts = new List<IExpression>();
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> propertyParts = new List<IExpression>();
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
 
             //get all linked properties, model, etc
             var mapperLinks = mapper
@@ -206,10 +191,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> queryParts = new List<IExpression>();
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> propertyParts = new List<IExpression>();
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
 
             //get all linked properties, model, etc
             var mapperLinks = mapper
@@ -250,7 +231,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 {
                     propertyExpr = (PropertyExpr)part;
 
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "cassandra");
+                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "cassandra");
 
                     if (mappedProperty != null)
                     {
@@ -259,7 +240,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .Where(x => x.Property == mappedProperty.Property)
                             .First();
 
-                        expressions.Add(new PropertyPart(properties, mappedProperty));
+                        expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
                         expressions.Add(new SeparatorPart(","));
                     };
                 }
@@ -271,7 +252,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     {
                         propertyExpr = (PropertyExpr)func;
 
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "cassandra");
+                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "cassandra");
 
                         if (mappedProperty != null)
                         {
@@ -280,7 +261,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                         .Where(x => x.Property == mappedProperty.Property)
                                         .First();
 
-                            expressions.Add(new PropertyPart(properties, mappedProperty));
+                            expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
                             expressions.Add(new SeparatorPart(","));
                         }
                     }
@@ -315,7 +296,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.CASSANDRA);
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "cassandra");
+                    leftMap = GetMappedProperty(mapperLinks, left, "cassandra");
 
                     if (leftMap != null)
                     {
@@ -323,14 +304,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "cassandra");
+                        rightMap = GetMappedProperty(mapperLinks, right, "cassandra");
 
                         if (rightMap != null)
                         {
@@ -338,7 +319,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)
@@ -383,7 +364,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     left = (TermExpr)@operator.Left;
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "cassandra");
+                    leftMap = GetMappedProperty(mapperLinks, left, "cassandra");
 
                     if (leftMap != null)
                     {
@@ -391,14 +372,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "cassandra");
+                        rightMap = GetMappedProperty(mapperLinks, right, "cassandra");
 
                         if (rightMap != null)
                         {
@@ -406,7 +387,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)
@@ -497,7 +478,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.CASSANDRA);
                     comparePart = new ComparePart(@operator.Compare, Common.Helpers.Utils.Database.CASSANDRA);
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "cassandra");
+                    leftMap = GetMappedProperty(mapperLinks, left, "cassandra");
 
                     if (leftMap != null)
                     {
@@ -505,14 +486,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "cassandra");
+                        rightMap = GetMappedProperty(mapperLinks, right, "cassandra");
 
                         if (rightMap != null)
                         {
@@ -520,7 +501,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)

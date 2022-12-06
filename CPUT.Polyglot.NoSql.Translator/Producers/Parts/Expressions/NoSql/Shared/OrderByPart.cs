@@ -1,4 +1,6 @@
 ﻿using Cassandra.DataStax.Graph;
+using CPUT.Polyglot.NoSql.Models.Mapper;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
@@ -14,17 +16,20 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
     {
         internal string Name { get; set; }
 
-        internal string Alias { get; set; }
+        internal string AliasIdentifier { get; set; }
 
         internal DirectionPart Direction { get; set; }
 
-        public OrderByPart(string name, string alias, DirectionPart direction)
+        public OrderByPart(Link mappedProperty, OrderByExpr orderByExpr)
         {
-            Name = name;
-            Alias = alias.ToLower();
-            Direction = direction;
-        }
+            Name = mappedProperty.Property;
+            AliasIdentifier = orderByExpr.AliasIdentifier;
 
+            if (string.IsNullOrEmpty(AliasIdentifier))
+                AliasIdentifier = mappedProperty.Reference.Substring(0, 3).ToLower();
+
+            Direction = new DirectionPart(orderByExpr.Direction);
+        }
         public void Accept(INeo4jVisitor visitor)
         {
             visitor.Visit(this);

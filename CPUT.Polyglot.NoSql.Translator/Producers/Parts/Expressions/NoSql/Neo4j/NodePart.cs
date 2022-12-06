@@ -9,16 +9,20 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
     {
         internal string Name { get; set; }
 
-        internal string Alias { get; set; }
+        internal string AliasIdentifier { get; set; }
 
         internal List<RelationshipPart> Relations { get; set; }
 
         public NodePart(string name, string alias, Relations[] relations)
         {
             Name = name;
-            Alias = alias.ToLower();
 
-            if(relations != null)
+            if(!string.IsNullOrEmpty(alias))
+                AliasIdentifier = alias.ToLower();
+            else
+                AliasIdentifier = name.Substring(0,3).ToLower();
+
+            if (relations != null)
             {
                 Relations = new List<RelationshipPart>();
 

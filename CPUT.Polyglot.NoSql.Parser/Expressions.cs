@@ -28,16 +28,38 @@ namespace CPUT.Polyglot.NoSql.Parser
             select new StringLiteralExpr(keyword.ToStringValue());
 
         private static TokenListParser<Lexicons, PropertyExpr> Property =
-            from keyword in Token.EqualTo(Lexicons.PROPERTY)
-            select new PropertyExpr(keyword.ToStringValue());
+            from x in (
+                from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
+                from dot in Parse.Ref(() => Dot).OptionalOrDefault()
+                from keyword in Token.EqualTo(Lexicons.PROPERTY)
+                from a in Parse.Ref(() => As).OptionalOrDefault()
+                from ran in Parse.Ref(() => ReferenceAliasName).OptionalOrDefault()
+
+                select new PropertyExpr(keyword.ToStringValue(),
+                                    ra.HasValue ? ra.ToStringValue() : string.Empty,
+                                    ran.HasValue ? ran.ToStringValue() : string.Empty)
+            ).Try()
+            select x;
 
         private static TokenListParser<Lexicons, TermExpr> Term =
-            from keyword in Token.EqualTo(Lexicons.TERM)
-            select new TermExpr(keyword.ToStringValue());
+             from x in (
+                  from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
+                  from dot in Parse.Ref(() => Dot).OptionalOrDefault()
+                  from keyword in Token.EqualTo(Lexicons.TERM).Try()
+                  from a in Parse.Ref(() => As).OptionalOrDefault()
+                  from ran in Parse.Ref(() => ReferenceAliasName).OptionalOrDefault()
+
+                  select new TermExpr(keyword.ToStringValue(),
+                                      ra.HasValue ? ra.ToStringValue() : string.Empty,
+                                      ran.HasValue ? ran.ToStringValue() : string.Empty)
+            ).Try()
+            select x;
 
         private static TokenListParser<Lexicons, DataExpr> Data =
            from keyword in Token.EqualTo(Lexicons.DATA)
-           select new DataExpr(keyword.ToStringValue());
+           from alias in Parse.Ref(() => As).OptionalOrDefault()
+           from refm in Parse.Ref(() => ReferenceModel).OptionalOrDefault()
+           select new DataExpr(keyword.ToStringValue(), refm.HasValue ? refm.ToStringValue() : string.Empty);
 
         private static TokenListParser<Lexicons, StorageExpr> Storage =
            from keyword in Token.EqualTo(Lexicons.NAMED_VENDOR)
@@ -62,6 +84,27 @@ namespace CPUT.Polyglot.NoSql.Parser
         private static TokenListParser<Lexicons, Token<Lexicons>> Direction =
           from d in Token.EqualTo(Lexicons.ASC).Or(Token.EqualTo(Lexicons.DESC))
           select d;
+
+        private static TokenListParser<Lexicons, Token<Lexicons>> ReferenceAlias =
+          from d in Token.EqualTo(Lexicons.REFERENCE_ALIAS)
+          select d;
+
+        private static TokenListParser<Lexicons, Token<Lexicons>> Dot =
+        from d in Token.EqualTo(Lexicons.DOT)
+        select d;
+
+        private static TokenListParser<Lexicons, Token<Lexicons>> As =
+          from d in Token.EqualTo(Lexicons.AS)
+          select d;
+
+        private static TokenListParser<Lexicons, Token<Lexicons>> ReferenceModel =
+         from d in Token.EqualTo(Lexicons.REFERENCE_MODEL)
+         select d;
+
+        private static TokenListParser<Lexicons, Token<Lexicons>> ReferenceAliasName =
+         from d in Token.EqualTo(Lexicons.REFERENCE_ALIAS_NAME)
+         select d;
+
 
         private static TokenListParser<Lexicons, Token<Lexicons>> Operators =
          from ops in Token.EqualTo(Lexicons.EQL)
@@ -197,9 +240,13 @@ namespace CPUT.Polyglot.NoSql.Parser
 
         private static TokenListParser<Lexicons, OrderByExpr> OrderBy =
             from keyword in Token.EqualTo(Lexicons.ORDER_BY)
+            from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
+            from dot in Parse.Ref(() => Dot).OptionalOrDefault()
             from property in Property
             from dir in Parse.Ref(() => Direction).OptionalOrDefault()
-            select new OrderByExpr(property.Value, OperatorMapping.DirectionMap[dir.Kind]);
+            select new OrderByExpr(property.Value, 
+                                   ra.HasValue ? ra.ToStringValue() : string.Empty,
+                                   OperatorMapping.DirectionMap[dir.Kind]);
 
         #endregion
 
@@ -261,9 +308,6 @@ namespace CPUT.Polyglot.NoSql.Parser
               from declare in Fetch
               from model in DataModel
               from link in Parse.Ref(() => Link).Try().OptionalOrDefault()
-                  //from link in model.Value.Count() > 1 ?
-                  //                                  Link :
-                  //                                  Parse.Ref(() => Link).Try().OptionalOrDefault()
               from filter in Parse.Ref(() => Filter).OptionalOrDefault()
               from groupby in Parse.Ref(() => GroupBy).OptionalOrDefault()
               from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()
@@ -276,9 +320,7 @@ namespace CPUT.Polyglot.NoSql.Parser
              from declare in Add
              from properties in Properties
              from model in Parse.Ref(() => DataModel).OptionalOrDefault()
-             from link in (model != null && model.Value.Count() > 1) ?
-                                               Link :
-                                               Parse.Ref(() => Link).Try().OptionalOrDefault()
+             from link in Parse.Ref(() => Link).Try().OptionalOrDefault()
              from filter in Parse.Ref(() => Filter).OptionalOrDefault()
              from groupby in Parse.Ref(() => GroupBy).OptionalOrDefault()
              from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()
@@ -290,9 +332,7 @@ namespace CPUT.Polyglot.NoSql.Parser
             from declare in Modify
             from properties in Properties
             from model in Parse.Ref(() => DataModel).OptionalOrDefault()
-            from link in (model != null && model.Value.Count() > 1) ?
-                                              Link :
-                                              Parse.Ref(() => Link).Try().OptionalOrDefault()
+            from link in Parse.Ref(() => Link).Try().OptionalOrDefault()
             from filter in Parse.Ref(() => Filter).OptionalOrDefault()
             from groupby in Parse.Ref(() => GroupBy).OptionalOrDefault()
             from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()

@@ -21,6 +21,7 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
             var parenDepth = 0;
             var textOpen = false;
             var lhs = false;
+            var previousText = string.Empty;
 
             do
             {
@@ -47,26 +48,99 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                     else
                     {
                         if (keywordTracking[keywordTracking.Count - 1] == "FETCH")
-                            yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+                        {
+                            if (next.Value == '.')
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
+                            else if (text == "AS")
+                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                            else if (previousText == "AS")
+                            {
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+
+                                previousText = string.Empty;
+                            }
+                            else
+                                yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+
+                            previousText = text;
+                        }
                         else if (keywordTracking[keywordTracking.Count - 1] == "ADD" 
                             || keywordTracking[keywordTracking.Count - 1] == "MODIFY"
                             || keywordTracking[keywordTracking.Count - 1] == "DATA_MODEL")
-                            yield return Result.Value(Lexicons.DATA, wordStart, next.Location);
+                        {
+
+                            if (text == "AS")
+                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                            else if (previousText == "AS")
+                            {
+                                yield return Result.Value(Lexicons.REFERENCE_MODEL, wordStart, next.Location);
+
+                                previousText = string.Empty;
+                            }
+                            else
+                                yield return Result.Value(Lexicons.DATA, wordStart, next.Location);
+
+                            previousText = text;
+                        }
                         else if (keywordTracking[keywordTracking.Count - 1] == "PROPERTIES" 
                             || keywordTracking[keywordTracking.Count - 1] == "LINK_ON"
                             || keywordTracking[keywordTracking.Count - 1] == "FILTER_ON")
                         {
+                           
                             if (!lhs)
                                 lhs = true;
                             else
                                 lhs = false;
 
-                            yield return Result.Value(TermOrFunction.Parse(text), wordStart, next.Location);
+                            if (next.Value == '.')
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
+                            else if (text == "AS")
+                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                            else if (previousText == "AS")
+                            {
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+
+                                previousText = string.Empty;
+                            }
+                            else
+                                yield return Result.Value(TermOrFunction.Parse(text), wordStart, next.Location);
+
+                            previousText = text;
                         }
                         else if (keywordTracking[keywordTracking.Count - 1] == "GROUP_BY")
-                            yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
+                        {
+                            if (next.Value == '.')
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
+                            else if (text == "AS")
+                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                            else if (previousText == "AS")
+                            {
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+
+                                previousText = string.Empty;
+                            }
+                            else
+                                yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
+
+                            previousText = text;
+                        }
                         else if (keywordTracking[keywordTracking.Count - 1] == "ORDER_BY")
-                            yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
+                        {
+                            if (next.Value == '.')
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
+                            else if (text == "AS")
+                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                            else if (previousText == "AS")
+                            {
+                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+
+                                previousText = string.Empty;
+                            }
+                            else
+                                yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
+
+                            previousText = text;
+                        }
                         else if (keywordTracking[keywordTracking.Count - 1] == "TARGET")
                             yield return Result.Value(Lexicons.NAMED_VENDOR, wordStart, next.Location);
                         else
@@ -137,6 +211,11 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                 else if (next.Value == ',')
                 {
                     yield return Result.Value(Lexicons.COMMA, next.Location, next.Remainder);
+                    next = next.Remainder.ConsumeChar();
+                }
+                else if (next.Value == '.')
+                {
+                    yield return Result.Value(Lexicons.DOT, next.Location, next.Remainder);
                     next = next.Remainder.ConsumeChar();
                 }
                 else
@@ -210,6 +289,16 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                         return Lexicons.MIN;
                     else if (idOrKeyword == "max")
                         return Lexicons.MAX;
+                    else if (idOrKeyword == "nsum")
+                        return Lexicons.NSUM;
+                    else if (idOrKeyword == "navg")
+                        return Lexicons.NAVG;
+                    else if (idOrKeyword == "ncount")
+                        return Lexicons.NCOUNT;
+                    else if (idOrKeyword == "nmin")
+                        return Lexicons.NMIN;
+                    else if (idOrKeyword == "nmax")
+                        return Lexicons.NMAX;
                 }
 
                 return Lexicons.PROPERTY;
@@ -233,6 +322,16 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                       return Lexicons.MIN;
                   else if (idOrKeyword == "max")
                       return Lexicons.MAX;
+                  else if (idOrKeyword == "nsum")
+                      return Lexicons.NSUM;
+                  else if (idOrKeyword == "navg")
+                      return Lexicons.NAVG;
+                  else if (idOrKeyword == "ncount")
+                      return Lexicons.NCOUNT;
+                  else if (idOrKeyword == "nmin")
+                      return Lexicons.NMIN;
+                  else if (idOrKeyword == "nmax")
+                      return Lexicons.NMAX;
               }
 
               return Lexicons.TERM;
@@ -266,6 +365,11 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
             new AggregateOperator("count"),
             new AggregateOperator("min"),
             new AggregateOperator("max"),
+            new AggregateOperator("nsum"),
+            new AggregateOperator("navg"),
+            new AggregateOperator("ncount"),
+            new AggregateOperator("nmin"),
+            new AggregateOperator("nmax"),
         }.ToImmutableDictionary(k => k.Name, v => v, StringComparer.OrdinalIgnoreCase);
     }
 }

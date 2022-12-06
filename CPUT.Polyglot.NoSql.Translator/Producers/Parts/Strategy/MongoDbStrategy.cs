@@ -1,7 +1,4 @@
-﻿using Cassandra.Mapping;
-using CPUT.Polyglot.NoSql.Models.Mapper;
-using CPUT.Polyglot.NoSql.Models.Translator;
-using CPUT.Polyglot.NoSql.Parser;
+﻿using CPUT.Polyglot.NoSql.Models.Mapper;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
@@ -13,11 +10,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Text;
-using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using BaseExpr = CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using Component = CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 
@@ -137,15 +130,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> propertyParts = new List<IExpression>();
 
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var DataModelExpr = (Component.DataModelExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DataModelExpr)));
-            var LinkExpr = (Component.LinkExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.LinkExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            var GroupByExpr = (Component.GroupByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.GroupByExpr)));
-            var RestrictExpr = (Component.RestrictExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.RestrictExpr)));
-            var OrderByExpr = (Component.OrderByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.OrderByExpr)));
-
             //get all linked properties, model, etc
             var mapperLinks = mapper
                   .Where(x => DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
@@ -174,16 +158,16 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                 targetModel.Add(new FindPart(queryParts.ToArray()));
 
-                if (OrderByExpr != null)
+                if (this.OrderByExpr != null)
                 {
-                    var mappedProperty = GetMappedProperty(mapperLinks, OrderByExpr.Value, "mongodb");
+                    var mappedProperty = GetMappedProperty(mapperLinks, this.OrderByExpr, "mongodb");
 
                     if (mappedProperty != null)
-                        targetModel.Add(new OrderByPart(mappedProperty.Property, "", new DirectionPart(OrderByExpr.Direction)));
+                        targetModel.Add(new OrderByPart(mappedProperty, this.OrderByExpr));
                 }
 
-                if (RestrictExpr != null)
-                    targetModel.Add(new RestrictPart(RestrictExpr.Value));
+                if (this.RestrictExpr != null)
+                    targetModel.Add(new RestrictPart(this.RestrictExpr.Value));
             }
 
             return targetModel;
@@ -195,14 +179,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> queryParts = new List<IExpression>();
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> setParts = new List<IExpression>();
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
-            var DataModelExpr = (Component.DataModelExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.DataModelExpr)));
-            var LinkExpr = (Component.LinkExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.LinkExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            var GroupByExpr = (Component.GroupByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.GroupByExpr)));
 
             //get all linked properties, model, etc
             var mapperLinks = mapper
@@ -240,16 +216,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         {
             List<IExpression> targetModel = new List<IExpression>();
             List<IExpression> queryParts = new List<IExpression>();
-            //List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> addParts = new List<IExpression>();
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
-            var DataModelExpr = (Component.DataModelExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.DataModelExpr)));
-            var LinkExpr = (Component.LinkExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.LinkExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            var GroupByExpr = (Component.GroupByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.GroupByExpr)));
 
             //get all linked properties, model, etc
             var mapperLinks = mapper
@@ -262,18 +229,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             if (targetModel.Count > 0)
             {
-                //if (FilterExpr != null)
-                //    logicalParts.AddRange(GetLogicalPart(FilterExpr, mapperLinks, schemas));
-
                 //set property fields
                 addParts.AddRange(GetSetValuePart(PropertiesExpr, mapperLinks, schemas));
 
                 if (addParts.Count > 0)
                     addParts.RemoveAt(addParts.Count - 1);
-
-                ////add detailed logic
-                //if (logicalParts.Count > 0)
-                //    queryParts.Add(new ConditionPart(1, logicalParts.ToArray()));
 
                 queryParts.Add(new AddPart(addParts.ToArray()));
 
@@ -282,7 +242,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             return targetModel;
         }
-
 
         #region Parts
 
@@ -352,7 +311,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.MONGODB);
                     comparePart = new ComparePart(@operator.Compare, Common.Helpers.Utils.Database.MONGODB);
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "mongodb");
+                    leftMap = GetMappedProperty(mapperLinks, left, "mongodb");
 
                     if (leftMap != null)
                     {
@@ -360,14 +319,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "mongodb");
+                        rightMap = GetMappedProperty(mapperLinks, right, "mongodb");
 
                         if (rightMap != null)
                         {
@@ -375,7 +334,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)
@@ -424,7 +383,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.MONGODB);
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "mongodb");
+                    leftMap = GetMappedProperty(mapperLinks, left, "mongodb");
 
                     if (leftMap != null)
                     {
@@ -432,14 +391,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "mongodb");
+                        rightMap = GetMappedProperty(mapperLinks, right, "mongodb");
 
                         if (rightMap != null)
                         {
@@ -447,7 +406,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)
@@ -492,7 +451,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 {
                     propertyExpr = (PropertyExpr)part;
 
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "mongodb");
+                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "mongodb");
 
                     if (mappedProperty != null)
                     {
@@ -501,7 +460,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .Where(x => x.Property == mappedProperty.Property)
                             .First();
 
-                        expressions.Add(new PropertyPart(properties, mappedProperty));
+                        expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
                         expressions.Add(new SeparatorPart(","));
                     };
                 }
@@ -513,7 +472,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     {
                         propertyExpr = (PropertyExpr)func;
 
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "mongodb"); 
+                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "mongodb"); 
 
                         if (mappedProperty != null)
                         {
@@ -522,7 +481,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                         .Where(x => x.Property == mappedProperty.Property)
                                         .First();
 
-                            expressions.Add(new PropertyPart(properties, mappedProperty));
+                            expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
                             expressions.Add(new SeparatorPart(","));
                         }
                     }

@@ -171,7 +171,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         if(@operator.Operator == OperatorType.Eql)
                         {
-                            leftMap = GetMappedProperty(mapperLinks, left.Value, "redis");
+                            leftMap = GetMappedProperty(mapperLinks, left, "redis");
 
                             if (leftMap != null)
                             {
@@ -236,7 +236,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     if (@operator.Operator == OperatorType.Eql)
                     {
-                        leftMap = GetMappedProperty(mapperLinks, left.Value, "redis");
+                        leftMap = GetMappedProperty(mapperLinks, left, "redis");
 
                         if (leftMap != null)
                         {

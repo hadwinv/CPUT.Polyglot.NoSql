@@ -12,7 +12,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
     {
         internal string Name { get; set; }
 
-        internal string Alias { get; set; }
+        internal string AliasIdentifier { get; set; }
+
+        internal string AliasName { get; set; }
 
         internal string Type { get; set; }
 
@@ -24,12 +26,29 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 
         internal bool IsKey { get; set; }
 
-        public PropertyPart(Properties properties, Link link)
+        public PropertyPart(Properties properties, Link link, BaseExpr baseExpr)
         {
             Name = link.Property;
-            Alias = link.Reference.Substring(0, 3).ToLower();
 
-            if(!string.IsNullOrEmpty(link.Reference_Property))
+            if(baseExpr is PropertyExpr)
+            {
+                var property = (PropertyExpr)baseExpr;
+
+                AliasIdentifier = property.AliasIdentifier;
+                AliasName = property.AliasName;
+            }
+            else if (baseExpr is TermExpr)
+            {
+                var term = (TermExpr)baseExpr;
+
+                AliasIdentifier = term.AliasIdentifier;
+                AliasName = term.AliasName;
+            }
+
+            if(string.IsNullOrEmpty(AliasIdentifier))
+                AliasIdentifier = link.Reference.Substring(0, 3).ToLower();
+
+            if (!string.IsNullOrEmpty(link.Reference_Property))
             {
                 MemberOf = link.Reference_Property;
                 MemberOfType = link.Reference_Type;

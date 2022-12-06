@@ -12,11 +12,14 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
     {
         public string Value { get; set; }
 
+        public string AliasIdentifier { get; set; }
+
         public DirectionType Direction { get; set; }
 
-        public OrderByExpr(string value, DirectionType direction)
+        public OrderByExpr(string value, string aliasIdentifier, DirectionType direction)
         {
             Value = value;
+            AliasIdentifier = aliasIdentifier;
 
             if (direction == DirectionType.None)
                 Direction = DirectionType.Asc;

@@ -25,19 +25,33 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         void Visit(RestrictPart restrict);
 
         void Visit(SeparatorPart separator);
+
         void Visit(OperatorPart operatorPart);
+        
         void Visit(ComparePart comparePart);
+        
         void Visit(MatchPart matchPart);
+        
         void Visit(SetPart setPart);
+        
         void Visit(SetValuePart setValuePart);
+        
         void Visit(InsertPart insertPart);
+        
         void Visit(ValuesPart valuesPart);
+        
         void Visit(InsertNodePart insertNodePart);
+        
         void Visit(OrderByPart orderByPart);
+        
         void Visit(DirectionPart directionPart);
-        void Visit(FunctionPart functionPart);
+        
+        void Visit(NFunctionPart functionPart);
+        
         void Visit(UnwindPart unwindPart);
+        
         void Visit(UnwindPropertyPart unwindPropertyPart);
+        
         void Visit(UnwindJsonPart unwindJsonPart);
     }
 }

@@ -36,6 +36,55 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
         }
 
         [Test]
+        public void Fetch_SimpleQueryWithAllAlias_ReturnSyntaxStructure()
+        {
+            var input = @" FETCH { d.property AS myproperty, d.property AS myproperty}
+                            DATA_MODEL { data AS d }
+                            RESTRICT_TO { 1 }
+                            TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            var syntax = Expressions.Select.Parse(tokens);
+
+            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+                //fetch
+                typeof(DeclareExpr),
+                //data model
+                typeof(DataModelExpr),
+                //restrict model
+                typeof(RestrictExpr),
+                //target model
+                typeof(TargetExpr)
+            );
+        }
+
+        [Test]
+        public void Fetch_SimpleQueryWithPartialAlias_ReturnSyntaxStructure()
+        {
+            var input = @" FETCH { d.property AS myproperty,  d.property}
+                            DATA_MODEL { data AS d }
+                            RESTRICT_TO { 1 }
+                            TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            var syntax = Expressions.Select.Parse(tokens);
+
+            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+                //fetch
+                typeof(DeclareExpr),
+                //data model
+                typeof(DataModelExpr),
+                //restrict model
+                typeof(RestrictExpr),
+                //target model
+                typeof(TargetExpr)
+            );
+        }
+
+
+        [Test]
         public void Fetch_QueryWithCondition_ReturnSyntaxStructure()
         {
             var input = @" FETCH { property, property }
@@ -102,6 +151,42 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                             ORDER_BY {property DESC}
                             TARGET { storage_type, storage_type }"
                         ;
+
+            var tokens = new Lexer().Tokenize(input);
+
+            var syntax = Expressions.Select.Parse(tokens);
+
+            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+                //fetch
+                typeof(DeclareExpr),
+                //data model
+                typeof(DataModelExpr),
+                //link on
+                typeof(LinkExpr),
+                //filter
+                typeof(FilterExpr),
+                //group
+                typeof(GroupByExpr),
+                //restrict
+                typeof(RestrictExpr),
+                //order
+                typeof(OrderByExpr),
+                //target model
+                typeof(TargetExpr)
+                );
+        }
+
+        [Test]
+        public void Fetch_ComplexQueryWithAlias_ReturnSyntaxStructure()
+        {
+            var input = @"FETCH { a.property AS p, a.property AS p, SUM(b.property) }
+                          DATA_MODEL { data AS a, data AS b}
+                          LINK_ON { a.property = b.property AND a.property = b.property  }
+                          FILTER_ON {a.filter = 2 AND b.filter = 'unit' }
+                          GROUP_BY { a.property, a.property }
+                          RESTRICT_TO { 10 }
+                          ORDER_BY { a.property DESC }
+                          TARGET { storage_type, storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
 

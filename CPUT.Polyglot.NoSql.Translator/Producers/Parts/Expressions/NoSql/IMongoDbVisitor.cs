@@ -26,5 +26,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         void Visit(AddPart addPart);
         void Visit(DirectionPart directionPart);
         void Visit(OrderByPart orderByPart);
+        void Visit(AggregatePart aggregatePart);
     }
 }

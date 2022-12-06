@@ -327,7 +327,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(PropertyPart property)
         {
+            //if (!string.IsNullOrEmpty(property.AliasIdentifier))
+            //    Query.Append(property.AliasIdentifier + ".");
+
             Query.Append(property.Name);
+
+            if (!string.IsNullOrEmpty(property.AliasName))
+                Query.Append("AS " + property.AliasName);
         }
 
         public void Visit(SeparatorPart separator)
@@ -365,6 +371,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 Query.Append(" : -1 ");
             else
                 Query.Append(" : 1 ");
+        }
+
+        public void Visit(AggregatePart aggregatePart)
+        {
+            throw new NotImplementedException();
         }
     }
 }

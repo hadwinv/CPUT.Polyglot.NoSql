@@ -10,7 +10,12 @@ namespace CPUT.Polyglot.NoSql.Parser.Parsers.Operators
             [Lexicons.COUNT] = Common.Parsers.Operators.AggregateType.Count,
             [Lexicons.AVG] = Common.Parsers.Operators.AggregateType.Avg,
             [Lexicons.MIN] = Common.Parsers.Operators.AggregateType.Min,
-            [Lexicons.MAX] = Common.Parsers.Operators.AggregateType.Max
+            [Lexicons.MAX] = Common.Parsers.Operators.AggregateType.Max,
+            [Lexicons.NSUM] = Common.Parsers.Operators.AggregateType.NSum,
+            [Lexicons.NCOUNT] = Common.Parsers.Operators.AggregateType.NCount,
+            [Lexicons.NAVG] = Common.Parsers.Operators.AggregateType.NAvg,
+            [Lexicons.NMIN] = Common.Parsers.Operators.AggregateType.NMin,
+            [Lexicons.NMAX] = Common.Parsers.Operators.AggregateType.NMax
 
         };
 

@@ -16,7 +16,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
     {
         internal string Name { get; set; }
 
-        internal string Alias { get; set; }
+        internal string AliasIdentifier { get; set; }
+
+        internal string AliasName { get; set; }
 
         internal string Type { get; set; }
 
@@ -24,7 +26,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
         public UnwindPropertyPart(Properties properties, Link link)
         {
             Name = link.Property;
-            Alias = link.Reference_Property.Substring(0, 2).ToLower();
+            AliasIdentifier = link.Reference_Property.Substring(0, 2).ToLower();
         }
 
         public void Accept(INeo4jVisitor visitor)

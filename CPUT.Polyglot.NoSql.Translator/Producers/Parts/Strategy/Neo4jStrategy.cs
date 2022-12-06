@@ -122,33 +122,25 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> nodeParts = new List<IExpression>();
 
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var DataModelExpr = (Component.DataModelExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DataModelExpr)));
-            var LinkExpr = (Component.LinkExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.LinkExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            var RestrictExpr = (Component.RestrictExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.RestrictExpr)));
-            var OrderByExpr = (Component.OrderByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.OrderByExpr)));
-
             //get all linked properties, model, etc
             var mapperLinks = mapper
-                  .Where(x => DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
+                  .Where(x => this.DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
                   .Select(s => s)
                   .ToList();
 
             //match
-            targetModel.Add(new MatchPart(GetNodePart(DataModelExpr, mapperLinks, schemas)));
+            targetModel.Add(new MatchPart(GetNodePart(this.DataModelExpr, mapperLinks, schemas)));
 
             if (targetModel.Count > 0)
             {
-                if (FilterExpr != null)
-                    logicalParts.AddRange(GetLogicalPart(FilterExpr, mapperLinks, schemas));
+                if (this.FilterExpr != null)
+                    logicalParts.AddRange(GetLogicalPart(this.FilterExpr, mapperLinks, schemas));
 
                 if(logicalParts.Count > 0)
                     targetModel.Add(new ConditionPart(logicalParts.ToArray()));
 
                 //get unwind fields
-                unwindJsonParts.AddRange(GetUnwindJsonPart(DeclareExpr, mapperLinks));
+                unwindJsonParts.AddRange(GetUnwindJsonPart(this.DeclareExpr, mapperLinks));
 
                 if (unwindJsonParts.Count > 0)
                 {
@@ -159,7 +151,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 }
 
                 //get property fields
-                propertyParts.AddRange(GetPropertyPart(DeclareExpr, mapperLinks, schemas));
+                propertyParts.AddRange(GetPropertyPart(this.DeclareExpr, mapperLinks, schemas));
 
                 if (propertyParts.Count > 0)
                 {
@@ -168,12 +160,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     targetModel.Add(new ReturnPart(propertyParts.ToArray()));
                 }
 
-                if (OrderByExpr != null)
+                if (this.OrderByExpr != null)
                 {
-                    var mappedProperty = GetMappedProperty(mapperLinks, OrderByExpr.Value, "neo4j");
+
+                    var mappedProperty = GetMappedProperty(mapperLinks, this.OrderByExpr, "neo4j");
 
                     if (mappedProperty != null)
-                        targetModel.Add(new OrderByPart(mappedProperty.Property, mappedProperty.Reference.Substring(0, 3).ToLower(), new DirectionPart(OrderByExpr.Direction)));
+                        targetModel.Add(new OrderByPart(mappedProperty, this.OrderByExpr));
                 }
 
                 if (RestrictExpr != null)
@@ -189,13 +182,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> propertyParts = new List<IExpression>();
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> nodeParts = new List<IExpression>();
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            var RestrictExpr = (Component.RestrictExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.RestrictExpr)));
-            var OrderByExpr = (Component.OrderByExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.OrderByExpr)));
 
             //get all linked properties, model, etc
             var mapperLinks = mapper
@@ -215,7 +201,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     targetModel.Add(new ConditionPart(logicalParts.ToArray()));
 
                 //set values
-                propertyParts = GetSetValuePart(PropertiesExpr, mapperLinks, schemas).ToList();
+                propertyParts = GetSetValuePart(this.PropertiesExpr, mapperLinks, schemas).ToList();
 
                 if (propertyParts.Count > 0)
                     propertyParts.RemoveAt(propertyParts.Count - 1);
@@ -245,11 +231,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             List<IExpression> propertyParts = new List<IExpression>();
             List<IExpression> logicalParts = new List<IExpression>();
             List<IExpression> nodeParts = new List<IExpression>();
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
 
             //get all linked properties, model, etc
             var mapperLinks = mapper
@@ -311,7 +292,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     {
                         var relations = schemas.SelectMany(x => x.Model.Where(x => x.Name == map.Reference && x.Relations != null).SelectMany(x => x.Relations)).ToList();
 
-                        nodeParts.Add(new NodePart(map.Reference, map.Reference.Substring(0, 3), relations.ToArray()));
+                        nodeParts.Add(new NodePart(map.Reference, data.AliasIdentifier, relations.ToArray()));
                     }
                 }
             }
@@ -330,7 +311,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             Link mappedProperty;
 
-
             if (expr is DeclareExpr)
                 declareExpr = (DeclareExpr)expr;
             else if (expr is DataModelExpr)
@@ -342,7 +322,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 {
                     propertyExpr = (PropertyExpr)part;
 
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "neo4j");
+                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
 
                     if (mappedProperty != null)
                     {
@@ -352,7 +332,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         {
                             if (!string.IsNullOrEmpty(mappedProperty.Reference_Property))
                             {
-                                expressions.Add(new UnwindJsonPart(mappedProperty));
+                                expressions.Add(new UnwindJsonPart(mappedProperty, propertyExpr));
                                 expressions.Add(new SeparatorPart(","));
                             }
                         }
@@ -366,7 +346,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     {
                         propertyExpr = (PropertyExpr)func;
 
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "neo4j");
+                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
 
                         if (mappedProperty != null)
                         {
@@ -376,7 +356,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             {
                                 if (!string.IsNullOrEmpty(mappedProperty.Reference_Property))
                                 {
-                                    expressions.Add(new UnwindJsonPart(mappedProperty));
+                                    expressions.Add(new UnwindJsonPart(mappedProperty, propertyExpr));
                                     expressions.Add(new SeparatorPart(","));
                                 }
                             }
@@ -422,7 +402,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.NEOJ4);
                     comparePart = new ComparePart(@operator.Compare, Common.Helpers.Utils.Database.NEOJ4);
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "neo4j");
+                    leftMap = GetMappedProperty(mapperLinks, left, "neo4j");
 
                     if (leftMap != null)
                     {
@@ -430,14 +410,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "neo4j");
+                        rightMap = GetMappedProperty(mapperLinks, right, "neo4j");
 
                         if (rightMap != null)
                         {
@@ -445,7 +425,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)
@@ -461,30 +441,23 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return logicalParts.ToArray();
         }
 
-        private IExpression[] GetPropertyPart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks, List<NSchema> schemas)
+        private IExpression[] GetPropertyPart(DeclareExpr declareExpr, List<MappedSource> mapperLinks, List<NSchema> schemas)
         {
             List<IExpression> expressions = new List<IExpression>();
 
-            DeclareExpr declareExpr = null;
-            DataModelExpr dataModelExpr = null;
             PropertyExpr propertyExpr;
             FunctionExpr functionExpr;
 
             Properties properties;
             Link mappedProperty;
 
-            if (expr is DeclareExpr)
-                declareExpr = (DeclareExpr)expr;
-            else if (expr is DataModelExpr)
-                dataModelExpr = (DataModelExpr)expr;
-
-            foreach (var part in (declareExpr != null ? declareExpr.Value : dataModelExpr.Value))
+            foreach (var part in declareExpr.Value)
             {
                 if (part is PropertyExpr)
                 {
                     propertyExpr = (PropertyExpr)part;
-
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "neo4j");
+                    
+                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
 
                     if (mappedProperty != null)
                     {
@@ -494,7 +467,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .First();
 
                         if(string.IsNullOrEmpty(mappedProperty.Reference_Property))
-                            expressions.Add(new PropertyPart(properties, mappedProperty));
+                            expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
                         else
                             expressions.Add(new UnwindPropertyPart(properties, mappedProperty));
 
@@ -509,7 +482,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     {
                         propertyExpr = (PropertyExpr)func;
 
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr.Value, "neo4j");
+                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
 
                         if (mappedProperty != null)
                         {
@@ -520,13 +493,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             if (string.IsNullOrEmpty(mappedProperty.Reference_Property))
                             {
-                                expressions.Add(new FunctionPart(
-                                                new PropertyPart(properties, mappedProperty),
+                                expressions.Add(new NFunctionPart(
+                                                new PropertyPart(properties, mappedProperty, propertyExpr),
                                                 functionExpr.Type));
                             }
                             else
                             {
-                                expressions.Add(new FunctionPart(
+                                expressions.Add(new NFunctionPart(
                                              new UnwindPropertyPart(properties, mappedProperty),
                                              functionExpr.Type));
                             }
@@ -565,7 +538,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.NEOJ4);
 
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "neo4j");
+                    leftMap = GetMappedProperty(mapperLinks, left, "neo4j");
 
                     if (leftMap != null)
                     {
@@ -573,14 +546,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "neo4j");
+                        rightMap = GetMappedProperty(mapperLinks, right, "neo4j");
 
                         if (rightMap != null)
                         {
@@ -588,7 +561,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)
@@ -633,7 +606,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.NEOJ4);
                     left = (TermExpr)@operator.Left;
                     
-                    leftMap = GetMappedProperty(mapperLinks, left.Value, "neo4j");
+                    leftMap = GetMappedProperty(mapperLinks, left, "neo4j");
 
                     if (leftMap != null)
                     {
@@ -641,14 +614,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                             .First(x => x.Property == leftMap.Property);
 
-                        leftPart = new PropertyPart(properties, leftMap);
+                        leftPart = new PropertyPart(properties, leftMap, left);
                     }
 
                     if (@operator.Right is TermExpr)
                     {
-                        var rightTerm = (TermExpr)@operator.Right;
+                        var right = (TermExpr)@operator.Right;
 
-                        rightMap = GetMappedProperty(mapperLinks, rightTerm.Value, "neo4j");
+                        rightMap = GetMappedProperty(mapperLinks, right, "neo4j");
 
                         if (rightMap != null)
                         {
@@ -656,7 +629,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .First(x => x.Property == rightMap.Property);
 
-                            rightPart = new PropertyPart(properties, rightMap);
+                            rightPart = new PropertyPart(properties, rightMap, right);
                         }
                     }
                     else if (@operator.Right is StringLiteralExpr)

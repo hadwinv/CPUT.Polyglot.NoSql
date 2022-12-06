@@ -570,6 +570,167 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
         }
 
         [Test]
+        public void Fetch_SimpleNSumProperty_ReturnTokens()
+        {
+            var input = @" FETCH {nsum(property) }
+                                DATA_MODEL { data }
+                                FILTER_ON { (propertyo = propertyo) }
+                                TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.NSUM,
+                Lexicons.LEFT_PAREN,
+                Lexicons.PROPERTY,
+                 Lexicons.RIGHT_PAREN,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //filter
+                Lexicons.FILTER_ON,
+                Lexicons.LEFT_PAREN,
+                Lexicons.TERM,
+                Lexicons.EQL,
+                Lexicons.TERM,
+                Lexicons.RIGHT_PAREN,
+
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR);
+        }
+
+        [Test]
+        public void Fetch_SimpleNAverageProperty_ReturnTokens()
+        {
+            var input = @" FETCH {navg(property) }
+                                DATA_MODEL { data }
+                                FILTER_ON { (propertyo = propertyo) }
+                                TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.NAVG,
+                Lexicons.LEFT_PAREN,
+                Lexicons.PROPERTY,
+                 Lexicons.RIGHT_PAREN,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //filter
+                Lexicons.FILTER_ON,
+                Lexicons.LEFT_PAREN,
+                Lexicons.TERM,
+                Lexicons.EQL,
+                Lexicons.TERM,
+                Lexicons.RIGHT_PAREN,
+
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR);
+        }
+
+        [Test]
+        public void Fetch_SimpleNCountProperty_ReturnTokens()
+        {
+            var input = @" FETCH {ncount(property) }
+                                DATA_MODEL { data }
+                                FILTER_ON { (propertyo = propertyo) }
+                                TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.NCOUNT,
+                Lexicons.LEFT_PAREN,
+                Lexicons.PROPERTY,
+                 Lexicons.RIGHT_PAREN,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //filter
+                Lexicons.FILTER_ON,
+                Lexicons.LEFT_PAREN,
+                Lexicons.TERM,
+                Lexicons.EQL,
+                Lexicons.TERM,
+                Lexicons.RIGHT_PAREN,
+                //target
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR);
+        }
+
+        [Test]
+        public void Fetch_SimpleNMinProperty_ReturnTokens()
+        {
+            var input = @" FETCH {nmin(property) }
+                                DATA_MODEL { data }
+                                FILTER_ON { (propertyo = propertyo) }
+                                TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.NMIN,
+                Lexicons.LEFT_PAREN,
+                Lexicons.PROPERTY,
+                 Lexicons.RIGHT_PAREN,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //filter
+                Lexicons.FILTER_ON,
+                Lexicons.LEFT_PAREN,
+                Lexicons.TERM,
+                Lexicons.EQL,
+                Lexicons.TERM,
+                Lexicons.RIGHT_PAREN,
+                //target
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR);
+        }
+
+        [Test]
+        public void Fetch_SimpleNMaxProperty_ReturnTokens()
+        {
+            var input = @" FETCH {nmax(property) }
+                                DATA_MODEL { data }
+                                FILTER_ON { (propertyo = propertyo) }
+                                TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.NMAX,
+                Lexicons.LEFT_PAREN,
+                Lexicons.PROPERTY,
+                 Lexicons.RIGHT_PAREN,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                //filter
+                Lexicons.FILTER_ON,
+                Lexicons.LEFT_PAREN,
+                Lexicons.TERM,
+                Lexicons.EQL,
+                Lexicons.TERM,
+                Lexicons.RIGHT_PAREN,
+                //target
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR);
+        }
+
+
+        [Test]
         public void Fetch_AggregatedPropertyWithGroupBy_ReturnTokens()
         {
             var input = @" FETCH { property, sum(property), avg(property), count(property), min(property),  max(property) }
@@ -701,6 +862,41 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                 Lexicons.DATA,
                 //order
                 Lexicons.ORDER_BY,
+                Lexicons.PROPERTY,
+                Lexicons.DESC,
+                //target model
+                Lexicons.TARGET,
+                Lexicons.NAMED_VENDOR
+            );
+        }
+
+        [Test]
+        public void Fetch_PropertyWithAlias_ReturnTokens()
+        {
+            var input = @" FETCH { p.property AS p}
+                            DATA_MODEL { data AS p}
+                            ORDER_BY { p.property DESC }
+                            TARGET { storage_type }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            tokens.Select(x => x.Kind).Should().Equal(
+                //fetch
+                Lexicons.FETCH,
+                Lexicons.REFERENCE_ALIAS,
+                Lexicons.DOT,
+                Lexicons.PROPERTY,
+                Lexicons.AS,
+                Lexicons.REFERENCE_ALIAS_NAME,
+                //data model
+                Lexicons.DATA_MODEL,
+                Lexicons.DATA,
+                Lexicons.AS,
+                Lexicons.REFERENCE_MODEL,
+                //order
+                Lexicons.ORDER_BY,
+                Lexicons.REFERENCE_ALIAS,
+                Lexicons.DOT,
                 Lexicons.PROPERTY,
                 Lexicons.DESC,
                 //target model

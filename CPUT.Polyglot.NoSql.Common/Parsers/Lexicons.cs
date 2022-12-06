@@ -57,6 +57,12 @@ namespace CPUT.Polyglot.NoSql.Common.Parsers
         [Token] MIN,
         [Token] MAX,
 
+        [Token] NSUM,
+        [Token] NCOUNT,
+        [Token] NAVG,
+        [Token] NMIN,
+        [Token] NMAX,
+
         //other
         [Token(Example = ",")] COMMA,
         [Token(Example = "(")] LEFT_PAREN,
@@ -64,6 +70,10 @@ namespace CPUT.Polyglot.NoSql.Common.Parsers
         [Token(Example = ";")] SEMICOLON,
         [Token(Example = "[")] LEFT_BRACKET,
         [Token(Example = "]")] RIGHT_BRACKET,
+        [Token(Category = "Punctuation", Example = ".")] DOT,
+        [Token] REFERENCE_ALIAS,
+        [Token] REFERENCE_ALIAS_NAME,
+        [Token(Example = "model as m")] REFERENCE_MODEL,
 
         //primitive types
         [Token] NUMBER,

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -105,58 +107,89 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
             NodeDirection direction = NodeDirection.None;
             bool common = false;
+            int parentCount = 0;
 
             foreach (var node in parent)
             {
-                Query.Append("MATCH ");
-
-                if (node.Value.Count > 1)
+                if(parentCount > 0)
                 {
-                    if (node.Value.Count > 2)
-                        Query.Append("OPTIONAL ");
+                 //  MATCH(t: Progress) < -[:TRANSCRIPT] - (s: Pupil) -[:ENROLLED_IN]->(c: Course)
+                 //OPTIONAL MATCH(c)-[:CONTAINS]->(su: Subject)
+                 //UNWIND apoc.convert.fromJsonList(t.marks) as ma
+                 //RETURN s.title, s.name, s.surname, ma.Grade, c.name, su.name,  MAX(ma.Score) as Score
+                 //LIMIT 10
+                    Query.Append("OPTIONAL MATCH ");
 
                     foreach (var relation in node.Value)
                     {
+                        var parentNode = nodes.First(x => x.Name == node.Key);
                         var relatedNode = nodes.First(x => x.Name == relation.Value);
                         var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
 
-                        if (direction == NodeDirection.None)
-                            direction = NodeDirection.Backward;
-                        else
-                            direction = NodeDirection.Forward;
+                        Query.Append("(" + parentNode.AliasIdentifier + ")");
 
                         if (direction == NodeDirection.Forward)
                             DoRelationshipPart(relationship, NodeDirection.Backward);
 
                         //add left then right node in loop
                         DoNodePart(relatedNode);
-
-                        if (direction == NodeDirection.Backward)
-                            DoRelationshipPart(relationship, NodeDirection.Forward);
-
-                        if (!common)
-                        {
-                            DoNodePart(nodes.First(x => x.Name == node.Key));
-                            common = true;
-                        }
                     }
+                    
                 }
                 else
                 {
-                    DoNodePart(nodes.First(x => x.Name == node.Key));
+                    Query.Append("MATCH ");
 
-                    foreach (var relation in node.Value)
+                    if (node.Value.Count > 1)
                     {
-                        var relatedNode = nodes.First(x => x.Name == relation.Value);
-                        var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
-                       
-                        DoRelationshipPart(relationship, NodeDirection.Forward);
+                        foreach (var relation in node.Value)
+                        {
+                            var relatedNode = nodes.First(x => x.Name == relation.Value);
+                            var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
 
-                        //add left then right node in loop
-                     
-                        DoNodePart(relatedNode);
+                            if (direction == NodeDirection.None)
+                                direction = NodeDirection.Backward;
+                            else
+                                direction = NodeDirection.Forward;
+
+                            if (direction == NodeDirection.Forward)
+                                DoRelationshipPart(relationship, NodeDirection.Backward);
+
+                            //add left then right node in loop
+                            DoNodePart(relatedNode);
+
+                            if (direction == NodeDirection.Backward)
+                                DoRelationshipPart(relationship, NodeDirection.Forward);
+
+                            if (!common)
+                            {
+                                DoNodePart(nodes.First(x => x.Name == node.Key));
+                                common = true;
+                            }
+                        }
                     }
+                    else
+                    {
+                        DoNodePart(nodes.First(x => x.Name == node.Key));
+
+                        foreach (var relation in node.Value)
+                        {
+                            var relatedNode = nodes.First(x => x.Name == relation.Value);
+                            var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
+
+                            if (node.Value.Count == 1)
+                                DoRelationshipPart(relationship, NodeDirection.Backward);
+                            else
+                                DoRelationshipPart(relationship, NodeDirection.Forward);
+                            //add left then right node in loop
+
+                            DoNodePart(relatedNode);
+                        }
+                    }
+
                 }
+
+                parentCount++;
             }
         }
 
@@ -164,19 +197,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             if(direction == NodeDirection.Forward)
             {
-                Query.Append("-");
-
-                relationship.Accept(this);
-
-                Query.Append("->");
-            }
-            else if (direction == NodeDirection.Backward)
-            {
                 Query.Append("<-");
 
                 relationship.Accept(this);
 
                 Query.Append("-");
+            }
+            else if (direction == NodeDirection.Backward)
+            {
+                Query.Append("-");
+
+                relationship.Accept(this);
+
+                Query.Append("->");
             }
         }
 
@@ -191,7 +224,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(NodePart node)
         {
-            Query.Append(node.Alias + ":" + node.Name);
+            Query.Append(node.AliasIdentifier + ":" + node.Name);
         }
 
         public void Visit(RelationshipPart relationship)
@@ -201,7 +234,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(PropertyPart property)
         {
-            Query.Append(property.Alias + "." + property.Name);
+            if(!string.IsNullOrEmpty(property.AliasIdentifier))
+                Query.Append(property.AliasIdentifier + ".");
+
+            Query.Append(property.Name);
+
+            if (!string.IsNullOrEmpty(property.AliasName))
+                Query.Append("AS " + property.AliasName);
         }
 
         public void Visit(ConditionPart condition)
@@ -226,14 +265,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             if (!string.IsNullOrEmpty(logic.Compare.Type))
                 Query.Append(" " + logic.Compare.Type + " ");
 
-            Query.Append(logic.Left.Alias + "." + logic.Left.Name);
+            logic.Left.Accept(this);
 
             Query.Append(" " + logic.Operator.Type + " ");
 
             if (logic.Right.Type == "string")
                 Query.Append("\"" + logic.Right.Name + "\"");
             else
-                Query.Append(logic.Right.Name);
+                logic.Right.Accept(this);
         }
 
         public void Visit(ReturnPart @return)
@@ -250,9 +289,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 {
                     ((UnwindPropertyPart)expr).Accept(this);
                 }
-                else if (expr is FunctionPart)
+                else if (expr is NFunctionPart)
                 {
-                    ((FunctionPart)expr).Accept(this);
+                    ((NFunctionPart)expr).Accept(this);
                 }
                 else if (expr is SeparatorPart)
                 {
@@ -300,12 +339,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(SetValuePart setValue)
         {
-            Query.Append(setValue.Left.Alias + "." + setValue.Left.Name + " " + setValue.Operator.Type + " ");
+            setValue.Left.Accept(this);
+
+            Query.Append(setValue.Operator.Type + " ");
 
             if (setValue.Right.Type == "string")
                 Query.Append("\"" + setValue.Right.Name + "\"");
             else
-                Query.Append(setValue.Right.Name);
+                setValue.Right.Accept(this);
         }
 
         public void Visit(InsertPart insert)
@@ -358,7 +399,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(OrderByPart orderBy)
         {
-            Query.Append(" ORDER BY " + orderBy.Alias + "." +  orderBy.Name + " ");
+            Query.Append(" ORDER BY " + orderBy.AliasIdentifier + "." +  orderBy.Name + " ");
 
             orderBy.Direction.Accept(this);
         }
@@ -369,7 +410,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 Query.Append(" " + direction.Type + " ");
         }
 
-        public void Visit(FunctionPart function)
+        public void Visit(NFunctionPart function)
         {
             Query.Append(" " + function.Type + "(");
 
@@ -397,7 +438,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
                     property.Accept(this);
 
-                    Query.Append(") as " + property.UnwindAlias);
+                    Query.Append(") as " + property.UnwindAliasIdentifier);
                 }
                 else if (expr is SeparatorPart)
                 {
@@ -408,12 +449,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(UnwindPropertyPart unwindProperty)
         {
-            Query.Append(unwindProperty.Alias + "." + unwindProperty.Name);
+            if (!string.IsNullOrEmpty(unwindProperty.AliasIdentifier))
+                Query.Append(unwindProperty.AliasIdentifier + ".");
+
+            Query.Append(unwindProperty.Name);
+
+            if (!string.IsNullOrEmpty(unwindProperty.AliasName))
+                Query.Append("AS " + unwindProperty.AliasName);
+
         }
 
         public void Visit(UnwindJsonPart unwindJson)
         {
-            Query.Append(unwindJson.Alias + "." + unwindJson.Name);
+            Query.Append(unwindJson.AliasIdentifier + "." + unwindJson.Name);
         }
     }
 }

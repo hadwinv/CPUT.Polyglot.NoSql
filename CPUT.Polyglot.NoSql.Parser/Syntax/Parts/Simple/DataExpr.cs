@@ -6,11 +6,12 @@ namespace CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple
     {
         public string Value { get; set; }
 
-        public bool Mapped { get; set; }
+        public string AliasIdentifier { get; set; }
 
-        public DataExpr(string value)
+        public DataExpr(string value, string aliasIdentifier)
         {
             Value = value;
+            AliasIdentifier = aliasIdentifier;
         }
 
         public override string ToString()

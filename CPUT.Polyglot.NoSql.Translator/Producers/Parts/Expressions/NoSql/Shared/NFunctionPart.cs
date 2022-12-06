@@ -13,7 +13,7 @@ using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
 {
-    public class FunctionPart : IExpression
+    public class NFunctionPart : IExpression
     {
         internal IExpression PropertyPart { get; set; }
 
@@ -26,10 +26,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
             [AggregateType.Count] = "COUNT",
             [AggregateType.Avg] = "AVG",
             [AggregateType.Max] = "MAX",
-            [AggregateType.Min] = "MIN"
+            [AggregateType.Min] = "MIN",
+            [AggregateType.NSum] = "SUM",
+            [AggregateType.NCount] = "COUNT",
+            [AggregateType.NAvg] = "AVG",
+            [AggregateType.NMax] = "MAX",
+            [AggregateType.NMin] = "MIN"
         };
 
-        public FunctionPart(IExpression propertyPart, AggregateType type)
+        public NFunctionPart(IExpression propertyPart, AggregateType type)
         {
             PropertyPart = propertyPart;
             Type = _keywords[type];
