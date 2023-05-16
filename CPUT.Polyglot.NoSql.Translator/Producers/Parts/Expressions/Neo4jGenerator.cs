@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Text;
-using System.Text.RegularExpressions;
-using CPUT.Polyglot.NoSql.Models._data.prep;
-using CPUT.Polyglot.NoSql.Models.Mapper;
-using CPUT.Polyglot.NoSql.Parser;
+﻿using System.Text;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j;
@@ -15,11 +6,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using MongoDB.Driver;
-using Neo4jClient;
-using Neo4jClient.Cypher;
 using Pipelines.Sockets.Unofficial.Arenas;
-using static System.Formats.Asn1.AsnWriter;
-using static System.Net.Mime.MediaTypeNames;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
@@ -93,19 +80,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                                     }});
                         }
                         else
-                        {
                             parent[parentNode.Name].Add(relation.Name, node.Name);
-                        }
                     }
                 }
             }
             else
-            {
                 parent.Add(nodes[0].Name, new Dictionary<string, string>());
-            }
             
 
-            NodeDirection direction = NodeDirection.None;
+            DirectionType direction = DirectionType.None;
             bool common = false;
             int parentCount = 0;
 
@@ -113,11 +96,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             {
                 if(parentCount > 0)
                 {
-                 //  MATCH(t: Progress) < -[:TRANSCRIPT] - (s: Pupil) -[:ENROLLED_IN]->(c: Course)
-                 //OPTIONAL MATCH(c)-[:CONTAINS]->(su: Subject)
-                 //UNWIND apoc.convert.fromJsonList(t.marks) as ma
-                 //RETURN s.title, s.name, s.surname, ma.Grade, c.name, su.name,  MAX(ma.Score) as Score
-                 //LIMIT 10
                     Query.Append("OPTIONAL MATCH ");
 
                     foreach (var relation in node.Value)
@@ -128,13 +106,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
                         Query.Append("(" + parentNode.AliasIdentifier + ")");
 
-                        if (direction == NodeDirection.Forward)
-                            DoRelationshipPart(relationship, NodeDirection.Backward);
+                        if (direction == DirectionType.Forward)
+                            DoRelationshipPart(relationship, DirectionType.Backward);
 
                         //add left then right node in loop
                         DoNodePart(relatedNode);
                     }
-                    
                 }
                 else
                 {
@@ -147,19 +124,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                             var relatedNode = nodes.First(x => x.Name == relation.Value);
                             var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
 
-                            if (direction == NodeDirection.None)
-                                direction = NodeDirection.Backward;
+                            if (direction == DirectionType.None)
+                                direction = DirectionType.Backward;
                             else
-                                direction = NodeDirection.Forward;
+                                direction = DirectionType.Forward;
 
-                            if (direction == NodeDirection.Forward)
-                                DoRelationshipPart(relationship, NodeDirection.Backward);
+                            if (direction == DirectionType.Forward)
+                                DoRelationshipPart(relationship, DirectionType.Backward);
 
                             //add left then right node in loop
                             DoNodePart(relatedNode);
 
-                            if (direction == NodeDirection.Backward)
-                                DoRelationshipPart(relationship, NodeDirection.Forward);
+                            if (direction == DirectionType.Backward)
+                                DoRelationshipPart(relationship, DirectionType.Forward);
 
                             if (!common)
                             {
@@ -178,9 +155,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                             var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
 
                             if (node.Value.Count == 1)
-                                DoRelationshipPart(relationship, NodeDirection.Backward);
+                                DoRelationshipPart(relationship, DirectionType.Backward);
                             else
-                                DoRelationshipPart(relationship, NodeDirection.Forward);
+                                DoRelationshipPart(relationship, DirectionType.Forward);
                             //add left then right node in loop
 
                             DoNodePart(relatedNode);
@@ -193,9 +170,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             }
         }
 
-        private void DoRelationshipPart(RelationshipPart relationship, NodeDirection direction)
+        private void DoRelationshipPart(RelationshipPart relationship, DirectionType direction)
         {
-            if(direction == NodeDirection.Forward)
+            if(direction == DirectionType.Forward)
             {
                 Query.Append("<-");
 
@@ -203,7 +180,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
                 Query.Append("-");
             }
-            else if (direction == NodeDirection.Backward)
+            else if (direction == DirectionType.Backward)
             {
                 Query.Append("-");
 
@@ -289,9 +266,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 {
                     ((UnwindPropertyPart)expr).Accept(this);
                 }
-                else if (expr is NFunctionPart)
+                else if (expr is NativeFunctionPart)
                 {
-                    ((NFunctionPart)expr).Accept(this);
+                    ((NativeFunctionPart)expr).Accept(this);
                 }
                 else if (expr is SeparatorPart)
                 {
@@ -353,7 +330,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             Query.Append("CREATE ( ");
 
-            foreach (var expr in insert.Properties)
+            foreach (var expr in insert.Parts)
             {
                 if (expr is NodePart)
                 {
@@ -410,7 +387,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 Query.Append(" " + direction.Type + " ");
         }
 
-        public void Visit(NFunctionPart function)
+        public void Visit(NativeFunctionPart function)
         {
             Query.Append(" " + function.Type + "(");
 
@@ -428,7 +405,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             Query.Append(" UNWIND ");
 
-            foreach(var expr in unwind.Expressions)
+            foreach(var expr in unwind.Fields)
             {
                 if (expr is UnwindJsonPart)
                 {

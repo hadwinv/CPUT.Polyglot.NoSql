@@ -1,5 +1,4 @@
-﻿using Cassandra;
-using CPUT.Polyglot.NoSql.Common.Helpers;
+﻿using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Interface;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
@@ -9,20 +8,12 @@ using CPUT.Polyglot.NoSql.Parser;
 using CPUT.Polyglot.NoSql.Parser.Tokenizers;
 using CPUT.Polyglot.NoSql.Translator;
 using CPUT.Polyglot.NoSql.Translator.Events;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts;
 using FluentAssertions;
-using MongoDB.Driver;
 using Moq;
-using Neo4jClient.Cypher;
 using NUnit.Framework;
-using StackExchange.Redis;
 using Superpower;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 {
@@ -49,12 +40,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         #region Redis
 
         [Test]
-        public void Redis_FetchStudentWithoutFilter_ReturnExecutableQuery()
+        public void Redis_FetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
+                    DATA_MODEL { }
                     TARGET {  redis }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -78,7 +69,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Redis_FetchStudentWithKeyFilter_ReturnExecutableQuery()
+        public void Redis_FetchWithKeyFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -108,7 +99,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Redis_FetchStudentWithoutKeyFilter_ReturnExecutableQuery()
+        public void Redis_FetchWithoutKeyFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -139,7 +130,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Redis_FetchStudentWithMultipleFiltersIncludingKey_ReturnExecutableQuery()
+        public void Redis_FetchWithMultipleFiltersIncludingKey_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -169,7 +160,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Redis_FetchStudentWithMultipleFiltersExcludingKey_ReturnExecutableQuery()
+        public void Redis_FetchWithMultipleFiltersExcludingKey_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -258,7 +249,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-
         [Test]
         public void Redis_AddPropertyWithKey_ReturnExecutableQuery()
         {
@@ -322,7 +312,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         #region Cassandra
 
         [Test]
-        public void Cassandra_FetchStudentWithoutFilter_ReturnExecutableQuery()
+        public void Cassandra_FetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -346,12 +336,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentWithRestriction_ReturnExecutableQuery()
+        public void Cassandra_FetchWithRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -376,12 +366,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students LIMIT 10 ").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student LIMIT 10 ").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentOrderBy_ReturnExecutableQuery()
+        public void Cassandra_FetchOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -406,12 +396,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students ORDER BY firstname ASC").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname ASC").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentOrderByDesc_ReturnExecutableQuery()
+        public void Cassandra_FetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -436,12 +426,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students ORDER BY firstname DESC").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname DESC").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentWithFilter_ReturnExecutableQuery()
+        public void Cassandra_FetchWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -466,12 +456,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students WHERE idno = \"62408306136\"").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\"").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void Cassandra_FetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -496,13 +486,13 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students WHERE idno = \"62408306136\" AND idno = \"624083061345\"").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\"").Replace(" ", "")
 
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentWithMoreThanOneANDFilter_ReturnExecutableQuery()
+        public void Cassandra_FetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -527,12 +517,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students WHERE idno = \"62408306136\" AND idno = \"624083061345\" AND idno = \"624083061344\"").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\" AND idno = \"624083061344\"").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentWithMoreThanOneOrFilter_ReturnExecutableQuery()
+        public void Cassandra_FetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -557,12 +547,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students WHERE idno = \"62408306136\" OR idno = \"624083061345\" OR idno = \"624083061344\"").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" OR idno = \"624083061345\" OR idno = \"624083061344\"").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Cassandra_FetchStudentWithORANDFilter_ReturnExecutableQuery()
+        public void Cassandra_FetchWithORANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -587,7 +577,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("SELECT firstname, lastname, idno, dob FROM students WHERE idno = \"62408306136\" AND idno = \"624083061345\" OR idno = \"624083061344\"").Replace(" ", "")
+                ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\" OR idno = \"624083061344\"").Replace(" ", "")
             );
         }
 
@@ -617,7 +607,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("UPDATE students SET firstname = \"Chuck T\" WHERE idno = \"62408306136\"").Replace(" ", "")
+                ("UPDATE student SET firstname = \"Chuck T\" WHERE idno = \"62408306136\"").Replace(" ", "")
             );
         }
 
@@ -646,7 +636,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("UPDATE students SET firstname = \"Chuck T\", lastname = \"Tylers\" WHERE idno = \"62408306136\"").Replace(" ", "")
+                ("UPDATE student SET firstname = \"Chuck T\", lastname = \"Tylers\" WHERE idno = \"62408306136\"").Replace(" ", "")
             );
         }
 
@@ -674,7 +664,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("UPDATE students SET firstname = \"Chuck T\"").Replace(" ", "")
+                ("UPDATE student SET firstname = \"Chuck T\"").Replace(" ", "")
             );
         }
 
@@ -702,7 +692,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("UPDATE students SET firstname = \"Chuck T\", lastname = \"Tylers\"").Replace(" ", "")
+                ("UPDATE student SET firstname = \"Chuck T\", lastname = \"Tylers\"").Replace(" ", "")
             );
         }
 
@@ -731,10 +721,9 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("INSERT INTO students (firstname) VALUES (\"Chuck T\")").Replace(" ", "")
+                ("INSERT INTO student (firstname) VALUES (\"Chuck T\")").Replace(" ", "")
             );
         }
-
 
         [Test]
         public void Cassandra_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
@@ -761,7 +750,157 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                 ("INSERT INTO students (firstname, lastname) VALUES (\"Chuck T\", \"Tylers\")").Replace(" ", "")
+                 ("INSERT INTO student (firstname, lastname) VALUES (\"Chuck T\", \"Tylers\")").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNSUM_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, nsum(marks) }
+                    DATA_MODEL { transcript}
+                    FILTER_ON {student_no = '05506604815'}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, SUM(marks) as marks FROM grades WHERE idno = \"05506604815\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, navg(marks) }
+                    DATA_MODEL { transcript}
+                    FILTER_ON {student_no = '05506604815'}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, AVG(marks) as marks FROM grades WHERE idno = \"05506604815\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNCount_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, ncount(marks) }
+                    DATA_MODEL { transcript}
+                    FILTER_ON {student_no = '05506604815'}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, COUNT(marks) as marks FROM grades WHERE idno = \"05506604815\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNMIN_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, nmin(marks) }
+                    DATA_MODEL { transcript}
+                    FILTER_ON {student_no = '05506604815'}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, MIN(marks) as marks FROM grades WHERE idno = \"05506604815\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNMAX_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, nmax(marks) }
+                    DATA_MODEL { transcript}
+                    FILTER_ON {student_no = '05506604815'}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, MAX(marks) as marks FROM grades WHERE idno = \"05506604815\"").Replace(" ", "")
             );
         }
 
@@ -770,11 +909,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         #region MongoDB
 
         [Test]
-        public void MongoDB_FetchStudentWithoutFilter_ReturnExecutableQuery()
+        public void MongoDB_FetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     TARGET {  mongodb }";
 
@@ -800,11 +939,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchStudentWithRestriction_ReturnExecutableQuery()
+        public void MongoDB_FetchWithRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     RESTRICT_TO { 10 }
                     TARGET {  mongodb }";
@@ -830,11 +969,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchStudentOrderBy_ReturnExecutableQuery()
+        public void MongoDB_FetchOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     ORDER_BY { name} 
                     TARGET {  mongodb }";
@@ -860,11 +999,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchStudentOrderByDesc_ReturnExecutableQuery()
+        public void MongoDB_FetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     ORDER_BY { name DESC} 
                     TARGET {  mongodb }";
@@ -890,11 +1029,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchStudentWithSingleFilter_ReturnExecutableQuery()
+        public void MongoDB_FetchWithSingleFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     FILTER_ON {idnumber = '62408306136'}
                     TARGET {  mongodb }";
@@ -921,11 +1060,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchStudentWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void MongoDB_FetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345'}
                     TARGET {  mongodb }";
@@ -946,17 +1085,15 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"624083061345\"}, {\"id_number\" : \"62408306136\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
-                
-            );
+                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", ""));
         }
 
         [Test]
-        public void MongoDB_FetchStudentWithMoreThanOneANDFilter_ReturnExecutableQuery()
+        public void MongoDB_FetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' AND idnumber = '624083061344'}
                     TARGET {  mongodb }";
@@ -977,16 +1114,16 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"624083061345\"},{\"id_number\" : \"624083061344\"},{\"id_number\" : \"62408306136\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"},{\"id_number\" : \"624083061344\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
             );
         }
 
         [Test]
-        public void MongoDB_FetchStudentWithMoreThanOneOrFilter_ReturnExecutableQuery()
+        public void MongoDB_FetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     FILTER_ON {idnumber = '62408306136' OR idnumber = '624083061345' OR idnumber = '624083061344'}
                     TARGET {  mongodb }";
@@ -1007,16 +1144,16 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$or\" : [{\"id_number\" : \"624083061345\"},{\"id_number\" : \"624083061344\"},{\"id_number\" : \"62408306136\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+                ("db.getCollection(\"students\").find({\"$or\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"},{\"id_number\" : \"624083061344\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
             );
         }
 
         [Test]
-        public void MongoDB_FetchStudentWithORANDFilter_ReturnExecutableQuery()
+        public void MongoDB_FetchWithORANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
                     DATA_MODEL { student}
                     FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' OR idnumber = '624083061344'}
                     TARGET {  mongodb }";
@@ -1037,7 +1174,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$or\" : [{\"id_number\" : \"624083061344\"}],\"$and\" : [{\"id_number\" : \"624083061345\"},{\"id_number\" : \"62408306136\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"}],\"$or\" : [{\"id_number\" : \"624083061344\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
             );
         }
 
@@ -1214,15 +1351,47 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-
         [Test]
-        public void MongoDB_FetchSum_ReturnExecutableQuery()
+        public void MongoDB_AddMultipleEntries_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' OR idnumber = '624083061344'}
+            var input = @"ADD { student }
+                          PROPERTIES {[{ name = 'Chuck T', surname = 'Tylers'}, { name = 'Taylor', surname = 'Test'}]}
+                          TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Insert.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.ADD
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}, {\"name\" : \"Taylor\",  \"surname\" : \"Test\"}])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void MongoDB_FetchNSUM_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nsum(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    FILTER_ON { s.idnumber = '35808404617' OR s.idnumber = '21708702176' AND t.subject.duration > 0 }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
                     TARGET {  mongodb }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1237,22 +1406,269 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
                                Command = Utils.Command.FETCH
                            });
 
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $match : {" +
+                "       \"$or\" : [" +
+                "           {\"id_number\" : \"35808404617\"}," +
+                "           {\"id_number\" : \"21708702176\"}" +
+                "       ]," +
+                "       \"$and\" : [" +
+                "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
+                "       ]}}," +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $sum: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+            );
+        }
+    
+        [Test]
+    
+        public void MongoDB_FetchNCOUNT_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, ncount(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    FILTER_ON { s.idnumber = '35808404617' OR s.idnumber = '21708702176' AND t.subject.duration > 0 }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
 
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$or\" : [{\"id_number\" : \"624083061344\"}],\"$and\" : [{\"id_number\" : \"624083061345\"},{\"id_number\" : \"62408306136\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $match : {" +
+                "       \"$or\" : [" +
+                "           {\"id_number\" : \"35808404617\"}," +
+                "           {\"id_number\" : \"21708702176\"}" +
+                "       ]," +
+                "       \"$and\" : [" +
+                "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
+                "       ]}}," +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $count: {}}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
             );
-   //         db.getCollection("students")
-   // .aggregate([
-   //  {
-   //    $group:
-   //             {
-   //             _id: "$register.status", 
-   //        count: {$sum: "$register._id"}
-   //             }
-   //         }
-   //])
+        }
+
+        [Test]
+        public void MongoDB_FetchNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, navg(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    FILTER_ON { s.idnumber = '35808404617' OR s.idnumber = '21708702176' AND t.subject.duration > 0 }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $match : {" +
+                "       \"$or\" : [" +
+                "           {\"id_number\" : \"35808404617\"}," +
+                "           {\"id_number\" : \"21708702176\"}" +
+                "       ]," +
+                "       \"$and\" : [" +
+                "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
+                "       ]}}," +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $avg: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+        );
+        }
+
+        [Test]
+        public void MongoDB_FetchNMIN_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nmin(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    FILTER_ON { s.idnumber = '35808404617' OR s.idnumber = '21708702176' AND t.subject.duration > 0 }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $match : {" +
+                "       \"$or\" : [" +
+                "           {\"id_number\" : \"35808404617\"}," +
+                "           {\"id_number\" : \"21708702176\"}" +
+                "       ]," +
+                "       \"$and\" : [" +
+                "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
+                "       ]}}," +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $min: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void MongoDB_FetchNMAX_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nmax(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    FILTER_ON { s.idnumber = '35808404617' OR s.idnumber = '21708702176' AND t.subject.duration > 0 }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $match : {" +
+                "       \"$or\" : [" +
+                "           {\"id_number\" : \"35808404617\"}," +
+                "           {\"id_number\" : \"21708702176\"}" +
+                "       ]," +
+                "       \"$and\" : [" +
+                "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
+                "       ]}}," +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $max: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+        );
         }
 
         #endregion
@@ -1260,13 +1676,13 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         #region Neo4j
 
         [Test]
-        public void Neo4j_FetchStudentWithoutFilter_ReturnExecutableQuery()
+        public void Neo4j_FetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1288,16 +1704,15 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-
         [Test]
-        public void Neo4j_FetchStudentWithRestriction_ReturnExecutableQuery()
+        public void Neo4j_FetchWithRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    RESTRICT_TO { 10 }
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                RESTRICT_TO { 10 }
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1320,14 +1735,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Neo4j_FetchStudentOrderBy_ReturnExecutableQuery()
+        public void Neo4j_FetchOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    ORDER_BY { name} 
-                    TARGET {  neo4j }";
+            var input = @"FETCH { title, name, surname, idnumber, dateofbirth }
+                DATA_MODEL { student}
+                ORDER_BY { name} 
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1345,19 +1760,19 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pup:Pupil ) RETURN pup.name, pup.surname, pup.idnumber, pup.dob ORDER BY pup.name ASC").Replace(" ", "")
+                ("MATCH ( pup:Pupil ) RETURN pup.title, pup.name, pup.surname, pup.idnumber, pup.dob ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
 
         [Test]
-        public void Neo4j_FetchStudentOrderByDesc_ReturnExecutableQuery()
+        public void Neo4j_FetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    ORDER_BY { name DESC} 
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                ORDER_BY { name DESC} 
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1380,14 +1795,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Neo4j_FetchStudentWithFilter_ReturnExecutableQuery()
+        public void Neo4j_FetchWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    FILTER_ON {idnumber = '62408306136'}
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                FILTER_ON {idnumber = '62408306136'}
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1410,14 +1825,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Neo4j_FetchStudentWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void Neo4j_FetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345'}
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345'}
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1441,14 +1856,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Neo4j_FetchStudentWithMoreThanOneANDFilter_ReturnExecutableQuery()
+        public void Neo4j_FetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' AND idnumber = '624083061344'}
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' AND idnumber = '624083061344'}
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1471,14 +1886,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Neo4j_FetchStudentWithMoreThanOneOrFilter_ReturnExecutableQuery()
+        public void Neo4j_FetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    FILTER_ON {idnumber = '62408306136' OR idnumber = '624083061345' OR idnumber = '624083061344'}
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                FILTER_ON {idnumber = '62408306136' OR idnumber = '624083061345' OR idnumber = '624083061344'}
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1501,14 +1916,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Neo4j_FetchStudentWithORANDFilter_ReturnExecutableQuery()
+        public void Neo4j_FetchWithORANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { student}
-                    FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' OR idnumber = '624083061344'}
-                    TARGET {  neo4j }";
+                DATA_MODEL { student}
+                FILTER_ON {idnumber = '62408306136' AND idnumber = '624083061345' OR idnumber = '624083061344'}
+                TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1531,14 +1946,43 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
+        public void Neo4j_FetchUnwinded_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, marks }
+                        DATA_MODEL { transcript}
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, mar.Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
         public void Neo4j_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T'}
-                            FILTER_ON { idnumber = '62408306136' }
-                            TARGET { neo4j }";
+                        PROPERTIES { name = 'Chuck T'}
+                        FILTER_ON { idnumber = '62408306136' }
+                        TARGET { neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1566,9 +2010,9 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             List<Constructs> results = null;
 
             var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                            FILTER_ON { idnumber = '62408306136' }
-                            TARGET { neo4j }";
+                        PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                        FILTER_ON { idnumber = '62408306136' }
+                        TARGET { neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1595,8 +2039,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             List<Constructs> results = null;
 
             var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T'}
-                            TARGET { neo4j }";
+                        PROPERTIES { name = 'Chuck T'}
+                        TARGET { neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1623,8 +2067,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             List<Constructs> results = null;
 
             var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                            TARGET { neo4j }";
+                        PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                        TARGET { neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1651,8 +2095,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             List<Constructs> results = null;
 
             var input = @"ADD { student }
-                          PROPERTIES { name = 'Chuck T'}
-                          TARGET { neo4j }";
+                      PROPERTIES { name = 'Chuck T'}
+                      TARGET { neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1680,8 +2124,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             List<Constructs> results = null;
 
             var input = @"ADD { student }
-                          PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                          TARGET { neo4j }";
+                      PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                      TARGET { neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1703,160 +2147,15 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-        [Test]        
-        public void Neo4j_FetchUnwindedSUM_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"FETCH { gradedsymbol, nsum(marks) }
-                            DATA_MODEL { transcript}
-                            TARGET {  neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.FETCH
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as ma RETURN ma.Grade, SUM(ma.Score) as Score").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Neo4j_FetchUnwindedAVG_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"FETCH { gradedsymbol, avg(marks) }
-                            DATA_MODEL { transcript}
-                            TARGET {  neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.FETCH
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as ma RETURN ma.Grade, AVG(ma.Score) as Score").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Neo4j_FetchUnwindedCount_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"FETCH { gradedsymbol, Count(marks) }
-                            DATA_MODEL { transcript}
-                            TARGET {  neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.FETCH
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as ma RETURN ma.Grade, COUNT(ma.Score) as Score").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Neo4j_FetchUnwindedMIN_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"FETCH { gradedsymbol, min(marks) }
-                            DATA_MODEL { transcript}
-                            TARGET {  neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.FETCH
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as ma RETURN ma.Grade, MIN(ma.Score) as Score").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Neo4j_FetchUnwindedMAX_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"FETCH { gradedsymbol, max(marks) }
-                            DATA_MODEL { transcript}
-                            TARGET {  neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.FETCH
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as ma RETURN ma.Grade, MAX(ma.Score) as Score").Replace(" ", "")
-            );
-        }
-
         [Test]
         public void Neo4j_FetchSingleRelation_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { title, name, surname, gradedsymbol, max(marks) }
-                            DATA_MODEL { student, transcript}
-                            RESTRICT_TO { 10 }
-                            TARGET {  neo4j }";
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, nmax(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t}
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1874,7 +2173,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH (pup:Pupil)-[:TRANSCRIPT]->(pro:Progress) UNWIND apoc.convert.fromJsonList( pro.marks) as ma RETURN pup.title, pup.name, pup.surname, ma.Grade,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
+                ("MATCH (s:Pupil)-[:TRANSCRIPT]->(t:Progress) UNWIND apoc.convert.fromJsonList( t.marks) as mar RETURN s.title, s.name, s.surname, mar.Grade,  MAX(mar.Score) as Score LIMIT 10").Replace(" ", "")
             );
         }
 
@@ -1883,10 +2182,10 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, max(t.marks) }
-                            DATA_MODEL { student AS s, transcript AS t, course AS c}
-                            RESTRICT_TO { 10 }
-                            TARGET {  neo4j }";
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, nmax(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c}
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1904,7 +2203,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course) UNWIND apoc.convert.fromJsonList( t.marks) as ma RETURN s.title, s.name, s.surname, ma.Grade, c.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course) UNWIND apoc.convert.fromJsonList( t.marks) as mar RETURN s.title, s.name, s.surname, mar.Grade, c.name,  MAX(mar.Score) as Score LIMIT 10").Replace(" ", "")
             );
         }
 
@@ -1913,9 +2212,183 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, su.name, max(t.marks) }
-                            DATA_MODEL { student AS s, transcript AS t, course AS c, subject AS su}
-                            RESTRICT_TO { 10 }
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, su.name, nmax(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c, subject AS su}
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)OPTIONAL MATCH (c)-[:CONTAINS]->(su:Subject) UNWIND apoc.convert.fromJsonList( t.marks) as mar RETURN s.title, s.name, s.surname, mar.Grade, c.name, su.name,  MAX(mar.Score) as Score LIMIT 10").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNSUM_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, nsum(marks) }
+                        DATA_MODEL { transcript}
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, SUM(mar.Score) as Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, navg(marks) }
+                        DATA_MODEL { transcript}
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, AVG(mar.Score) as Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNCount_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, ncount(marks) }
+                        DATA_MODEL { transcript}
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, COUNT(mar.Score) as Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNMIN_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, nmin(marks) }
+                        DATA_MODEL { transcript}
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, MIN(mar.Score) as Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNMAX_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, nmax(marks) }
+                        DATA_MODEL { transcript}
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, MAX(mar.Score) as Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchNSUM_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { name, nsum(cost) }
+                            DATA_MODEL { subject}
                             TARGET {  neo4j }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1934,39 +2407,126 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             results = transformed.Result;
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)OPTIONAL MATCH (c)-[:CONTAINS]->(su:Subject) UNWIND apoc.convert.fromJsonList( t.marks) as ma RETURN s.title, s.name, s.surname, ma.Grade, c.name, su.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
+                ("MATCH ( sub:Subject ) RETURN sub.name, SUM(sub.cost) as cost").Replace(" ", "")
             );
         }
 
-        //[Test]
-        //public void Neo4j_FetchMoreThanThreeRelation_ReturnExecutableQuery()
-        //{
-        //    List<Constructs> results = null;
+        [Test]
+        public void Neo4j_FetchNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
 
-        //    var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, su.name, max(t.marks) }
-        //                    DATA_MODEL { student AS s, transcript AS t, course AS c, subject AS su}
-        //                    RESTRICT_TO { 10 }
-        //                    TARGET {  neo4j }";
+            var input = @"FETCH { name, navg(cost) }
+                            DATA_MODEL { subject}
+                            TARGET {  neo4j }";
 
-        //    var tokens = new Lexer().Tokenize(input);
+            var tokens = new Lexer().Tokenize(input);
 
-        //    //generate abstract syntax tree
-        //    var syntaxExpr = Expressions.Select.Parse(tokens);
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
 
-        //    var transformed = _translate.Convert(
-        //                   new ConstructPayload
-        //                   {
-        //                       BaseExpr = syntaxExpr,
-        //                       Command = Utils.Command.FETCH
-        //                   });
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
 
 
-        //    results = transformed.Result;
+            results = transformed.Result;
 
-        //    results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-        //        ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)OPTIONAL MATCH (c)-[:CONTAINS]->(su:Subject) UNWIND apoc.convert.fromJsonList( t.marks) as ma RETURN s.title, s.name, s.surname, ma.Grade, c.name, su.name,  MAX(ma.Score) as Score LIMIT 10").Replace(" ", "")
-        //    );
-        //}
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( sub:Subject ) RETURN sub.name, AVG(sub.cost) as cost").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchNCount_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { name, ncount(cost) }
+                            DATA_MODEL { subject}
+                            TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( sub:Subject ) RETURN sub.name, COUNT(sub.cost) as cost").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchNMIN_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { name, nmin(cost) }
+                            DATA_MODEL { subject}
+                            TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( sub:Subject ) RETURN sub.name, MIN(sub.cost) as cost").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchNMAX_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { name, nmax(cost) }
+                            DATA_MODEL { subject}
+                            TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( sub:Subject ) RETURN sub.name, MAX(sub.cost) as cost").Replace(" ", "")
+            );
+        }
+    
 
         #endregion
 

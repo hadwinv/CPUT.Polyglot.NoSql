@@ -1,9 +1,4 @@
 ﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
@@ -14,15 +9,15 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Component
 
         public string AliasIdentifier { get; set; }
 
-        public DirectionType Direction { get; set; }
+        public OrderType Direction { get; set; }
 
-        public OrderByExpr(string value, string aliasIdentifier, DirectionType direction)
+        public OrderByExpr(string value, string aliasIdentifier, OrderType direction)
         {
             Value = value;
             AliasIdentifier = aliasIdentifier;
 
-            if (direction == DirectionType.None)
-                Direction = DirectionType.Asc;
+            if (direction == OrderType.None)
+                Direction = OrderType.Asc;
             else
                 Direction = direction;
         }

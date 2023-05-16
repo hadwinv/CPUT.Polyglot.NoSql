@@ -10,12 +10,6 @@
     <Compile Remove="GaV.cs" />
     <Compile Remove="LaV.cs" />
     <Compile Remove="Mappers.cs" />
-    <Compile Remove="Templates\Link.cs" />
-    <Compile Remove="Templates\Model.cs" />
-    <Compile Remove="Templates\Properties.cs" />
-    <Compile Remove="Templates\Relations.cs" />
-    <Compile Remove="Templates\Resources.cs" />
-    <Compile Remove="Templates\Schemas.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,24 +22,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Templates\Configs\GlobalTemplate.json">
+    <None Update="_schemas\_unifiedview.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Templates\Configs\MapperTemplate.json">
+    <None Update="_schemas\_native\_columnar.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Templates\Configs\Native\ColumnarTemplate.json">
+    <None Update="_schemas\_native\_document.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Templates\Configs\Native\DocumentTemplate.json">
+    <None Update="_schemas\_native\_graph.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Templates\Configs\Native\GraphTemplate.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Templates\Configs\Native\KeyValueTemplate.json">
+    <None Update="_schemas\_native\_keyvalue.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

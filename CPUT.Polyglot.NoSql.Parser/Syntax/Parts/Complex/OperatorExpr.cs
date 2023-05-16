@@ -1,6 +1,4 @@
-﻿using CPUT.Polyglot.NoSql.Common.Parsers;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using Superpower.Model;
+﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex

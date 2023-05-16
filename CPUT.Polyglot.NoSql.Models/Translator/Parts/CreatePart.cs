@@ -1,4 +1,4 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
+﻿using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
@@ -10,6 +10,8 @@ namespace CPUT.Polyglot.NoSql.Models.Translator.Parts
         
         public Command Command { get; set;  }
         
-        public List<MappedSource> Mapper { get; set; }
+        public List<USchema> USchema { get; set; }
+
+        public List<NSchema> NSchema { get; set; }
     }
 }

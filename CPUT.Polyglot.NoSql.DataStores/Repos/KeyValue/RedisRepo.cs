@@ -3,7 +3,6 @@ using CPUT.Polyglot.NoSql.Interface.Repos;
 using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Native.Redis;
 using CPUT.Polyglot.NoSql.Models.Translator;
-using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;

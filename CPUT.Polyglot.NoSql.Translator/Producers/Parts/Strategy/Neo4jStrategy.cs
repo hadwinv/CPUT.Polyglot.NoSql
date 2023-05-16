@@ -1,5 +1,6 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
-using CPUT.Polyglot.NoSql.Parser;
+﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
+using CPUT.Polyglot.NoSql.Models.Views.Shared;
+using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
@@ -7,29 +8,39 @@ using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Cassandra;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
-using System.ComponentModel;
-using System.Linq.Expressions;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
-using BaseExpr = CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using Component = CPUT.Polyglot.NoSql.Parser.Syntax.Component;
-using StackExchange.Redis;
-using System.Collections.Generic;
-using System.Xml.Linq;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
+using CPUT.Polyglot.NoSql.Models.Translator;
 using Cassandra.Mapping;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
+using System.Xml.Linq;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
     public class Neo4jStrategy : StrategyPart
     {
+        protected string Target = "neo4j";
+
+        private IExpression[] _unwindParts { get; set; }
+
+        public IExpression[] UnwindParts { 
+            get
+            {
+                if (_unwindParts == null)
+                    _unwindParts = GetUnwindPart();
+
+                return _unwindParts;
+            }
+        }
+
+
         public override string Alter()
         {
             throw new NotImplementedException();
@@ -45,14 +56,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             throw new NotImplementedException();
         }
 
-        public override string Fetch(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Fetch()
         {
             Console.WriteLine("Starting Neo4jPart - Fetch");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToSelectModel(expression, mapper, schemas);
+            var targetQuery = ConvertToSelectModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
@@ -68,14 +79,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public override string Modify(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Modify()
         {
             Console.WriteLine("Starting Neo4jPart - Fetch");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToUpdateModel(expression, mapper, schemas);
+            var targetQuery = ConvertToUpdateModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
@@ -91,14 +102,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public override string Add(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Add()
         {
             Console.WriteLine("Starting Neo4jPart - Fetch");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToAddModel(expression, mapper, schemas);
+            var targetQuery = ConvertToAddModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
@@ -114,541 +125,385 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public List<IExpression> ConvertToSelectModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
-        {
-            List<IExpression> targetModel = new List<IExpression>();
-            List<IExpression> unwindJsonParts = new List<IExpression>();
-            List<IExpression> propertyParts = new List<IExpression>();
-            List<IExpression> logicalParts = new List<IExpression>();
-            List<IExpression> nodeParts = new List<IExpression>();
+        #region Expression Parts
 
-            //get all linked properties, model, etc
-            var mapperLinks = mapper
-                  .Where(x => this.DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
+        #region Select
+
+        public List<IExpression> ConvertToSelectModel()
+        {
+            var parts = new List<IExpression>();
 
             //match
-            targetModel.Add(new MatchPart(GetNodePart(this.DataModelExpr, mapperLinks, schemas)));
+            parts.Add(new MatchPart(GetNodePart()));
 
-            if (targetModel.Count > 0)
+            if (parts.Count > 0)
             {
                 if (this.FilterExpr != null)
-                    logicalParts.AddRange(GetLogicalPart(this.FilterExpr, mapperLinks, schemas));
-
-                if(logicalParts.Count > 0)
-                    targetModel.Add(new ConditionPart(logicalParts.ToArray()));
+                    parts.Add(new ConditionPart(GetLogicalPart().ToArray()));
 
                 //get unwind fields
-                unwindJsonParts.AddRange(GetUnwindJsonPart(this.DeclareExpr, mapperLinks));
-
-                if (unwindJsonParts.Count > 0)
-                {
-                    unwindJsonParts.RemoveAt(unwindJsonParts.Count - 1);
-
-                    //unwind collections
-                    targetModel.Add(new UnwindPart(unwindJsonParts.ToArray()));
-                }
+                parts.AddRange(UnwindParts);
 
                 //get property fields
-                propertyParts.AddRange(GetPropertyPart(this.DeclareExpr, mapperLinks, schemas));
+                parts.Add(new ReturnPart(GetPropertyPart().ToArray()));
 
-                if (propertyParts.Count > 0)
-                {
-                    propertyParts.RemoveAt(propertyParts.Count - 1);
+                if (OrderByExpr != null)
+                    parts.Add(GetOrderPart(Target));
 
-                    targetModel.Add(new ReturnPart(propertyParts.ToArray()));
-                }
-
-                if (this.OrderByExpr != null)
-                {
-
-                    var mappedProperty = GetMappedProperty(mapperLinks, this.OrderByExpr, "neo4j");
-
-                    if (mappedProperty != null)
-                        targetModel.Add(new OrderByPart(mappedProperty, this.OrderByExpr));
-                }
-
-                if (RestrictExpr != null)
-                    targetModel.Add(new RestrictPart(RestrictExpr.Value));
+                if (this.RestrictExpr != null)
+                    parts.Add(new RestrictPart(this.RestrictExpr.Value));
             }
 
-            return targetModel;
+            return parts;
         }
 
-        public List<IExpression> ConvertToUpdateModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        #endregion
+
+        #region Update
+
+        public List<IExpression> ConvertToUpdateModel()
         {
-            List<IExpression> targetModel = new List<IExpression>();
-            List<IExpression> propertyParts = new List<IExpression>();
-            List<IExpression> logicalParts = new List<IExpression>();
-            List<IExpression> nodeParts = new List<IExpression>();
+            var parts = new List<IExpression>();
 
-            //get all linked properties, model, etc
-            var mapperLinks = mapper
-                  .Where(x => DeclareExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
+            // var innerParts = new List<IExpression>();
 
-            //match
-            targetModel.Add(new MatchPart(GetNodePart(DeclareExpr, mapperLinks, schemas)));
+            parts.Add(new MatchPart(GetNodePart().ToArray()));
 
-            if (targetModel.Count > 0)
+            if (parts.Count > 0)
             {
-                if (FilterExpr != null)
-                    logicalParts.AddRange(GetLogicalPart(FilterExpr, mapperLinks, schemas));
+                if (this.FilterExpr != null)
+                    parts.Add(new ConditionPart(GetLogicalPart().ToArray()));
 
-                if (logicalParts.Count > 0)
-                    targetModel.Add(new ConditionPart(logicalParts.ToArray()));
+                parts.AddRange(GetInsertValuePart(false).ToArray());
 
-                //set values
-                propertyParts = GetSetValuePart(this.PropertiesExpr, mapperLinks, schemas).ToList();
+                if (OrderByExpr != null)
+                    parts.Add(GetOrderPart(Target));
 
-                if (propertyParts.Count > 0)
-                    propertyParts.RemoveAt(propertyParts.Count - 1);
-
-                //if (OrderByExpr != null)
-                //{
-                //    var mappedProperty = GetMappedProperty(mapperLinks, OrderByExpr.Value, "cassandra");
-
-                //    if (mappedProperty != null)
-                //        targetModel.Add(new OrderByPart(mappedProperty.Property, new DirectionPart(OrderByExpr.Direction)));
-                //}
-
-                targetModel.Add(new SetPart(propertyParts.ToArray()));
-
-                if (RestrictExpr != null)
-                    targetModel.Add(new RestrictPart(RestrictExpr.Value));
+                if (this.RestrictExpr != null)
+                    parts.Add(new RestrictPart(this.RestrictExpr.Value));
 
                
             }
 
-            return targetModel;
+            return parts;
         }
 
-        public List<IExpression> ConvertToAddModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        #endregion
+
+        #region Add
+
+        public List<IExpression> ConvertToAddModel()
         {
-            List<IExpression> targetModel = new List<IExpression>();
-            List<IExpression> propertyParts = new List<IExpression>();
-            List<IExpression> logicalParts = new List<IExpression>();
-            List<IExpression> nodeParts = new List<IExpression>();
+            var parts = new List<IExpression>();
 
-            //get all linked properties, model, etc
-            var mapperLinks = mapper
-                  .Where(x => DeclareExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
+            var innerParts = new List<IExpression>();
+            
+            innerParts.AddRange(GetNodePart().ToArray());
 
-            //match
-            nodeParts.AddRange(GetNodePart(DeclareExpr, mapperLinks, schemas));
-
-            if (nodeParts.Count > 0)
+            if (innerParts.Count > 0)
             {
-                if (FilterExpr != null)
-                    logicalParts.AddRange(GetLogicalPart(FilterExpr, mapperLinks, schemas));
-
-                if (logicalParts.Count > 0)
-                    nodeParts.Add(new ConditionPart(logicalParts.ToArray()));
-
                 //set values
-                propertyParts = GetInsertValuePart(PropertiesExpr, mapperLinks, schemas).ToList();
+                innerParts.AddRange(GetInsertValuePart(true).ToArray());
 
-                if (propertyParts.Count > 0)
-                    propertyParts.RemoveAt(propertyParts.Count - 1);
-
-
-                nodeParts.Add(new ValuesPart(propertyParts.ToArray()));
-
-                targetModel.Add(new InsertPart(nodeParts.ToArray()));
+                parts.Add(new InsertPart(innerParts.ToArray()));
             }
 
-            return targetModel;
+            return parts;
         }
 
-        private NodePart[] GetNodePart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks, List<NSchema> schemas)
+        #endregion
+
+        private NodePart[] GetNodePart()
         {
-            List<NodePart> nodeParts = new List<NodePart>();
-            DeclareExpr declareExpr = null;
-            DataModelExpr dataModelExpr = null;
+            var parts = new List<NodePart>();
 
-            if (expr is DeclareExpr)
-                declareExpr = (DeclareExpr)expr;
-            else if (expr is DataModelExpr)
-                dataModelExpr = (DataModelExpr)expr;
-
-            foreach (var part in (declareExpr != null ? declareExpr.Value : dataModelExpr.Value))
+            if (DataModelExpr != null)
             {
-                if (part is DataExpr)
+                foreach (var part in DataModelExpr.Value)
                 {
-                    DataExpr data = (DataExpr)part;
-
-                    var map = mapperLinks
-                        .Where(x => x.Name == data.Value)
-                        .SelectMany(x => x.Resources
-                                            .SelectMany(x => x.Link))
-                        .Where(t => t.Target == "neo4j")
-                        .FirstOrDefault();
-
-                    if (map != null)
+                    if (part is DataExpr)
                     {
-                        var relations = schemas.SelectMany(x => x.Model.Where(x => x.Name == map.Reference && x.Relations != null).SelectMany(x => x.Relations)).ToList();
+                        var data = (DataExpr)part;
 
-                        nodeParts.Add(new NodePart(map.Reference, data.AliasIdentifier, relations.ToArray()));
+                        var link = Assistor.USchema
+                           .Select(x => x.View)
+                           .Where(x => x.Name == data.Value)
+                           .SelectMany(x => x.Resources
+                                             .SelectMany(x => x.Link))
+                           .Where(t => t.Target == Target)
+                           .FirstOrDefault();
+
+                        if (link != null)
+                        {
+                            var relations = Assistor.NSchema
+                                .SelectMany(x => x.Model
+                                        .Where(x => x.Name == link.Reference && x.Relations != null)
+                                .SelectMany(x => x.Relations)).ToList();
+
+                            parts.Add(new NodePart(link.Reference, data.AliasIdentifier, relations.ToArray()));
+                        }
                     }
                 }
             }
 
-            return nodeParts.ToArray();
+            return parts.ToArray();
         }
 
-        private IExpression[] GetUnwindJsonPart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks)
+        private LogicalPart[] GetLogicalPart()
         {
-            List<IExpression> expressions = new List<IExpression>();
+            var parts = new List<LogicalPart>();
 
-            DeclareExpr declareExpr = null;
-            DataModelExpr dataModelExpr = null;
-            PropertyExpr propertyExpr;
-            FunctionExpr functionExpr;
-
-            Link mappedProperty;
-
-            if (expr is DeclareExpr)
-                declareExpr = (DeclareExpr)expr;
-            else if (expr is DataModelExpr)
-                dataModelExpr = (DataModelExpr)expr;
-
-            foreach (var part in (declareExpr != null ? declareExpr.Value : dataModelExpr.Value))
+            if (FilterExpr != null)
             {
-                if (part is PropertyExpr)
+                foreach (var part in FilterExpr.Value)
                 {
-                    propertyExpr = (PropertyExpr)part;
-
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
-
-                    if (mappedProperty != null)
+                    if (part is GroupExpr)
                     {
-                        var jsonParts = expressions.Where(x => x.GetType().Equals(typeof(UnwindJsonPart))).Select(x => (UnwindJsonPart)x).ToList();
+                        var groupExpr = (GroupExpr)part;
+                        var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                        if (!jsonParts.Exists(x => x.Name == mappedProperty.Reference_Property))
-                        {
-                            if (!string.IsNullOrEmpty(mappedProperty.Reference_Property))
-                            {
-                                expressions.Add(new UnwindJsonPart(mappedProperty, propertyExpr));
-                                expressions.Add(new SeparatorPart(","));
-                            }
-                        }
-                    };
+                        var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEOJ4);
+                        var comparePart = new ComparePart(operatorExpr.Compare, Common.Helpers.Utils.Database.NEOJ4);
+
+                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+
+                        parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
+                    }
                 }
-                else if (part is FunctionExpr)
+            }
+
+            return parts.ToArray();
+        }
+
+        private IExpression[] GetPropertyPart()
+        {
+            var parts = new List<IExpression>();
+
+            if(DeclareExpr != null)
+            {
+                foreach (var part in DeclareExpr.Value)
                 {
-                    functionExpr = (FunctionExpr)part;
-
-                    foreach (var func in functionExpr.Value)
+                    if (part is PropertyExpr)
                     {
-                        propertyExpr = (PropertyExpr)func;
+                        var propertyExpr = (PropertyExpr)part;
 
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
+                        var mappedProperty = GetMappedProperty(propertyExpr, Target);
 
                         if (mappedProperty != null)
                         {
-                            var jsonParts = expressions.Where(x => x.GetType().Equals(typeof(UnwindJsonPart))).Select(x => (UnwindJsonPart)x).ToList();
+                            var properties = Assistor.NSchema
+                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                                .Where(x => x.Property == mappedProperty.Property)
+                                .First();
 
-                            if (!jsonParts.Exists(x => x.Name == mappedProperty.Reference_Property))
+                            //apply correct alias
+                            ApplyUnwindedAlias(mappedProperty, ref propertyExpr);
+
+                            parts.Add(new PropertyPart(mappedProperty, propertyExpr));
+                            parts.Add(new SeparatorPart(","));
+                        }
+                    }
+                    else if (part is FunctionExpr)
+                    {
+                        var expr = (FunctionExpr)part;
+
+                        foreach (var func in expr.Value)
+                        {
+                            var @base = (PropertyExpr)func;
+
+                            //if (func is PropertyExpr)
+                            //    @base = (PropertyExpr)func;
+                            //else
+                            //    @base = (JsonExpr)func;
+
+                            var mappedProperty = GetMappedProperty(@base, Target);
+
+                            if (mappedProperty != null)
                             {
-                                if (!string.IsNullOrEmpty(mappedProperty.Reference_Property))
+                                var properties = Assistor.NSchema
+                                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                                            .Where(x => x.Property == mappedProperty.Property)
+                                            .First();
+
+                                //apply correct alias
+                                ApplyUnwindedAlias(mappedProperty, ref @base);
+
+                                parts.Add(new NativeFunctionPart(
+                                        new PropertyPart( mappedProperty, @base), expr.Type)
+                                    );
+                                parts.Add(new SeparatorPart(","));
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (parts.Count > 0)
+                parts.RemoveAt(parts.Count - 1);
+
+            return parts.ToArray();
+        }
+
+        private IExpression[] GetUnwindPart()
+        {
+            var parts = new List<IExpression>();
+
+            if (DeclareExpr != null)
+            {
+                var innerParts = new List<IExpression>();
+                var models = new List<Model>();
+
+                foreach (var part in DeclareExpr.Value)
+                {
+                    if (part is PropertyExpr)
+                    {
+                        var propertyExpr = (PropertyExpr)part;
+
+                        var mappedProperty = GetMappedProperty(propertyExpr, Target);
+
+                        if (mappedProperty != null)
+                        {
+                            var model = Assistor.NSchema
+                                .SelectMany(x => x.Model)
+                                .Where(x => x.Name == mappedProperty.Reference)
+                                .First();
+
+                            if (model.Type == "json")
+                            {
+                                var parentModel = Assistor.NSchema
+                                    .SelectMany(x => x.Model)
+                                    .Where(x => x.Properties.Exists(x => x.Property == model.Name))
+                                    .First();
+
+                                if (!models.Exists(x => x.Name == parentModel.Name))
                                 {
-                                    expressions.Add(new UnwindJsonPart(mappedProperty, propertyExpr));
-                                    expressions.Add(new SeparatorPart(","));
+                                    innerParts.Add(new UnwindJsonPart(propertyExpr, parentModel, model.Name));
+                                    innerParts.Add(new SeparatorPart(","));
+
+                                    models.Add(parentModel);
+                                }
+                            }
+                        }
+                    }
+                    else if (part is FunctionExpr)
+                    {
+                        var functionExpr = (FunctionExpr)part;
+
+                        foreach (var func in functionExpr.Value)
+                        {
+                            var propertyExpr = (PropertyExpr)func;
+
+                            var mappedProperty = GetMappedProperty(propertyExpr, Target);
+
+                            if (mappedProperty != null)
+                            {
+                                var model = Assistor.NSchema
+                                 .SelectMany(x => x.Model)
+                                 .Where(x => x.Name == mappedProperty.Reference)
+                                 .First();
+
+                                if (model.Type == "json")
+                                {
+                                    var parentModel = Assistor.NSchema
+                                        .SelectMany(x => x.Model)
+                                        .Where(x => x.Properties.Exists(x => x.Property == model.Name))
+                                        .First();
+
+                                    if (!models.Exists(x => x.Name == parentModel.Name))
+                                    {
+                                        innerParts.Add(new UnwindJsonPart(propertyExpr, parentModel, model.Name));
+                                        innerParts.Add(new SeparatorPart(","));
+
+                                        models.Add(parentModel);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            return expressions.ToArray();
-        }
-
-        private LogicalPart[] GetLogicalPart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks, List<NSchema> schemas)
-        {
-            List<LogicalPart> logicalParts = new List<LogicalPart>();
-            PropertyPart leftPart = null;
-            PropertyPart rightPart = null;
-            OperatorPart operatorPart = null;
-            ComparePart comparePart = null;
-
-            FilterExpr filterExpr = null;
-            PropertiesExpr propertiesExpr = null;
-            GroupExpr group = null;
-            OperatorExpr @operator;
-            TermExpr left;
-            Link leftMap;
-            Link rightMap;
-            Properties properties;
-
-            if (expr is FilterExpr)
-                filterExpr = (FilterExpr)expr;
-            else if (expr is PropertiesExpr)
-                propertiesExpr = (PropertiesExpr)expr;
-
-            foreach (var part in (filterExpr != null ? filterExpr.Value : propertiesExpr.Value))
-            {
-                if (part is GroupExpr)
+                if (innerParts.Count > 0)
                 {
-                    group = (GroupExpr)part;
-                    @operator = (OperatorExpr)group.Value;
-
-                    left = (TermExpr)@operator.Left;
-
-                    operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.NEOJ4);
-                    comparePart = new ComparePart(@operator.Compare, Common.Helpers.Utils.Database.NEOJ4);
-
-                    leftMap = GetMappedProperty(mapperLinks, left, "neo4j");
-
-                    if (leftMap != null)
-                    {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .First(x => x.Property == leftMap.Property);
-
-                        leftPart = new PropertyPart(properties, leftMap, left);
-                    }
-
-                    if (@operator.Right is TermExpr)
-                    {
-                        var right = (TermExpr)@operator.Right;
-
-                        rightMap = GetMappedProperty(mapperLinks, right, "neo4j");
-
-                        if (rightMap != null)
-                        {
-                            properties = schemas
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .First(x => x.Property == rightMap.Property);
-
-                            rightPart = new PropertyPart(properties, rightMap, right);
-                        }
-                    }
-                    else if (@operator.Right is StringLiteralExpr)
-                        rightPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                    else if (@operator.Right is NumberLiteralExpr)
-                        rightPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
-
-                    if (leftPart != null && rightPart != null)
-                        logicalParts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
+                    innerParts.RemoveAt(innerParts.Count - 1);
+                    parts.Add(new UnwindPart(innerParts.ToArray()));
                 }
             }
 
-            return logicalParts.ToArray();
+            return parts.ToArray();
         }
 
-        private IExpression[] GetPropertyPart(DeclareExpr declareExpr, List<MappedSource> mapperLinks, List<NSchema> schemas)
+        private IExpression[] GetInsertValuePart(bool insert)
         {
-            List<IExpression> expressions = new List<IExpression>();
+            var parts = new List<IExpression>();
 
-            PropertyExpr propertyExpr;
-            FunctionExpr functionExpr;
-
-            Properties properties;
-            Link mappedProperty;
-
-            foreach (var part in declareExpr.Value)
+            if (PropertiesExpr != null)
             {
-                if (part is PropertyExpr)
+                foreach (var groups in PropertiesExpr.Value)
                 {
-                    propertyExpr = (PropertyExpr)part;
-                    
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
+                    var exprs = new List<IExpression>();
 
-                    if (mappedProperty != null)
+                    foreach (var part in ((GroupPropertiesExpr)groups).Value)
                     {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .Where(x => x.Property == mappedProperty.Property)
-                            .First();
-
-                        if(string.IsNullOrEmpty(mappedProperty.Reference_Property))
-                            expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
-                        else
-                            expressions.Add(new UnwindPropertyPart(properties, mappedProperty));
-
-                        expressions.Add(new SeparatorPart(","));
-                    };
-                }
-                else if (part is FunctionExpr)
-                {
-                    functionExpr = (FunctionExpr)part;
-
-                    foreach (var func in functionExpr.Value)
-                    {
-                        propertyExpr = (PropertyExpr)func;
-
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "neo4j");
-
-                        if (mappedProperty != null)
+                        if (part is GroupExpr)
                         {
-                            properties = schemas
-                                        .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                        .Where(x => x.Property == mappedProperty.Property)
-                                        .First();
+                            var groupExpr = (GroupExpr)part;
+                            var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                            if (string.IsNullOrEmpty(mappedProperty.Reference_Property))
-                            {
-                                expressions.Add(new NFunctionPart(
-                                                new PropertyPart(properties, mappedProperty, propertyExpr),
-                                                functionExpr.Type));
-                            }
+                            var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEOJ4);
+
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+
+                            if (insert)
+                                exprs.Add(new InsertNodePart(leftPart, operatorPart, rightPart));
                             else
-                            {
-                                expressions.Add(new NFunctionPart(
-                                             new UnwindPropertyPart(properties, mappedProperty),
-                                             functionExpr.Type));
-                            }
+                                exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
 
-                            expressions.Add(new SeparatorPart(","));
+                            exprs.Add(new SeparatorPart(","));
                         }
                     }
+
+                    if (exprs.Count > 0)
+                        exprs.RemoveAt(exprs.Count - 1);
+
+                    if (insert)
+                        parts.Add(new ValuesPart(exprs.ToArray()));
+                    else
+                        parts.Add(new SetPart(exprs.ToArray()));
+
+                    parts.Add(new SeparatorPart(","));
                 }
             }
 
-            return expressions.ToArray();
+            if (parts.Count > 0)
+                parts.RemoveAt(parts.Count - 1);
+
+            return parts.ToArray();
         }
 
-        private IExpression[] GetSetValuePart(PropertiesExpr propertiesExpr, List<MappedSource> mapperLinks, List<NSchema> schemas)
+        private void ApplyUnwindedAlias(Link mappedProperty, ref PropertyExpr propertyExpr)
         {
-            List<IExpression> setValueParts = new List<IExpression>();
-            PropertyPart leftPart = null;
-            PropertyPart rightPart = null;
-            OperatorPart operatorPart = null;
-
-            GroupExpr group = null;
-            OperatorExpr @operator;
-            TermExpr left;
-            Link leftMap;
-            Link rightMap;
-            Properties properties;
-
-            foreach (var part in propertiesExpr.Value)
+            if (UnwindParts != null && UnwindParts.Count() > 0)
             {
-                if (part is GroupExpr)
+                var unwind = (UnwindPart?)UnwindParts.SingleOrDefault(x => x.GetType().Equals(typeof(UnwindPart)));
+
+                if (unwind != null)
                 {
-                    group = (GroupExpr)part;
-                    @operator = (OperatorExpr)group.Value;
-
-                    left = (TermExpr)@operator.Left;
-
-                    operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.NEOJ4);
-
-                    leftMap = GetMappedProperty(mapperLinks, left, "neo4j");
-
-                    if (leftMap != null)
+                    foreach (var field in unwind.Fields.Where(x => x.GetType().Equals(typeof(UnwindJsonPart))))
                     {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .First(x => x.Property == leftMap.Property);
+                        var unwindJsonPart = (UnwindJsonPart)field;
 
-                        leftPart = new PropertyPart(properties, leftMap, left);
-                    }
-
-                    if (@operator.Right is TermExpr)
-                    {
-                        var right = (TermExpr)@operator.Right;
-
-                        rightMap = GetMappedProperty(mapperLinks, right, "neo4j");
-
-                        if (rightMap != null)
+                        if (unwindJsonPart.Name == mappedProperty.Reference)
                         {
-                            properties = schemas
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .First(x => x.Property == rightMap.Property);
-
-                            rightPart = new PropertyPart(properties, rightMap, right);
+                            propertyExpr.AliasIdentifier = unwindJsonPart.UnwindAliasIdentifier;
+                            break;
                         }
-                    }
-                    else if (@operator.Right is StringLiteralExpr)
-                        rightPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                    else if (@operator.Right is NumberLiteralExpr)
-                        rightPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
-
-                    if (leftPart != null && rightPart != null)
-                    {
-                        setValueParts.Add(new SetValuePart(leftPart, operatorPart, rightPart));
-
-                        if (propertiesExpr != null)
-                            setValueParts.Add(new SeparatorPart(","));
                     }
                 }
             }
-
-            return setValueParts.ToArray();
         }
 
-        private IExpression[] GetInsertValuePart(PropertiesExpr propertiesExpr, List<MappedSource> mapperLinks, List<NSchema> schemas)
-        {
-            List<IExpression> insertValueParts = new List<IExpression>();
-            PropertyPart leftPart = null;
-            PropertyPart rightPart = null;
-            OperatorPart operatorPart = null;
-
-            GroupExpr group = null;
-            OperatorExpr @operator;
-            TermExpr left;
-            Link leftMap;
-            Link rightMap;
-            Properties properties;
-
-            foreach (var part in propertiesExpr.Value)
-            {
-                if (part is GroupExpr)
-                {
-                    group = (GroupExpr)part;
-                    @operator = (OperatorExpr)group.Value;
-
-                    operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.NEOJ4);
-                    left = (TermExpr)@operator.Left;
-                    
-                    leftMap = GetMappedProperty(mapperLinks, left, "neo4j");
-
-                    if (leftMap != null)
-                    {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .First(x => x.Property == leftMap.Property);
-
-                        leftPart = new PropertyPart(properties, leftMap, left);
-                    }
-
-                    if (@operator.Right is TermExpr)
-                    {
-                        var right = (TermExpr)@operator.Right;
-
-                        rightMap = GetMappedProperty(mapperLinks, right, "neo4j");
-
-                        if (rightMap != null)
-                        {
-                            properties = schemas
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .First(x => x.Property == rightMap.Property);
-
-                            rightPart = new PropertyPart(properties, rightMap, right);
-                        }
-                    }
-                    else if (@operator.Right is StringLiteralExpr)
-                        rightPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                    else if (@operator.Right is NumberLiteralExpr)
-                        rightPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
-
-
-                    if (leftPart != null && rightPart != null)
-                    {
-                        insertValueParts.Add(new InsertNodePart(leftPart, operatorPart, rightPart));
-
-                        if (propertiesExpr != null)
-                            insertValueParts.Add(new SeparatorPart(","));
-                    }
-                }
-            }
-
-            return insertValueParts.ToArray();
-        }
+        #endregion
     }
 }

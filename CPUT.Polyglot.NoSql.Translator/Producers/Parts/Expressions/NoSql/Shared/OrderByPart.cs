@@ -1,14 +1,7 @@
-﻿using Cassandra.DataStax.Graph;
-using CPUT.Polyglot.NoSql.Models.Mapper;
+﻿using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
 {
@@ -29,6 +22,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
                 AliasIdentifier = mappedProperty.Reference.Substring(0, 3).ToLower();
 
             Direction = new DirectionPart(orderByExpr.Direction);
+            
         }
         public void Accept(INeo4jVisitor visitor)
         {

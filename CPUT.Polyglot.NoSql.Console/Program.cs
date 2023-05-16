@@ -3,7 +3,6 @@ using CPUT.Polyglot.NoSql.DataStores.Repos.Columnar;
 using CPUT.Polyglot.NoSql.DataStores.Repos.Document;
 using CPUT.Polyglot.NoSql.DataStores.Repos.Graph;
 using CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue;
-using CPUT.Polyglot.NoSql.Delegator;
 using CPUT.Polyglot.NoSql.Delegator.Adaptors;
 using CPUT.Polyglot.NoSql.Interface;
 using CPUT.Polyglot.NoSql.Interface.Delegator;
@@ -19,7 +18,6 @@ using CPUT.Polyglot.NoSql.Translator;
 using CPUT.Polyglot.NoSql.Translator.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StackExchange.Redis;
 using Proxy = CPUT.Polyglot.NoSql.Delegator.Proxy;
 
 using IHost host = Host.CreateDefaultBuilder(args)

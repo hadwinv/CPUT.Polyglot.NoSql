@@ -1,0 +1,141 @@
+[
+	{
+		"name": "cassandra",
+		"storage": "columnar",
+		"model": [
+			{
+				"name": "student",
+				"properties": [
+					{
+						"property": "idno",
+						"type": "string",
+						"key": true
+					},
+					{
+						"property": "firstname",
+						"type": "string",
+						"indexed": true
+					},
+					{
+						"property": "lastname",
+						"type": "string",
+						"indexed": true
+					},
+					{
+						"property": "dob",
+						"type": "string"
+					},
+					{
+						"property": "email",
+						"type": "string"
+					},
+					{
+						"property": "cellnumber",
+						"type": "string"
+					},
+					{
+						"property": "homenumber",
+						"type": "string"
+					},
+					{
+						"property": "address",
+						"type": "address"
+					},
+					{
+						"property": "registered",
+						"type": "registered"
+					}
+				],
+				"type": "table"
+			},
+			{
+				"name": "address",
+				"properties": [
+					{
+						"property": "streetno",
+						"type": "string"
+					},
+					{
+						"property": "streetname",
+						"type": "string"
+					},
+					{
+						"property": "postalcode",
+						"type": "string"
+					},
+					{
+						"property": "suburb",
+						"type": "string"
+					},
+					{
+						"property": "city",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "registered",
+				"properties": [
+					{
+						"property": "studentno",
+						"type": "string"
+					},
+					{
+						"property": "coursename",
+						"type": "string"
+					},
+					{
+						"property": "subject",
+						"type": "json"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "subject",
+				"properties": [
+					{
+						"property": "code",
+						"type": "string",
+						"key": true
+					},
+					{
+						"property": "name",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "grades",
+				"properties": [
+					{
+						"property": "id",
+						"type": "int",
+						"key": true
+					},
+					{
+						"property": "idno",
+						"type": "string",
+						"indexed": true
+					},
+					{
+						"property": "subject",
+						"type": "subject"
+					},
+					{
+						"property": "marks",
+						"type": "decimal",
+						"indexed": true
+					},
+					{
+						"property": "symbol",
+						"type": "string"
+					}
+				],
+				"type": "table"
+			}
+		]
+	}
+]

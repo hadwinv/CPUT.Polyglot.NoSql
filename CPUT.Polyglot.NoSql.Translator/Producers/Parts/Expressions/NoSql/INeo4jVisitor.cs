@@ -46,7 +46,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         
         void Visit(DirectionPart directionPart);
         
-        void Visit(NFunctionPart functionPart);
+        void Visit(NativeFunctionPart functionPart);
         
         void Visit(UnwindPart unwindPart);
         

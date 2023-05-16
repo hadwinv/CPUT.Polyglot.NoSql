@@ -44,7 +44,7 @@ namespace CPUT.Polyglot.NoSql.Delegator
                 //data test data
                 _redisjRepo.Load(dataset);
 
-                _cassandraRepo.Load(dataset);
+                //_cassandraRepo.Load(dataset);
 
                 //_mongoRepo.Load(dataset);
 

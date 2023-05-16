@@ -38,11 +38,11 @@ namespace CPUT.Polyglot.NoSql.Parser.Parsers.Operators
         };
 
 
-        public static IReadOnlyDictionary<Lexicons, Common.Parsers.Operators.DirectionType> DirectionMap = new Dictionary<Lexicons, Common.Parsers.Operators.DirectionType>()
+        public static IReadOnlyDictionary<Lexicons, Common.Parsers.Operators.OrderType> DirectionMap = new Dictionary<Lexicons, Common.Parsers.Operators.OrderType>()
         {
-            [Lexicons.None] = Common.Parsers.Operators.DirectionType.None,
-            [Lexicons.ASC] = Common.Parsers.Operators.DirectionType.Asc,
-            [Lexicons.DESC] = Common.Parsers.Operators.DirectionType.Desc,
+            [Lexicons.None] = Common.Parsers.Operators.OrderType.None,
+            [Lexicons.ASC] = Common.Parsers.Operators.OrderType.Asc,
+            [Lexicons.DESC] = Common.Parsers.Operators.OrderType.Desc,
         };
     }
 }

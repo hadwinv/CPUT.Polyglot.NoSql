@@ -19,16 +19,17 @@ namespace CPUT.Polyglot.NoSql.Translator
             _interpreter = interpreter;
             _schema = schema;
 
-            _interpreter.Add((int)Database.REDIS, new RedisPart(_schema.KeyValue()));
-            _interpreter.Add((int)Database.CASSANDRA, new CassandraPart(_schema.Columnar()));
-            _interpreter.Add((int)Database.MONGODB, new MongoDbPart(_schema.Document()));
-            _interpreter.Add((int)Database.NEOJ4, new Neo4jPart(_schema.Graph()));
+            var uschema = _schema.UnifiedView();
+
+            _interpreter.Add(Database.REDIS, new RedisPart(uschema, _schema.KeyValue()));
+            _interpreter.Add(Database.CASSANDRA, new CassandraPart(uschema, _schema.Columnar()));
+            _interpreter.Add(Database.MONGODB, new MongoDbPart(uschema, _schema.Document()));
+            _interpreter.Add(Database.NEOJ4, new Neo4jPart(uschema, _schema.Graph()));
         }
 
         public async Task<List<Constructs>> Convert(ConstructPayload payload)
         {
             List<Constructs> constructs = new List<Constructs>();
-
             List<Task<Constructs>> tasks = new List<Task<Constructs>>();
 
             //get targeted databases
@@ -42,10 +43,9 @@ namespace CPUT.Polyglot.NoSql.Translator
                     {
                         return _interpreter.Run(new Enquiry
                         {
-                            Database = GetDatabaseTarget(storage.Value),
                             BaseExpr = payload.BaseExpr,
                             Command = payload.Command,
-                            Mapper = _schema.Mapper()
+                            Database = GetDatabaseTarget(storage.Value),
                         });
                     }));
             }
@@ -61,30 +61,30 @@ namespace CPUT.Polyglot.NoSql.Translator
 
         #region private methods
 
-        private int GetDatabaseTarget(string name)
+        private Database GetDatabaseTarget(string name)
         {
-            int id;
+            Database db;
 
             switch (name.ToLower().Trim())
             {
                 case "redis":
-                    id = (int)Database.REDIS;
+                    db = Database.REDIS;
                     break;
                 case "cassandra":
-                    id = (int)Database.CASSANDRA;
+                    db = Database.CASSANDRA;
                     break;
                 case "mongodb":
-                    id = (int)Database.MONGODB;
+                    db = Database.MONGODB;
                     break;
                 case "neo4j":
-                    id = (int)Database.NEOJ4;
+                    db = Database.NEOJ4;
                     break;
                 default:
-                    id = -1;
+                    db = Database.NONE;
                     break;
             }
 
-            return id;
+            return db;
         }
 
         #endregion

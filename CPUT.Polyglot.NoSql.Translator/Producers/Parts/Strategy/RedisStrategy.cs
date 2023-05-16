@@ -1,29 +1,18 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions;
 using System.Text;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Redis;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using Cassandra.Mapping;
-using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
-using System.ComponentModel;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
-using BaseExpr = CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using Component = CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
-using CPUT.Polyglot.NoSql.Common.Parsers;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
     public class RedisStrategy : StrategyPart
     {
+        protected string Target = "redis";
         public RedisStrategy() {}
 
         public override string Alter()
@@ -41,14 +30,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             throw new NotImplementedException();
         }
 
-        public override string Fetch(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Fetch()
         {
             Console.WriteLine("Starting RedisPart - Fetch");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToGetModel(expression, mapper, schemas);
+            var targetQuery = ConvertToGetModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
@@ -64,24 +53,16 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public override string Modify(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Modify()
         {
             Console.WriteLine("Starting RedisPart - Modify");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToGetModel(expression, mapper, schemas);
+            var targetQuery = ConvertToGetSetModel();
 
-            if(targetQuery[0] is GetPart)
-            {
-                var key = ((GetPart)targetQuery[0]).Property.Name;
-
-                targetQuery.Add(new Expressions.NoSql.Redis.SetKeyValuePart(key, "{0}"));
-            }
-            else if (targetQuery[0] is KeyPart)
-                targetQuery.Add(new Expressions.NoSql.Redis.SetKeyValuePart("{0}", "{0}"));
-                
+          
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
 
@@ -96,16 +77,16 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public override string Add(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Add()
         {
             Console.WriteLine("Starting RedisPart - Add");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToSetModel(expression, mapper, schemas);
+            var targetQuery = ConvertToSetModel();
 
-            if(targetQuery.Count > 0)
+            if (targetQuery.Count > 0)
             {
                 //pass query expresion
                 var match = new QueryPart(targetQuery.ToArray());
@@ -119,153 +100,109 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             else
                 query.Append("Cannot generate Redis command");
 
-            Console.WriteLine(query);
+            //Console.WriteLine(query);
 
             return query.ToString();
         }
 
-        public List<IExpression> ConvertToGetModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        #region Expression Parts
+
+        private IExpression[] ConvertToGetModel()
         {
-            List<IExpression> targetModel = new List<IExpression>();
+            var parts = new List<IExpression>();
 
-            PropertyPart propertyPart = null;
-            GroupExpr group = null;
-            OperatorExpr @operator = null;
-            TermExpr left = null;
-            Link leftMap = null;
-            Properties properties = null;
-
-            List<MappedSource> mapperLinks = null;
-
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var DataModelExpr = (Component.DataModelExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.DataModelExpr)));
-            var FilterExpr = (Component.FilterExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.FilterExpr)));
-            
-            //get all linked properties, model, etc
-            if(DeclareExpr.Value.Any(x => x is DataExpr))
-            {
-                mapperLinks = mapper
-                 .Where(x => DeclareExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                 .Select(s => s)
-                 .ToList();
-            }
-            else
-            {
-                mapperLinks = mapper
-                  .Where(x => DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
-            }
-             
-
-            if(FilterExpr != null)
+            if (FilterExpr != null)
             {
                 foreach (var part in FilterExpr.Value)
                 {
                     if (part is GroupExpr)
                     {
-                        group = (GroupExpr)part;
-                        @operator = (OperatorExpr)group.Value;
-                        left = (TermExpr)@operator.Left;
+                        var groupExpr = (GroupExpr)part;
+                        var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                        if(@operator.Operator == OperatorType.Eql)
+                        if (operatorExpr.Operator == OperatorType.Eql)
                         {
-                            leftMap = GetMappedProperty(mapperLinks, left, "redis");
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
 
-                            if (leftMap != null)
+                            //check if property is used as key
+                            if(Assistor.NSchema
+                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                                .FirstOrDefault(x => x.Property == leftPart.Name && x.Key) != null)
                             {
-                                //check if property is used as key
-                                properties = schemas
-                                    .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                    .FirstOrDefault(x => x.Property == leftMap.Property && x.Key);
+                                var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                                if (properties != null)
-                                {
-                                    if (@operator.Right is StringLiteralExpr)
-                                        propertyPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                                    else if (@operator.Right is NumberLiteralExpr)
-                                        propertyPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
-
-                                    if (propertyPart != null)
-                                        targetModel.Add(new GetPart(propertyPart));
-                                }
+                                parts.Add(new GetPart(rightPart));
+                                break;
                             }
                         }
                     }
                 }
-
-                if(targetModel.Count == 0)  
-                    targetModel.Add(new KeyPart("*"));
             }
-            else
-            {
-                targetModel.Add(new KeyPart("*"));
-            }
+            
+            if(parts.Count == 0)
+                parts.Add(new KeyPart("*"));
 
-            return targetModel;
+            return parts.ToArray();
         }
 
-        public List<IExpression> ConvertToSetModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        private IExpression[] ConvertToGetSetModel()
         {
-            List<IExpression> targetModel = new List<IExpression>();
-            PropertyPart propertyPart = null;
+            var parts = new List<IExpression>();
 
-            GroupExpr group = null;
-            OperatorExpr @operator;
-            TermExpr left;
-            Link leftMap;
-            Properties properties;
+            var getParts = ConvertToGetModel();
 
-            //set expression parts
-            var DeclareExpr = (Component.DeclareExpr)expression.ParseTree.Single(x => x.GetType().Equals(typeof(Component.DeclareExpr)));
-            var PropertiesExpr = (Component.PropertiesExpr?)expression.ParseTree.SingleOrDefault(x => x.GetType().Equals(typeof(Component.PropertiesExpr)));
-
-            var mapperLinks = mapper
-                 .Where(x => DeclareExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                 .Select(s => s)
-                 .ToList();
-
-            foreach (var part in PropertiesExpr.Value)
+            foreach (var part in getParts)
             {
-                if (part is GroupExpr)
+                parts.Add(part);
+
+                if (part is GetPart)
+                    parts.Add(new SetKeyValuePart(((GetPart)part).Property.Name, "{0}"));
+                else if (part is KeyPart)
+                    parts.Add(new SetKeyValuePart("{0}", "{0}"));
+            }
+
+            return parts.ToArray();
+        }
+
+        public List<IExpression> ConvertToSetModel()
+        {
+            var parts = new List<IExpression>();
+
+
+            if (PropertiesExpr != null)
+            {
+                foreach (var groups in PropertiesExpr.Value)
                 {
-                    group = (GroupExpr)part;
-                    @operator = (OperatorExpr)group.Value;
-                    left = (TermExpr)@operator.Left;
-
-                    if (@operator.Operator == OperatorType.Eql)
+                    foreach (var part in ((GroupPropertiesExpr)groups).Value)
                     {
-                        leftMap = GetMappedProperty(mapperLinks, left, "redis");
-
-                        if (leftMap != null)
+                        if (part is GroupExpr)
                         {
-                            //check if property is used as key
-                            properties = schemas
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .FirstOrDefault(x => x.Property == leftMap.Property && x.Key);
+                            var groupExpr = (GroupExpr)part;
+                            var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                            if (properties != null)
+                            if (operatorExpr.Operator == OperatorType.Eql)
                             {
-                                if (@operator.Right is StringLiteralExpr)
-                                    propertyPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                                else if (@operator.Right is NumberLiteralExpr)
-                                    propertyPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
+                                var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
 
-                                if (propertyPart != null)
+                                //check if property is used as key
+                                if (Assistor.NSchema
+                                    .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                                    .FirstOrDefault(x => x.Property == leftPart.Name && x.Key) != null)
                                 {
-                                    targetModel.Add(new Expressions.NoSql.Redis.SetKeyValuePart(propertyPart.Name, "{0}"));
+                                    var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+
+                                    parts.Add(new SetKeyValuePart(rightPart.Name, "{0}"));
                                     break;
                                 }
-                                    
                             }
                         }
                     }
                 }
             }
 
-            return targetModel;
+            return parts;
         }
 
+        #endregion
     }
 }

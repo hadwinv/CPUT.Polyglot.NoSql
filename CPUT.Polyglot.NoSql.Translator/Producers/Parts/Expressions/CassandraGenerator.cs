@@ -1,13 +1,8 @@
-﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
+﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Cassandra;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
-using Microsoft.VisualBasic;
-using Neo4jClient.Cypher;
-using StackExchange.Redis;
 using System.Text;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
@@ -73,6 +68,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                     {
                         ((PropertyPart)property).Accept(this);
                     }
+                    else if (property is NativeFunctionPart)
+                    {
+                        ((NativeFunctionPart)property).Accept(this);
+                    }
                     else if (property is SeparatorPart)
                     {
                         ((SeparatorPart)property).Accept(this);
@@ -85,7 +84,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             Query.Append(" UPDATE ");
 
-            foreach (var expr in update.Properties)
+            foreach (var expr in update.Parts)
             {
                 if (expr is TablePart)
                 {
@@ -98,7 +97,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             Query.Append(" INSERT INTO ");
 
-            foreach (var expr in insert.Properties)
+            foreach (var expr in insert.Parts)
             {
                 if (expr is TablePart)
                 {
@@ -114,9 +113,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             foreach (var expr in from.Properties)
             {
                 if (expr is TablePart)
-                {
                     ((TablePart)expr).Accept(this);
-                }
             }
         }
 
@@ -137,13 +134,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             foreach (var expr in condition.Logic)
             {
                 if (expr is LogicalPart)
-                {
                     ((LogicalPart)expr).Accept(this);
-                }
                 else if (expr is ConditionPart)
-                {
                     ((ConditionPart)expr).Accept(this);
-                }
             }
         }
 
@@ -189,13 +182,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             foreach (var expr in set.Properties)
             {
                 if (expr is SetValuePart)
-                {
                     ((SetValuePart)expr).Accept(this);
-                }
                 else if (expr is SeparatorPart)
-                {
                     ((SeparatorPart)expr).Accept(this); ;
-                }
             }
         }
 
@@ -274,6 +263,20 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             if(!string.IsNullOrEmpty(direction.Type))
                 Query.Append(" " + direction.Type + " ");
+        }
+
+        public void Visit(NativeFunctionPart function)
+        {
+            Query.Append(" " + function.Type + "(");
+
+            function.PropertyPart.Accept(this);
+
+            Query.Append(") as ");
+
+            if (function.PropertyPart is PropertyPart)
+                Query.Append(((PropertyPart)function.PropertyPart).Name);
+            else if (function.PropertyPart is UnwindPropertyPart)
+                Query.Append(((UnwindPropertyPart)function.PropertyPart).Name);
         }
     }
 }

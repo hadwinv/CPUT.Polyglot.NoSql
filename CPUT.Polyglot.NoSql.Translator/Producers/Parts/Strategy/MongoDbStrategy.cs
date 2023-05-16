@@ -1,7 +1,6 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
+﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions;
@@ -11,13 +10,36 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using System.Text;
-using BaseExpr = CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using Component = CPUT.Polyglot.NoSql.Parser.Syntax.Component;
+using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
     public class MongoDbStrategy : StrategyPart
     {
+        protected string Target = "mongodb";
+
+        private bool _aggregate
+        {
+            get
+            {
+                if (DeclareExpr != null)
+                {
+                    var expr = DeclareExpr.Value.SingleOrDefault(x => x.GetType().Equals(typeof(FunctionExpr))) as FunctionExpr;
+
+                    if (expr != null)
+                    {
+                        if (expr.Type == AggregateType.NSum || expr.Type == AggregateType.NAvg ||
+                            expr.Type == AggregateType.NMin || expr.Type == AggregateType.NMax || expr.Type == AggregateType.NCount)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+        }
+
         public override string Alter()
         {
             //            --Add the join_date column in employees collection.
@@ -54,20 +76,31 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             throw new NotImplementedException();
         }
 
-        public override string Fetch(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Fetch()
         {
             Console.WriteLine("Starting MongoDbPart - Fetch");
 
-            var query = new StringBuilder();
+            CollectionPart[] targetQuery;
+            MongoDBFormat format;
 
             //set expression parts
-            var targetQuery = ConvertToFindModel(expression, mapper, schemas);
+            if (_aggregate)
+            {
+                targetQuery = CreateAggregateModel();
+                format = MongoDBFormat.Aggregate_Order;
+            }
+            else
+            {
+                targetQuery = CreateFindModel();
+                format = MongoDBFormat.Find_Order;
+            }
 
             //pass query expresion
-            var match = new QueryPart(targetQuery.ToArray());
+            var match = new QueryPart(targetQuery);
 
             //initialise mongodb query generator
-            var generator = new MongoDbGenerator(query);
+            var query = new StringBuilder();
+            var generator = new MongoDbGenerator(query, format);
 
             //kick off visitors
             match.Accept(generator);
@@ -77,20 +110,20 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public override string Modify(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Modify()
         {
             Console.WriteLine("Starting MongoDbPart - Modify");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToModifyModel(expression, mapper, schemas);
+            var targetQuery = ConvertToModifyModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
 
             //initialise mongodb query generator
-            var generator = new MongoDbGenerator(query);
+            var generator = new MongoDbGenerator(query, MongoDBFormat.None);
 
             //kick off visitors
             match.Accept(generator);
@@ -100,20 +133,20 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        public override string Add(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        public override string Add()
         {
             Console.WriteLine("Starting MongoDbPart - Add");
 
             var query = new StringBuilder();
 
             //set expression parts
-            var targetQuery = ConvertToAddModel(expression, mapper, schemas);
+            var targetQuery = ConvertToAddModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery.ToArray());
 
             //initialise mongodb query generator
-            var generator = new MongoDbGenerator(query);
+            var generator = new MongoDbGenerator(query, MongoDBFormat.None);
 
             //kick off visitors
             match.Accept(generator);
@@ -123,374 +156,429 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return query.ToString();
         }
 
-        private List<IExpression> ConvertToFindModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
+        #region Expression Parts
+
+        #region Find
+
+        private CollectionPart[] CreateFindModel()
         {
-            List<IExpression> targetModel = new List<IExpression>();
-            List<IExpression> queryParts = new List<IExpression>();
-            List<IExpression> logicalParts = new List<IExpression>();
-            List<IExpression> propertyParts = new List<IExpression>();
-
-            //get all linked properties, model, etc
-            var mapperLinks = mapper
-                  .Where(x => DataModelExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
-
             //get collection(s)
-            targetModel.AddRange(GetCollectionPart(DataModelExpr, mapperLinks));
+            var collections = GetCollectionPart();
 
-            if (targetModel.Count > 0)
+            if (collections.Count() > 0)
             {
-                if (FilterExpr != null)
-                    logicalParts.AddRange(GetLogicalPart(FilterExpr, mapperLinks, schemas));
-
-                //get property fields
-                propertyParts.AddRange(GetPropertyPart(DeclareExpr, mapperLinks, schemas));
-
-                if (propertyParts.Count > 0)
-                    propertyParts.RemoveAt(propertyParts.Count - 1);
-
-                //add detailed logic
-                if (logicalParts.Count > 0)
-                    queryParts.Add(new ConditionPart(logicalParts.ToArray()));
-
-                queryParts.Add(new FieldPart(propertyParts.ToArray()));
-
-                targetModel.Add(new FindPart(queryParts.ToArray()));
-
-                if (this.OrderByExpr != null)
+                foreach (var col in collections)
                 {
-                    var mappedProperty = GetMappedProperty(mapperLinks, this.OrderByExpr, "mongodb");
+                    col.Find = new FindPart();
 
-                    if (mappedProperty != null)
-                        targetModel.Add(new OrderByPart(mappedProperty, this.OrderByExpr));
-                }
+                    //get property fields
+                    col.Find.Field = new FieldPart(GetPropertyPart().ToArray());
 
-                if (this.RestrictExpr != null)
-                    targetModel.Add(new RestrictPart(this.RestrictExpr.Value));
-            }
+                    //get conditions
+                    if (FilterExpr != null)
+                        col.Find.Condition = new ConditionPart(GetLogicalPart().ToArray());
 
-            return targetModel;
-        }
+                    if (OrderByExpr != null)
+                        col.Find.OrderBy = GetOrderPart(Target);
 
-        private List<IExpression> ConvertToModifyModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
-        {
-            List<IExpression> targetModel = new List<IExpression>();
-            List<IExpression> queryParts = new List<IExpression>();
-            List<IExpression> logicalParts = new List<IExpression>();
-            List<IExpression> setParts = new List<IExpression>();
-
-            //get all linked properties, model, etc
-            var mapperLinks = mapper
-                  .Where(x => DeclareExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
-
-            //get collection(s)
-            targetModel.AddRange(GetCollectionPart(DeclareExpr, mapperLinks));
-
-            if (targetModel.Count > 0)
-            {
-                if (FilterExpr != null)
-                    logicalParts.AddRange(GetLogicalPart(FilterExpr, mapperLinks, schemas));
-
-                //set property fields
-                setParts.AddRange(GetSetValuePart(PropertiesExpr, mapperLinks, schemas));
-
-                if (setParts.Count > 0)
-                    setParts.RemoveAt(setParts.Count - 1);
-
-                //add detailed logic
-                if (logicalParts.Count > 0)
-                    queryParts.Add(new ConditionPart(logicalParts.ToArray()));
-
-                queryParts.Add(new SetPart(setParts.ToArray()));
-
-                targetModel.Add(new UpdatePart(queryParts.ToArray()));
-            }
-
-            return targetModel;
-        }
-
-        private List<IExpression> ConvertToAddModel(BaseExpr.BaseExpr expression, List<MappedSource> mapper, List<NSchema> schemas)
-        {
-            List<IExpression> targetModel = new List<IExpression>();
-            List<IExpression> queryParts = new List<IExpression>();
-            List<IExpression> addParts = new List<IExpression>();
-
-            //get all linked properties, model, etc
-            var mapperLinks = mapper
-                  .Where(x => DeclareExpr.Value.Select(x => ((DataExpr)x).Value).ToList().Contains(x.Name))
-                  .Select(s => s)
-                  .ToList();
-
-            //get collection(s)
-            targetModel.AddRange(GetCollectionPart(DeclareExpr, mapperLinks));
-
-            if (targetModel.Count > 0)
-            {
-                //set property fields
-                addParts.AddRange(GetSetValuePart(PropertiesExpr, mapperLinks, schemas));
-
-                if (addParts.Count > 0)
-                    addParts.RemoveAt(addParts.Count - 1);
-
-                queryParts.Add(new AddPart(addParts.ToArray()));
-
-                targetModel.Add(new InsertPart(queryParts.ToArray()));
-            }
-
-            return targetModel;
-        }
-
-        #region Parts
-
-        private GetCollectionPart[] GetCollectionPart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks)
-        {
-            List<GetCollectionPart> collectionParts = new List<GetCollectionPart>();
-            DeclareExpr declareExpr = null;
-            DataModelExpr dataModelExpr = null;
-
-            if (expr is DeclareExpr)
-                declareExpr = (DeclareExpr)expr;
-            else if (expr is DataModelExpr)
-                dataModelExpr = (DataModelExpr)expr;
-                
-            foreach (var part in (declareExpr != null ? declareExpr.Value : dataModelExpr.Value))
-            {
-                if (part is DataExpr)
-                {
-                    DataExpr data = (DataExpr)part;
-
-                    var map = mapperLinks
-                        .Where(x => x.Name == data.Value)
-                        .SelectMany(x => x.Resources
-                                            .SelectMany(x => x.Link))
-                        .Where(t => t.Target == "mongodb")
-                        .FirstOrDefault();
-
-                    if (map != null)
-                        collectionParts.Add(new GetCollectionPart(map.Reference));
+                    if (this.RestrictExpr != null)
+                        col.Find.Restrict = new RestrictPart(this.RestrictExpr.Value);
                 }
             }
 
-            return collectionParts.ToArray();
+            return collections;
         }
 
-        private LogicalPart[] GetLogicalPart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks, List<NSchema> schemas)
+        private CollectionPart[] CreateAggregateModel()
         {
-            List<LogicalPart> logicalParts = new List<LogicalPart>();
-            PropertyPart leftPart = null;
-            PropertyPart rightPart = null;
-            OperatorPart operatorPart = null;
-            ComparePart comparePart = null;
+            //get collection(s)
+            var collections = GetCollectionPart();
 
-            FilterExpr filterExpr = null;
-            PropertiesExpr propertiesExpr = null;
-            GroupExpr group = null;
-            OperatorExpr @operator;
-            TermExpr left;
-            Link leftMap;
-            Link rightMap;
-            Properties properties;
+            if (collections.Count() > 0)
+            {
+                foreach (var col in collections)
+                {
+                    col.Aggregate = new AggregatePart();
+
+                    //apply conditions
+                    if (FilterExpr != null)
+                    {
+                        col.Aggregate.Match = new MatchPart(
+                            new List<IExpression> {
+                                new ConditionPart(GetLogicalPart())
+                            }.ToArray());
+                    }
+
+                    if (DeclareExpr != null)
+                    {
+                        //unwind complex field i.e. json
+                        col.Aggregate.Unwind = new UnwindPart(GetUnwindPart(Target).ToArray());
+
+                        //get staging property fields
+                        col.Aggregate.Project = new ProjectPart(GetProjectPart().ToArray());
+                    }
+
+                    if (GroupByExpr != null)
+                        col.Aggregate.GroupBy = new GroupByPart(GetGroupByPart().ToArray());
+
+                    if (OrderByExpr != null)
+                        col.Aggregate.OrderBy = GetOrderPart(Target);
+
+                    if (RestrictExpr != null)
+                        col.Aggregate.Restrict = new RestrictPart(RestrictExpr.Value);
+                }
+            }
+
+            return collections;
+        }
+
+        #endregion
+
+        #region Modify
+        private CollectionPart[] ConvertToModifyModel()
+        {
+            //get collection(s)
+            var collections = GetCollectionPart();
+
+            if (collections.Count() > 0)
+            {
+                var parts = new List<IExpression>();
+
+                foreach (var col in collections)
+                {
+                    //confitions
+                    parts.Add(new ConditionPart(GetLogicalPart().ToArray()));
+                    //set property fields
+                    parts.AddRange(SetValueParts(false).ToArray());
+
+                    //set property fields
+                    col.Update = new UpdatePart(parts.ToArray());
+                }
+            }
+
+            return collections;
+        }
+
+        #endregion
+
+        #region Add
+
+        private CollectionPart[] ConvertToAddModel()
+        {
+            //get collection(s)
+            var collections = GetCollectionPart();
+
+            if (collections.Count() > 0)
+            {
+                foreach (var col in collections)
+                {
+                    col.Insert = new InsertPart(SetValueParts(true));
+                }
+            }
+
+            return collections;
+        }
+
+        #endregion
+
+        private CollectionPart[] GetCollectionPart()
+        {
+            var collections = new List<CollectionPart>();
+
+            if(DataModelExpr != null)
+            {
+                foreach (var expr in DataModelExpr.Value)
+                {
+                    if (expr is DataExpr)
+                    {
+                        var data = (DataExpr)expr;
+
+                        var model = Assistor.USchema.Single(x => x.View.Name == data.Value);
+
+                        var linkage = model.View.Linkages.SingleOrDefault(x => x.Storage == Target);
+
+                        if (linkage != null)
+                        {
+                            ////get all linked properties, model, etc
+                            var native = Assistor.NSchema
+                                  .SelectMany(s => s.Model)
+                                  .Where(x => x.Name == linkage.Source && x.Type == "collection")
+                                  .FirstOrDefault();
+
+                            if (native != null)
+                                collections.Add(new CollectionPart(native.Name, data.Value, data.AliasIdentifier));
+                        }
+                    }
+                }
+            }
+
+            return collections.ToArray();
+        }
+
+        private LogicalPart[] GetLogicalPart()
+        {
+            var parts = new List<LogicalPart>();
             
-            if (expr is FilterExpr)
-                filterExpr = (FilterExpr)expr;
-            else if (expr is PropertiesExpr)
-                propertiesExpr = (PropertiesExpr)expr;
-
-            foreach (var part in (filterExpr != null ? filterExpr.Value : propertiesExpr.Value))
+            if(FilterExpr != null)
             {
-                if (part is GroupExpr)
+                foreach (var part in FilterExpr.Value)
                 {
-                    group = (GroupExpr)part;
-                    @operator = (OperatorExpr)group.Value;
-
-                    left = (TermExpr)@operator.Left;
-
-                    operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.MONGODB);
-                    comparePart = new ComparePart(@operator.Compare, Common.Helpers.Utils.Database.MONGODB);
-
-                    leftMap = GetMappedProperty(mapperLinks, left, "mongodb");
-
-                    if (leftMap != null)
+                    if (part is GroupExpr)
                     {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .First(x => x.Property == leftMap.Property);
+                        var groupExpr = (GroupExpr)part;
+                        var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                        leftPart = new PropertyPart(properties, leftMap, left);
-                    }
+                        var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.MONGODB);
+                        var comparePart = new ComparePart(operatorExpr.Compare, Common.Helpers.Utils.Database.MONGODB);
 
-                    if (@operator.Right is TermExpr)
-                    {
-                        var right = (TermExpr)@operator.Right;
+                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                        rightMap = GetMappedProperty(mapperLinks, right, "mongodb");
-
-                        if (rightMap != null)
-                        {
-                            properties = schemas
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .First(x => x.Property == rightMap.Property);
-
-                            rightPart = new PropertyPart(properties, rightMap, right);
-                        }
-                    }
-                    else if (@operator.Right is StringLiteralExpr)
-                        rightPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                    else if (@operator.Right is NumberLiteralExpr)
-                        rightPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
-
-                    if(leftPart != null && rightPart != null)
-                        logicalParts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
-                }
-            }
-
-            return logicalParts.ToArray();
-        }
-
-        private IExpression[] GetSetValuePart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks, List<NSchema> schemas)
-        {
-            List<IExpression> setValueParts = new List<IExpression>();
-            PropertyPart leftPart = null;
-            PropertyPart rightPart = null;
-            OperatorPart operatorPart = null;
-            ComparePart comparePart = null;
-
-            FilterExpr filterExpr = null;
-            PropertiesExpr propertiesExpr = null;
-            GroupExpr group = null;
-            OperatorExpr @operator;
-            TermExpr left;
-            Link leftMap;
-            Link rightMap;
-            Properties properties;
-
-            if (expr is FilterExpr)
-                filterExpr = (FilterExpr)expr;
-            else if (expr is PropertiesExpr)
-                propertiesExpr = (PropertiesExpr)expr;
-
-            foreach (var part in (filterExpr != null ? filterExpr.Value : propertiesExpr.Value))
-            {
-                if (part is GroupExpr)
-                {
-                    group = (GroupExpr)part;
-                    @operator = (OperatorExpr)group.Value;
-
-                    left = (TermExpr)@operator.Left;
-
-                    operatorPart = new OperatorPart(@operator.Operator, Common.Helpers.Utils.Database.MONGODB);
-
-                    leftMap = GetMappedProperty(mapperLinks, left, "mongodb");
-
-                    if (leftMap != null)
-                    {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .First(x => x.Property == leftMap.Property);
-
-                        leftPart = new PropertyPart(properties, leftMap, left);
-                    }
-
-                    if (@operator.Right is TermExpr)
-                    {
-                        var right = (TermExpr)@operator.Right;
-
-                        rightMap = GetMappedProperty(mapperLinks, right, "mongodb");
-
-                        if (rightMap != null)
-                        {
-                            properties = schemas
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .First(x => x.Property == rightMap.Property);
-
-                            rightPart = new PropertyPart(properties, rightMap, right);
-                        }
-                    }
-                    else if (@operator.Right is StringLiteralExpr)
-                        rightPart = new PropertyPart((StringLiteralExpr)@operator.Right);
-                    else if (@operator.Right is NumberLiteralExpr)
-                        rightPart = new PropertyPart((NumberLiteralExpr)@operator.Right);
-
-                    if (leftPart != null && rightPart != null)
-                    {
-                        setValueParts.Add(new SetValuePart(leftPart, operatorPart, rightPart));
-
-                        if (propertiesExpr != null)
-                            setValueParts.Add(new SeparatorPart(","));
+                        parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
                 }
             }
 
-            return setValueParts.ToArray();
+            return parts.ToArray();
         }
 
-        private IExpression[] GetPropertyPart(BaseExpr.BaseExpr expr, List<MappedSource> mapperLinks, List<NSchema> schemas)
+        private IExpression[] GetProjectPart()
         {
-            List<IExpression> expressions = new List<IExpression>();
-            PropertyPart propertyPart = null;
+            var parts = new List<IExpression>();
 
-            DeclareExpr declareExpr = null;
-            DataModelExpr dataModelExpr = null;
-            PropertyExpr propertyExpr;
-            FunctionExpr functionExpr;
-
-            Properties properties;
-            Link mappedProperty;
-
-            if (expr is DeclareExpr)
-                declareExpr = (DeclareExpr)expr;
-            else if (expr is DataModelExpr)
-                dataModelExpr = (DataModelExpr)expr;
-
-            foreach (var part in (declareExpr != null ? declareExpr.Value : dataModelExpr.Value))
+            if (DeclareExpr != null && GroupByExpr != null)
             {
-                if (part is PropertyExpr)
+                //set _id column first
+                foreach (var declare in DeclareExpr.Value)
                 {
-                    propertyExpr = (PropertyExpr)part;
+                    dynamic baseExpr = declare is PropertyExpr ? ((PropertyExpr)declare) :
+                                           declare is JsonExpr ? ((JsonExpr)declare) : ((FunctionExpr)declare);
 
-                    mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "mongodb");
-
-                    if (mappedProperty != null)
+                    if (baseExpr is not FunctionExpr)
                     {
-                        properties = schemas
-                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                            .Where(x => x.Property == mappedProperty.Property)
-                            .First();
+                        foreach (var groupExpr in GroupByExpr.Value)
+                        {
+                            dynamic? expr = groupExpr is PropertyExpr ? ((PropertyExpr)groupExpr) :
+                                               groupExpr is JsonExpr ? ((JsonExpr)groupExpr) : default;
 
-                        expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
-                        expressions.Add(new SeparatorPart(","));
-                    };
+                            if (expr != null)
+                            {
+                                if (expr.Value == baseExpr.Value)
+                                {
+                                    var property = GetMappedProperty(baseExpr, Target);
+
+                                    if (property != null)
+                                    {
+                                        parts.Add(new ProjectFieldPart(baseExpr, property));
+                                        parts.Add(new SeparatorPart(","));
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var expr = (FunctionExpr)baseExpr;
+
+                        foreach (var functionExpr in expr.Value)
+                        {
+                            dynamic nestedExpr = functionExpr is PropertyExpr ? ((PropertyExpr)functionExpr) : ((JsonExpr)functionExpr);
+
+                            var property = GetMappedProperty(nestedExpr, Target);
+
+                            if (property != null)
+                            {
+                                parts.Add(new ProjectFieldPart(nestedExpr, property));
+                                parts.Add(new SeparatorPart(","));
+
+                            }
+                        }
+                    }
                 }
-                else if (part is FunctionExpr)
+
+                if (parts.Count > 0)
+                    parts.RemoveAt(parts.Count - 1);
+            }
+
+            return parts.ToArray();
+        }
+
+        private IExpression[] GetPropertyPart()
+        {
+            var parts = new List<IExpression>();
+
+            if(DeclareExpr != null)
+            {
+                foreach (var part in DeclareExpr.Value)
                 {
-                    functionExpr = (FunctionExpr)part;
-
-                    foreach (var func in functionExpr.Value)
+                    if (part is PropertyExpr)
                     {
-                        propertyExpr = (PropertyExpr)func;
+                        var propertyExpr = (PropertyExpr)part;
 
-                        mappedProperty = GetMappedProperty(mapperLinks, propertyExpr, "mongodb"); 
+                        var mappedProperty = GetMappedProperty(propertyExpr, Target);
 
                         if (mappedProperty != null)
                         {
-                            properties = schemas
-                                        .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                        .Where(x => x.Property == mappedProperty.Property)
-                                        .First();
+                            var properties = Assistor.NSchema
+                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                                .Where(x => x.Property == mappedProperty.Property)
+                                .First();
 
-                            expressions.Add(new PropertyPart(properties, mappedProperty, propertyExpr));
-                            expressions.Add(new SeparatorPart(","));
+                            parts.Add(new PropertyPart(mappedProperty, propertyExpr));
+                            parts.Add(new SeparatorPart(","));
+                        };
+                    }
+                    else if (part is FunctionExpr)
+                    {
+                        var functionExpr = (FunctionExpr)part;
+
+                        foreach (var func in functionExpr.Value)
+                        {
+                            BaseExpr @base;
+
+                            if (func is PropertyExpr)
+                                @base = (PropertyExpr)func;
+                            else
+                                @base = (JsonExpr)func;
+
+                            var mappedProperty = GetMappedProperty(@base, Target);
+
+                            if (mappedProperty != null)
+                            {
+                                var properties = Assistor.NSchema
+                                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                                            .Where(x => x.Property == mappedProperty.Property)
+                                            .First();
+
+                                parts.Add(new PropertyPart(mappedProperty, @base));
+                                parts.Add(new SeparatorPart(","));
+                            }
                         }
                     }
                 }
+
+                if (parts.Count > 0)
+                    parts.RemoveAt(parts.Count - 1);
+
             }
 
-            return expressions.ToArray();
+            return parts.ToArray();
         }
-        
+
+        private IExpression[] GetGroupByPart()
+        {
+            var parts = new List<IExpression>();
+
+            if (DeclareExpr != null && GroupByExpr != null)
+            {
+                //set _id column first
+                foreach (var declare in DeclareExpr.Value)
+                {
+                    dynamic baseExpr = declare is PropertyExpr ? ((PropertyExpr)declare) :
+                                           declare is JsonExpr ? ((JsonExpr)declare) : ((FunctionExpr)declare);
+
+                    if (baseExpr is not FunctionExpr)
+                    {
+                        foreach (var groupExpr in GroupByExpr.Value)
+                        {
+                            dynamic? expr = groupExpr is PropertyExpr ? ((PropertyExpr)groupExpr) :
+                                               groupExpr is JsonExpr ? ((JsonExpr)groupExpr) : default;
+
+                            if (expr != null)
+                            {
+                                if (expr.Value == baseExpr.Value)
+                                {
+                                    var property = GetMappedProperty(baseExpr, Target);
+
+                                    if (property != null)
+                                    {
+                                        parts.Add(new GroupByFieldPart(baseExpr, property));
+                                        parts.Add(new SeparatorPart(","));
+
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var expr = (FunctionExpr)baseExpr;
+
+                        foreach (var functionExpr in expr.Value)
+                        {
+                            dynamic nestedExpr = functionExpr is PropertyExpr ? ((PropertyExpr)functionExpr) : ((JsonExpr)functionExpr);
+
+                            var property = GetMappedProperty(nestedExpr, Target);
+
+                            if (property != null)
+                            {
+                                parts.Add(
+                                    new NativeFunctionPart(
+                                        new FunctionFieldPart(nestedExpr, property), expr.Type)
+                                    );
+
+                                parts.Add(new SeparatorPart(","));
+
+                            }
+                        }
+                    }
+                }
+
+                if (parts.Count > 0)
+                    parts.RemoveAt(parts.Count - 1);
+            }
+
+            return parts.ToArray();
+        }
+
+        private IExpression[] SetValueParts(bool insert)
+        {
+            var parts = new List<IExpression>();
+
+            if (PropertiesExpr != null)
+            {
+                foreach (var groups in PropertiesExpr.Value)
+                {
+                    var exprs = new List<IExpression>();
+
+                    foreach (var part in ((GroupPropertiesExpr)groups).Value)
+                    {
+                        if (part is GroupExpr)
+                        {
+                            var groupExpr = (GroupExpr)part;
+                            var operatorExpr = (OperatorExpr)groupExpr.Value;
+
+                            var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.MONGODB);
+
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+
+                            exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
+                            exprs.Add(new SeparatorPart(","));
+                        }
+                    }
+
+                    if (exprs.Count > 0)
+                        exprs.RemoveAt(exprs.Count - 1);
+
+                    if (insert)
+                        parts.Add(new AddPart(exprs.ToArray()));
+                    else
+                        parts.Add(new SetPart(exprs.ToArray()));
+
+                    parts.Add(new SeparatorPart(","));
+                }
+            }
+
+            if (parts.Count > 0)
+                parts.RemoveAt(parts.Count - 1);
+
+            return parts.ToArray();
+        }
+
         #endregion
     }
 }

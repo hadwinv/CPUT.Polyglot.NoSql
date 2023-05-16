@@ -1,5 +1,4 @@
 ﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Redis;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;

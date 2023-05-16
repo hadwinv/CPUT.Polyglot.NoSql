@@ -1,25 +1,34 @@
 ﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb
 {
     public class FindPart : IExpression
     {
-        internal IExpression[] Properties { get; set; }
+        internal ConditionPart? Condition { get; set; }
 
-        public FindPart(IExpression[] properties)
+        internal FieldPart? Field { get; set; }
+        
+        internal OrderByPart? OrderBy { get; set; }
+
+        internal RestrictPart? Restrict { get; set; }
+
+        public FindPart()
         {
-            Properties = properties;
+
         }
+        //public FindPart(ConditionPart? condition, FieldPart? field, OrderByPart? orderBy, RestrictPart? restrict)
+        //{
+        //    Condition = condition;
+        //    Field = field;
+        //    OrderBy = orderBy;
+        //    Restrict = restrict;
+        //}
 
         public void Accept(INeo4jVisitor visitor)
         {
             throw new NotImplementedException();
-
         }
 
         public void Accept(ICassandraVisitor visitor)

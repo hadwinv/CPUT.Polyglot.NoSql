@@ -1,0 +1,187 @@
+[
+	{
+		"name": "mongodb",
+		"storage": "document",
+		"model": [
+			{
+				"name": "students",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int",
+						"key": true
+					},
+					{
+						"property": "init",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "surname",
+						"type": "string"
+					},
+					{
+						"property": "id_number",
+						"type": "string"
+					},
+					{
+						"property": "date_of_birth",
+						"type": "string"
+					},
+					{
+						"property": "contact",
+						"type": "contact"
+					},
+					{
+						"property": "register",
+						"type": "register"
+					}
+				],
+				"type": "collection"
+			},
+			{
+				"name": "faculty",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int"
+					},
+					{
+						"property": "shortcode",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "head",
+						"type": "string"
+					},
+					{
+						"property": "contact",
+						"type": "contact"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "contact",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int"
+					},
+					{
+						"property": "phone",
+						"type": "string"
+					},
+					{
+						"property": "email",
+						"type": "string"
+					},
+					{
+						"property": "address",
+						"type": "address"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "address",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int"
+					},
+					{
+						"property": "city",
+						"type": "string"
+					},
+					{
+						"property": "code",
+						"type": "string"
+					},
+					{
+						"property": "country",
+						"type": "string"
+					},
+					{
+						"property": "street",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "subject",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "cost",
+						"type": "decimal"
+					},
+					{
+						"property": "duration",
+						"type": "int"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "course",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "faculty",
+						"type": "faculty"
+					},
+					{
+						"property": "subjects",
+						"type": "subject"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "register",
+				"properties": [
+					{
+						"property": "_id",
+						"type": "int"
+					},
+					{
+						"property": "registration_date",
+						"type": "datetime"
+					},
+					{
+						"property": "status",
+						"type": "string"
+					},
+					{
+						"property": "course",
+						"type": "course"
+					}
+				],
+				"type": "json"
+			}
+		]
+	}
+]

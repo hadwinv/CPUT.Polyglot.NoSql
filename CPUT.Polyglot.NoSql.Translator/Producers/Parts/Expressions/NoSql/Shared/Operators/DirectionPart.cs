@@ -1,11 +1,4 @@
 ﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators
@@ -14,15 +7,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
     {
         internal string Type { get; set; }
 
-        public DirectionPart(DirectionType direction)
+        public DirectionPart(OrderType direction)
         {
-            Dictionary<DirectionType, string> keywords;
+            Dictionary<OrderType, string> keywords;
 
-            keywords = new Dictionary<DirectionType, string>
+            keywords = new Dictionary<OrderType, string>
             {
-                [DirectionType.None] = string.Empty,
-                [DirectionType.Asc] = "ASC",
-                [DirectionType.Desc] = "DESC"
+                [OrderType.None] = string.Empty,
+                [OrderType.Asc] = "ASC",
+                [OrderType.Desc] = "DESC"
             };
 
             Type = keywords[direction];

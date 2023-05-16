@@ -1,5 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Common.Parsers;
-using CPUT.Polyglot.NoSql.Models.Mapper;
+﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
+using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
@@ -18,60 +18,39 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 
         internal string Type { get; set; }
 
-        internal string MemberOf { get; set; }
-
-        internal string MemberOfType { get; set; }
-
-        internal string MemberOfAlias { get; set; }
-
-        internal bool IsKey { get; set; }
-
-        public PropertyPart(Properties properties, Link link, BaseExpr baseExpr)
+        public PropertyPart(Link link, BaseExpr baseExpr)
         {
             Name = link.Property;
 
-            if(baseExpr is PropertyExpr)
+            dynamic? expr = baseExpr is PropertyExpr ? ((PropertyExpr)baseExpr) :
+                            baseExpr is TermExpr ? ((TermExpr)baseExpr) :
+                            baseExpr is JsonExpr ? ((JsonExpr)baseExpr) : default;
+
+            if(expr != null)
             {
-                var property = (PropertyExpr)baseExpr;
+                AliasIdentifier = expr.AliasIdentifier;
+                AliasName = expr.AliasName;
 
-                AliasIdentifier = property.AliasIdentifier;
-                AliasName = property.AliasName;
+                if (expr is JsonExpr)
+                {
+                    var child = Assistor.NSchema.SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
+
+                    if (child != null)
+                        Name = Assistor.UnwindPropertyName(child) + "." + link.Property;
+                }
             }
-            else if (baseExpr is TermExpr)
-            {
-                var term = (TermExpr)baseExpr;
 
-                AliasIdentifier = term.AliasIdentifier;
-                AliasName = term.AliasName;
-            }
-
-            if(string.IsNullOrEmpty(AliasIdentifier))
+            if (string.IsNullOrEmpty(AliasIdentifier))
                 AliasIdentifier = link.Reference.Substring(0, 3).ToLower();
-
-            if (!string.IsNullOrEmpty(link.Reference_Property))
-            {
-                MemberOf = link.Reference_Property;
-                MemberOfType = link.Reference_Type;
-                MemberOfAlias = link.Reference_Property.Substring(0, 2).ToLower();
-            }
-            
-            IsKey = properties.Key;
         }
 
-        public PropertyPart(BaseExpr expr)
+        public PropertyPart(BaseExpr baseExpr)
         {
-            if(expr is StringLiteralExpr)
-            {
-                Name = ((StringLiteralExpr)expr).Value;
-                Type = "string";
-            }
-            else if (expr is NumberLiteralExpr)
-            {
-                Name = ((NumberLiteralExpr)expr).Value.ToString();
-                Type = "number";
-            }
-        }
+            dynamic? expr = baseExpr is StringLiteralExpr ? ((StringLiteralExpr)baseExpr) : ((NumberLiteralExpr)baseExpr);
 
+            Name = expr is StringLiteralExpr ? expr.Value : expr.Value.ToString();
+            Type = expr is StringLiteralExpr ? "string" : "int";
+        }
 
         public void Accept(INeo4jVisitor visitor)
         {

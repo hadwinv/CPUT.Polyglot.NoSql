@@ -1,6 +1,4 @@
-﻿using NUnit.Framework;
-
-namespace CPUT.Polyglot.NoSql.Tests.Unit.Adaptor
+﻿namespace CPUT.Polyglot.NoSql.Tests.Unit.Adaptor
 {
     internal class RedisConnectorTests
     {

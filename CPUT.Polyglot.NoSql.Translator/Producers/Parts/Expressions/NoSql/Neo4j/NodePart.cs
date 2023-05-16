@@ -1,6 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
+﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j

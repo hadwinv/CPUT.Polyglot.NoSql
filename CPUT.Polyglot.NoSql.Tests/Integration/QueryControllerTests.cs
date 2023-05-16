@@ -1,6 +1,4 @@
 ﻿using CPUT.Polyglot.NoSql.Interface.Logic;
-using NUnit.Framework;
-using System;
 
 namespace CPUT.Polyglot.NoSql.Tests.Integration
 {

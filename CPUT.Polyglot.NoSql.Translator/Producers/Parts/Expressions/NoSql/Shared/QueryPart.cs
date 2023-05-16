@@ -1,5 +1,4 @@
-﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
+﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
 {
@@ -7,9 +6,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
     {
         internal IExpression[] Expressions { get; set; }
 
-        public QueryPart(IExpression[] expression)
+        internal IExpression Expression { get; set; }
+
+        public QueryPart(IExpression[] expressions)
         {
-            Expressions = expression;
+            Expressions = expressions;
         }
 
         public void Accept(INeo4jVisitor visitor)

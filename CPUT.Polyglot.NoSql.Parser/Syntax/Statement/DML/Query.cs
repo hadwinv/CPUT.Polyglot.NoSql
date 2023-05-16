@@ -67,5 +67,24 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Statement.DML
 
             return Syntax;
         }
+
+        //add, properties, filter, restrict, target
+        public BaseExpr? BuildExpression(DataModelExpr dataModel, PropertiesExpr properties, FilterExpr? filter, RestrictExpr? restrict, TargetExpr? target)
+        {
+            //add
+            _syntax.Add(dataModel);
+            _syntax.Add(properties);
+
+            if (filter != null)
+                _syntax.Add(filter);
+
+            if (restrict != null)
+                _syntax.Add(restrict);
+
+            if (target != null)
+                _syntax.Add(target);
+
+            return Syntax;
+        }
     }
 }

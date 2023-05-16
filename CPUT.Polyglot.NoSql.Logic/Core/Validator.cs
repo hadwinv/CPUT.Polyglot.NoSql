@@ -1,7 +1,7 @@
 ﻿using CPUT.Polyglot.NoSql.Interface.Logic;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
-using CPUT.Polyglot.NoSql.Models.Mapper;
 using CPUT.Polyglot.NoSql.Models.Translator;
+using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
@@ -22,7 +22,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
             _schema = schema;
 
             //load unified schema
-            _global = _schema.Global();
+            _global = _schema.UnifiedView();
         }
 
         public Validators GlobalSchema(BaseExpr baseExpr)
@@ -51,7 +51,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
             //verify data models
             foreach (DataExpr expr in dataModelExpr.Value)
             {
-                foreach (var model in _global.Where(x => x.Model.Name == expr.Value).Select(x => x.Model))
+                foreach (var model in _global.Where(x => x.View.Name == expr.Value).Select(x => x.View))
                     matchmodels.Add(model.Name);
 
                 specifiedmodels.Add(expr.Value);
@@ -139,7 +139,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
 
             foreach (DataExpr data in dataModelExpr.Value)
             {
-                foreach (var properties in _global.Where(x => x.Model.Name == data.Value).SelectMany(x => x.Model.Properties))
+                foreach (var properties in _global.Where(x => x.View.Name == data.Value).SelectMany(x => x.View.Resources))
                 {
                     foreach (var column in fields)
                     {

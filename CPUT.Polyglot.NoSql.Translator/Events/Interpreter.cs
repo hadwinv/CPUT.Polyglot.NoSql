@@ -5,14 +5,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Events
 {
     public class Interpreter : IInterpreter
     {
-        public Dictionary<int, Transcriber> Query { get; set; }
+        public Dictionary<Common.Helpers.Utils.Database, Transcriber> Query { get; set; }
 
         public Interpreter()
         {
-            Query = new Dictionary<int, Transcriber>();
+            Query = new Dictionary<Common.Helpers.Utils.Database, Transcriber>();
         }
 
-        public void Add(int index, Transcriber handler)
+        public void Add(Common.Helpers.Utils.Database index, Transcriber handler)
         {
             Query.Add(index, handler);
         }
@@ -26,7 +26,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Events
                 constructs = Query[request.Database].Execute(
                     new Models.Translator.Parts.CreatePart{
                         BaseExpr = request.BaseExpr,
-                        Mapper = request.Mapper,
                         Command = request.Command
                     });
             }

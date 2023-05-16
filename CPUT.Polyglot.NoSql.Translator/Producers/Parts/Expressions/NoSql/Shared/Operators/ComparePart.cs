@@ -1,10 +1,4 @@
 ﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 

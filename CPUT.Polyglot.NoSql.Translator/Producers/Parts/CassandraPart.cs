@@ -1,7 +1,6 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
-using CPUT.Polyglot.NoSql.Models.Translator;
+﻿using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Models.Translator.Parts;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
+using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
@@ -9,18 +8,25 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {
     public class CassandraPart : Transcriber
     {
-        private List<NSchema> _schemas;
+        public List<USchema> _uSchema { get; set; }
+        public List<NSchema> _nSchema { get; set; }
 
-        public CassandraPart(List<NSchema> schemas)
+        public CassandraPart(List<USchema> uSchema, List<NSchema> nSchema)
         {
-            _schemas = schemas;
+            _uSchema = uSchema;
+            _nSchema = nSchema;
         }
 
         public override Constructs Execute(CreatePart request)
         {
             StrategyPart strategy = new CassandraStrategy();
+            
+            //set schemas
+            Assistor.USchema = _uSchema;
+            Assistor.NSchema = _nSchema;
 
-            var query = strategy.Query(request, _schemas);
+            //get query parts
+            var query = strategy.Query(request);
 
             return new Constructs
             {

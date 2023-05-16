@@ -31,7 +31,7 @@ namespace CPUT.Polyglot.NoSql.Parser
             from x in (
                 from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
                 from dot in Parse.Ref(() => Dot).OptionalOrDefault()
-                from keyword in Token.EqualTo(Lexicons.PROPERTY)
+                from keyword in Token.EqualTo(Lexicons.PROPERTY).Try()
                 from a in Parse.Ref(() => As).OptionalOrDefault()
                 from ran in Parse.Ref(() => ReferenceAliasName).OptionalOrDefault()
 
@@ -42,14 +42,28 @@ namespace CPUT.Polyglot.NoSql.Parser
             select x;
 
         private static TokenListParser<Lexicons, TermExpr> Term =
+          from x in (
+              from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
+              from dot in Parse.Ref(() => Dot).OptionalOrDefault()
+              from keyword in Token.EqualTo(Lexicons.TERM).Try()
+              from a in Parse.Ref(() => As).OptionalOrDefault()
+              from ran in Parse.Ref(() => ReferenceAliasName).OptionalOrDefault()
+
+              select new TermExpr(keyword.ToStringValue(),
+                                  ra.HasValue ? ra.ToStringValue() : string.Empty,
+                                  ran.HasValue ? ran.ToStringValue() : string.Empty)
+          ).Try()
+          select x;
+
+        private static TokenListParser<Lexicons, JsonExpr> Json =
              from x in (
                   from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
                   from dot in Parse.Ref(() => Dot).OptionalOrDefault()
-                  from keyword in Token.EqualTo(Lexicons.TERM).Try()
+                  from keyword in Token.EqualTo(Lexicons.JSON_PROPERTY).Try()
                   from a in Parse.Ref(() => As).OptionalOrDefault()
                   from ran in Parse.Ref(() => ReferenceAliasName).OptionalOrDefault()
 
-                  select new TermExpr(keyword.ToStringValue(),
+                  select new JsonExpr(keyword.ToStringValue(),
                                       ra.HasValue ? ra.ToStringValue() : string.Empty,
                                       ran.HasValue ? ran.ToStringValue() : string.Empty)
             ).Try()
@@ -120,6 +134,7 @@ namespace CPUT.Polyglot.NoSql.Parser
                Parse.Ref(() => StringLiteral).Cast<Lexicons, StringLiteralExpr, BaseExpr>(),
                Parse.Ref(() => Property).Cast<Lexicons, PropertyExpr, BaseExpr>(),
                Parse.Ref(() => Term.Cast<Lexicons, TermExpr, BaseExpr>()),
+               Parse.Ref(() => Json.Cast<Lexicons, JsonExpr, BaseExpr>()),
                Parse.Ref(() => Data).Cast<Lexicons, DataExpr, BaseExpr>()
            ).Try()
            select expr;
@@ -147,8 +162,8 @@ namespace CPUT.Polyglot.NoSql.Parser
            select new GroupExpr(t);
 
         private static TokenListParser<Lexicons, GroupExpr> GroupPropertiesExpr =
-          from cp in Parse.Ref(() => Separator).Try().OptionalOrDefault(new Token<Lexicons>(Lexicons.None, TextSpan.None))
-          from t in OperatorExpr(cp)
+          from s in Parse.Ref(() => Separator).Try().OptionalOrDefault(new Token<Lexicons>(Lexicons.None, TextSpan.None))
+          from t in OperatorExpr(s)
           select new GroupExpr(t);
 
         private static Func<Token<Lexicons>, TokenListParser<Lexicons, OperatorExpr>> OperatorExpr = (Token<Lexicons> cpr) =>
@@ -167,24 +182,33 @@ namespace CPUT.Polyglot.NoSql.Parser
             from columns in (Columns.ManyDelimitedBy(Token.EqualTo(Lexicons.COMMA)))
             select new DeclareExpr(columns);
 
-        private static TokenListParser<Lexicons, DeclareExpr> Add =
+        private static TokenListParser<Lexicons, DataModelExpr> Add =
             from keyword in Token.EqualTo(Lexicons.ADD)
             from columns in (Data.ManyDelimitedBy(Token.EqualTo(Lexicons.None)))
-            select new DeclareExpr(columns);
+            select new DataModelExpr(columns);
 
-        private static TokenListParser<Lexicons, DeclareExpr> Modify =
+        private static TokenListParser<Lexicons, DataModelExpr> Modify =
             from keyword in Token.EqualTo(Lexicons.MODIFY)
             from columns in (Data.ManyDelimitedBy(Token.EqualTo(Lexicons.None)))
-            select new DeclareExpr(columns);
+            select new DataModelExpr(columns);
 
         #endregion
 
         #region Properties
 
+        //
         private static TokenListParser<Lexicons, PropertiesExpr> Properties =
             from keyword in Token.EqualTo(Lexicons.PROPERTIES)
-            from clause in GroupPropertiesExpr.Repeat(ColumnSetRepeater(keyword.Span.Position.Absolute, keyword.Span.Source))
-            select new PropertiesExpr(clause);
+            from lb in Token.EqualTo(Lexicons.LEFT_BRACKET).OptionalOrDefault(new Token<Lexicons>(Lexicons.None, TextSpan.None))
+            from grp in (
+                from lcb in Token.EqualTo(Lexicons.LEFT_CURLY_BRACKET).OptionalOrDefault(new Token<Lexicons>(Lexicons.None, TextSpan.None))
+                from clause in GroupPropertiesExpr.Repeat(PropertySetRepeater(keyword.Span.Position.Absolute, keyword.Span.Source))
+                from rcb in Token.EqualTo(Lexicons.RIGHT_CURLY_BRACKET).OptionalOrDefault(new Token<Lexicons>(Lexicons.None, TextSpan.None))
+                select clause
+            ).ManyDelimitedBy(Token.EqualTo(Lexicons.COMMA)).Try()
+            from rb in Token.EqualTo(Lexicons.RIGHT_BRACKET).OptionalOrDefault(new Token<Lexicons>(Lexicons.None, TextSpan.None))
+
+            select new PropertiesExpr(grp);
 
         #endregion
 
@@ -275,10 +299,11 @@ namespace CPUT.Polyglot.NoSql.Parser
                 return 1;
         };
 
-        private static Func<int, string, int> ColumnSetRepeater = (int position, string token) =>
+        private static Func<int, string, int> PropertySetRepeater = (int position, string token) =>
         {
             var command = token.Substring(position, token.Substring(position).IndexOf("}"));
             var start = command.IndexOf("{");
+            
             var input = command.Substring(start + 1).Trim();
 
             var delimiter = input.Replace(",", "separator");
@@ -294,9 +319,7 @@ namespace CPUT.Polyglot.NoSql.Parser
             TokenListParser<Lexicons, T> expr = parsers[0].Try();
 
             foreach (var p in parsers.Skip(1))
-            {
                 expr = expr.Or(p);
-            }
 
             return expr;
         }
@@ -317,26 +340,20 @@ namespace CPUT.Polyglot.NoSql.Parser
 
         //add
         public static TokenListParser<Lexicons, BaseExpr> Insert =
-             from declare in Add
+             from add in Add
              from properties in Properties
-             from model in Parse.Ref(() => DataModel).OptionalOrDefault()
-             from link in Parse.Ref(() => Link).Try().OptionalOrDefault()
              from filter in Parse.Ref(() => Filter).OptionalOrDefault()
-             from groupby in Parse.Ref(() => GroupBy).OptionalOrDefault()
              from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()
              from target in Target
-             select new Query().BuildExpression(declare, properties, model, link, filter, groupby, restrict, target);
+             select new Query().BuildExpression(add, properties, filter, restrict, target);
 
         //modify
         public static TokenListParser<Lexicons, BaseExpr> Update =
-            from declare in Modify
+            from modify in Modify
             from properties in Properties
-            from model in Parse.Ref(() => DataModel).OptionalOrDefault()
-            from link in Parse.Ref(() => Link).Try().OptionalOrDefault()
             from filter in Parse.Ref(() => Filter).OptionalOrDefault()
-            from groupby in Parse.Ref(() => GroupBy).OptionalOrDefault()
             from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()
             from target in Target
-            select new Query().BuildExpression(declare, properties, model, link, filter, groupby, restrict, target);
+            select new Query().BuildExpression(modify, properties, filter, restrict, target);
     }
 }

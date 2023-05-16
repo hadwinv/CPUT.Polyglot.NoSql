@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Producers\Parts\Expressions\NoSql\MongoDb\MatchPart.cs" />
+    <Compile Remove="Producers\Parts\Expressions\NoSql\MongoDb\UnwindPart.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
   </ItemGroup>

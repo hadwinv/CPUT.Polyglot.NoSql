@@ -1,7 +1,7 @@
 ﻿using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Interface;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
-using CPUT.Polyglot.NoSql.Models.Mapper;
+using CPUT.Polyglot.NoSql.Models.Views;
 using Newtonsoft.Json;
 
 namespace CPUT.Polyglot.NoSql.Mapper
@@ -15,34 +15,14 @@ namespace CPUT.Polyglot.NoSql.Mapper
             _cache = cache;
         }
 
-        public List<MappedSource> Mapper()
-        {
-            //get from cache;
-            var schema = (List<MappedSource>)_cache.GetInMemory("binder");
-
-            if (schema == null)
-            {
-                var data = Utils.ReadTemplate(@"Templates/Configs/MapperTemplate.json");
-
-                if (!string.IsNullOrEmpty(data))
-                {
-                    schema = JsonConvert.DeserializeObject<List<MappedSource>>(data);
-
-                    _cache.AddToInMemory("binder", schema);
-                }
-            }
-
-            return schema;
-        }
-
-        public List<USchema> Global()
+        public List<USchema> UnifiedView()
         {
             //get from cache;
             var schema = (List<USchema>)_cache.GetInMemory("global");
 
             if (schema == null)
             {
-                var data = Utils.ReadTemplate(@"Templates/Configs/GlobalTemplate.json");
+                var data = Utils.ReadTemplate(@"_schemas/_unifiedview.json");
 
                 if (!string.IsNullOrEmpty(data))
                 {
@@ -62,7 +42,7 @@ namespace CPUT.Polyglot.NoSql.Mapper
 
             if (schema == null)
             {
-                var data = Utils.ReadTemplate(@"Templates/Configs/Native/KeyValueTemplate.json");
+                var data = Utils.ReadTemplate(@"_schemas/_native/_keyvalue.json");
 
                 if (!string.IsNullOrEmpty(data))
                 {
@@ -82,7 +62,7 @@ namespace CPUT.Polyglot.NoSql.Mapper
 
             if (schema == null)
             {
-                var data = Utils.ReadTemplate(@"Templates/Configs/Native/ColumnarTemplate.json");
+                var data = Utils.ReadTemplate(@"_schemas/_native/_columnar.json");
 
                 if (!string.IsNullOrEmpty(data))
                 {
@@ -102,7 +82,7 @@ namespace CPUT.Polyglot.NoSql.Mapper
 
             if (schema == null)
             {
-                var data = Utils.ReadTemplate(@"Templates/Configs/Native/DocumentTemplate.json");
+                var data = Utils.ReadTemplate(@"_schemas/_native/_document.json");
 
                 if (!string.IsNullOrEmpty(data))
                 {
@@ -122,7 +102,7 @@ namespace CPUT.Polyglot.NoSql.Mapper
 
             if (schema == null)
             {
-                var data = Utils.ReadTemplate(@"Templates/Configs/Native/GraphTemplate.json");
+                var data = Utils.ReadTemplate(@"_schemas/_native/_graph.json");
 
                 if (!string.IsNullOrEmpty(data))
                 {

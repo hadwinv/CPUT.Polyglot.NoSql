@@ -6,6 +6,7 @@ using CPUT.Polyglot.NoSql.Models.Translator;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CPUT.Polyglot.NoSql.DataStores.Repos.Document
 {
@@ -56,60 +57,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Document
             {
                 var connection = _connector.Connect();
 
-                connection.DropCollection("courses");
                 connection.DropCollection("students");
-
-                var courseCollection = connection.GetCollection<CourseModel>("courses");
-
-                foreach (var faculty in dataset[0].Faculties)
-                {
-                    facultyModel = new FacultiesModel
-                    {
-                        id = faculty.Id,
-                        name = faculty.Description,
-                        head = "test name",
-                        contact = new ContactModel
-                        {
-                            id = faculty.Id,
-                            phone = "0722794007",
-                            email = "test@test.com",
-                            address = new AddressModel
-                            {
-                                id = faculty.Id,
-                                city = "ttrtr",
-                                code = "3332",
-                                country = "Suth",
-                                street = "14 test strate"
-                            }
-                        }
-                    };
-
-                    foreach (var course in faculty.Courses)
-                    {
-                        foreach (var subject in course.Subjects)
-                        {
-                            subjectModel = new SubjectModel
-                            {
-                                id = subject.Id,
-                                name = subject.Description,
-                                cost = subject.Price,
-                                duration = 6,
-                            };
-                        }
-
-                        courseModel = new CourseModel
-                        {
-                            id = course.Id,
-                            name = course.Description,
-                            faculty = facultyModel,
-                            subject = subjectModel
-                        };
-
-                        documents.Add(courseModel);
-                    }
-                }
-
-                courseCollection.InsertMany(documents.ToArray());
 
                 var studentCollection = connection.GetCollection<StudentsModel>("students");
 
@@ -137,39 +85,67 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Document
                             email = student.Email,
                             phone = student.MobileNo
                         },
-                        register = new EnrollmentModel
+                        register = new RegisterModel
                         {
                             id = count,
                             registration_date = student.Profile.RegistrationDate.Value,
                             status = "Registered",
-                            course = new CourseModel
-                            {
-                                faculty = new FacultiesModel
-                                {
-                                    id = count,
-                                    name = string.Empty,
-                                    contact = new ContactModel
-                                    {
-                                        address = new AddressModel
-                                        {
-                                            id = count,
-                                            city = string.Empty,
-                                            country = string.Empty,
-                                            code = string.Empty,
-                                            street = string.Empty,
-                                            suburb = string.Empty
-                                        },
-                                        email = string.Empty,
-                                        phone = string.Empty
-                                    },
-                                    head = string.Empty,
-                                    shortcode = string.Empty
-                                },
-                                name = student.Profile.Course.Description
-                            }
                         },
                     };
 
+                    
+                    peopleModel.register.course = new CourseModel();
+                    peopleModel.register.course.subjects = new List<SubjectModel>();
+                    peopleModel.register.course.id = student.Profile.Course.Id;
+                    peopleModel.register.course.name = student.Profile.Course.Description;
+
+                    var found = false;
+
+                    foreach(var faculties in dataset[0].Faculties)
+                    {
+                        foreach(var courses in faculties.Courses.Where(x => x.Code == student.Profile.Course.Code))
+                        {
+                            found = true;
+
+                            peopleModel.register.course.faculty = new FacultiesModel
+                            {
+                                id = faculties.Id,
+                                shortcode = faculties.Code,
+                                name = faculties.Description,
+                                head = "John Doe",
+                                contact = new ContactModel
+                                {
+                                    id = faculties.Id,
+                                    phone = "0731234567",
+                                    email = "john@doe.com",
+                                    address = new AddressModel
+                                    {
+                                        id = faculties.Id,
+                                        city = "Cape Town",
+                                        code = "8000",
+                                        country = "South Africa",
+                                        street = "14 John Doe street"
+                                    }
+                                }
+                            };
+                        }
+
+                        if(found)
+                            break;
+                    }
+                   
+                    foreach (var subject in student.Profile.Course.Subjects)
+                    {
+                        peopleModel.register.course.subjects.Add(new SubjectModel
+                        {
+                            id = subject.Id,
+                            name = subject.Description,
+                            shortcode = subject.Code,
+                            cost = subject.Price,
+                            duration = subject.Duration
+                        });
+                    }
+                    
                     count++;
                     peoples.Add(peopleModel);
                 }

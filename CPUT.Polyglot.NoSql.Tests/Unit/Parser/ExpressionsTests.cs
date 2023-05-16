@@ -225,7 +225,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
-                typeof(DeclareExpr),
+                typeof(DataModelExpr),
                 //properties
                 typeof(PropertiesExpr),
                 //target
@@ -237,10 +237,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
         public void Add_MoreThanOneRow_ReturnSyntaxStructure()
         {
             var input = @" ADD { Entity }
-                           PROPERTIES { colum = '1', colum = 2 }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
+                           PROPERTIES {[ {column1 = '1'}, {column2 = '2'} ]}
                            TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -249,111 +246,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
-                typeof(DeclareExpr),
+                typeof(DataModelExpr),
                 //properties
                 typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //target model
+                //target
                 typeof(TargetExpr)
-                );
-        }
-
-        [Test]
-        public void Add_MoreThanOneRowWithAggregate_ReturnSyntaxStructure()
-        {
-            var input = @" ADD { Entity }
-                           PROPERTIES { colum = '1', column = sum(column) }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           TARGET { storage_type }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            var syntax = Expressions.Insert.Parse(tokens);
-
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //target model
-                typeof(TargetExpr)
-                );
-        }
-
-        [Test]
-        public void Add_MoreThanOneRowWithCondition_ReturnSyntaxStructure()
-        {
-            var input = @" ADD { Entity }
-                           PROPERTIES { colum = '1', column = sum(column) }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property AND property = property OR property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           TARGET { storage_type }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            var syntax = Expressions.Insert.Parse(tokens);
-
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //target model
-                typeof(TargetExpr)
-                );
-        }
-
-        [Test]
-        public void Add_MoreThanOneRowWithRestriction_ReturnSyntaxStructure()
-        {
-            var input = @" ADD { Entity }
-                           PROPERTIES { colum = '1', column = sum(column) }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property AND property = property OR property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           RESTRICT_TO { 1 }
-                           TARGET { storage_type }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            var syntax = Expressions.Insert.Parse(tokens);
-
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //restrict
-                typeof(RestrictExpr),
-                //target model
-                typeof(TargetExpr)
-                );
+            );
         }
 
         [Test]
@@ -369,7 +267,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
-                typeof(DeclareExpr),
+                typeof(DataModelExpr),
                 //properties
                 typeof(PropertiesExpr),
                 //target
@@ -377,128 +275,253 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             );
         }
 
-        [Test]
-        public void Modify_MoreThanOneRow_ReturnSyntaxStructure()
-        {
-            var input = @" MODIFY { Entity }
-                           PROPERTIES { colum = '1', colum = 2 }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           TARGET { storage_type }";
+        //[Test]
+        //public void Add_MoreThanOneRow_ReturnSyntaxStructure()
+        //{
+        //    var input = @" ADD { Entity }
+        //                   PROPERTIES { colum = '1', colum = 2 }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   TARGET { storage_type }";
 
-            var tokens = new Lexer().Tokenize(input);
+        //    var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Update.Parse(tokens);
+        //    var syntax = Expressions.Insert.Parse(tokens);
 
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //target model
-                typeof(TargetExpr)
-                );
-        }
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
 
-        [Test]
-        public void Modify_MoreThanOneRowWithAggregate_ReturnSyntaxStructure()
-        {
-            var input = @" MODIFY { Entity }
-                           PROPERTIES { colum = '1', column = sum(column) }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           TARGET { storage_type }";
+        //[Test]
+        //public void Add_MoreThanOneRowWithAggregate_ReturnSyntaxStructure()
+        //{
+        //    var input = @" ADD { Entity }
+        //                   PROPERTIES { colum = '1', column = sum(column) }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   TARGET { storage_type }";
 
-            var tokens = new Lexer().Tokenize(input);
+        //    var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Update.Parse(tokens);
+        //    var syntax = Expressions.Insert.Parse(tokens);
 
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //target model
-                typeof(TargetExpr)
-                );
-        }
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
 
-        [Test]
-        public void Modify_MoreThanOneRowWithCondition_ReturnSyntaxStructure()
-        {
-            var input = @" MODIFY { Entity }
-                           PROPERTIES { colum = '1', column = sum(column) }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property AND property = property OR property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           TARGET { storage_type }";
+        //[Test]
+        //public void Add_MoreThanOneRowWithCondition_ReturnSyntaxStructure()
+        //{
+        //    var input = @" ADD { Entity }
+        //                   PROPERTIES { colum = '1', column = sum(column) }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property AND property = property OR property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   TARGET { storage_type }";
 
-            var tokens = new Lexer().Tokenize(input);
+        //    var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Update.Parse(tokens);
+        //    var syntax = Expressions.Insert.Parse(tokens);
 
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //target model
-                typeof(TargetExpr)
-                );
-        }
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
 
-        [Test]
-        public void Modify_MoreThanOneRowWithRestriction_ReturnSyntaxStructure()
-        {
-            var input = @" MODIFY { Entity }
-                           PROPERTIES { colum = '1', column = sum(column) }
-                           DATA_MODEL { data, data}
-                           LINK_ON { property = property AND property = property OR property = property }    
-                           FILTER_ON { (propertyo = propertyo) }
-                           RESTRICT_TO { 1 }
-                           TARGET { storage_type }";
+        //[Test]
+        //public void Add_MoreThanOneRowWithRestriction_ReturnSyntaxStructure()
+        //{
+        //    var input = @" ADD { Entity }
+        //                   PROPERTIES { colum = '1', column = sum(column) }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property AND property = property OR property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   RESTRICT_TO { 1 }
+        //                   TARGET { storage_type }";
 
-            var tokens = new Lexer().Tokenize(input);
+        //    var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Update.Parse(tokens);
+        //    var syntax = Expressions.Insert.Parse(tokens);
 
-            syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
-                //fetch
-                typeof(DeclareExpr),
-                //properties
-                typeof(PropertiesExpr),
-                //data model
-                typeof(DataModelExpr),
-                //link
-                typeof(LinkExpr),
-                //filter
-                typeof(FilterExpr),
-                //restrict
-                typeof(RestrictExpr),
-                //target model
-                typeof(TargetExpr)
-                );
-        }
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //restrict
+        //        typeof(RestrictExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
+
+
+
+        //[Test]
+        //public void Modify_MoreThanOneRow_ReturnSyntaxStructure()
+        //{
+        //    var input = @" MODIFY { Entity }
+        //                   PROPERTIES { colum = '1', colum = 2 }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   TARGET { storage_type }";
+
+        //    var tokens = new Lexer().Tokenize(input);
+
+        //    var syntax = Expressions.Update.Parse(tokens);
+
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
+
+        //[Test]
+        //public void Modify_MoreThanOneRowWithAggregate_ReturnSyntaxStructure()
+        //{
+        //    var input = @" MODIFY { Entity }
+        //                   PROPERTIES { colum = '1', column = sum(column) }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   TARGET { storage_type }";
+
+        //    var tokens = new Lexer().Tokenize(input);
+
+        //    var syntax = Expressions.Update.Parse(tokens);
+
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
+
+        //[Test]
+        //public void Modify_MoreThanOneRowWithCondition_ReturnSyntaxStructure()
+        //{
+        //    var input = @" MODIFY { Entity }
+        //                   PROPERTIES { colum = '1', column = sum(column) }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property AND property = property OR property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   TARGET { storage_type }";
+
+        //    var tokens = new Lexer().Tokenize(input);
+
+        //    var syntax = Expressions.Update.Parse(tokens);
+
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
+
+        //[Test]
+        //public void Modify_MoreThanOneRowWithRestriction_ReturnSyntaxStructure()
+        //{
+        //    var input = @" MODIFY { Entity }
+        //                   PROPERTIES { colum = '1', column = sum(column) }
+        //                   DATA_MODEL { data, data}
+        //                   LINK_ON { property = property AND property = property OR property = property }    
+        //                   FILTER_ON { (propertyo = propertyo) }
+        //                   RESTRICT_TO { 1 }
+        //                   TARGET { storage_type }";
+
+        //    var tokens = new Lexer().Tokenize(input);
+
+        //    var syntax = Expressions.Update.Parse(tokens);
+
+        //    syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
+        //        //fetch
+        //        typeof(DeclareExpr),
+        //        //properties
+        //        typeof(PropertiesExpr),
+        //        //data model
+        //        typeof(DataModelExpr),
+        //        //link
+        //        typeof(LinkExpr),
+        //        //filter
+        //        typeof(FilterExpr),
+        //        //restrict
+        //        typeof(RestrictExpr),
+        //        //target model
+        //        typeof(TargetExpr)
+        //        );
+        //}
 
     }
 }

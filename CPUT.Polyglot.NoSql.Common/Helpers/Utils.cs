@@ -17,6 +17,7 @@
 
         public enum Database
         {
+            NONE,
             REDIS,
             CASSANDRA,
             NEOJ4,

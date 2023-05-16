@@ -34,6 +34,7 @@ namespace CPUT.Polyglot.NoSql.Common.Parsers
         [Token(Category = "Keyword")] AS,
         //schema
         [Token(Category = "Schema", Example = "Column(n)")] PROPERTY,
+        [Token(Category = "Schema", Example = "Column(n.json)")] JSON_PROPERTY,
         [Token(Category = "Schema", Example = "Entity(n)")] DATA,
         //condition
         [Token(Category = "Condition")] LH_FILTER_EXP,
@@ -70,6 +71,8 @@ namespace CPUT.Polyglot.NoSql.Common.Parsers
         [Token(Example = ";")] SEMICOLON,
         [Token(Example = "[")] LEFT_BRACKET,
         [Token(Example = "]")] RIGHT_BRACKET,
+        [Token(Example = "{")] LEFT_CURLY_BRACKET,
+        [Token(Example = "}")] RIGHT_CURLY_BRACKET,
         [Token(Category = "Punctuation", Example = ".")] DOT,
         [Token] REFERENCE_ALIAS,
         [Token] REFERENCE_ALIAS_NAME,

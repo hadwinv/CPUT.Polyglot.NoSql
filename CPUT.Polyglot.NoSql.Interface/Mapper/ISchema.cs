@@ -1,13 +1,11 @@
-﻿using CPUT.Polyglot.NoSql.Models.Mapper;
+﻿using CPUT.Polyglot.NoSql.Models.Views;
 using System.Collections.Generic;
 
 namespace CPUT.Polyglot.NoSql.Interface.Mapper
 {
     public interface ISchema
     {
-        List<MappedSource> Mapper();
-
-        List<USchema> Global();
+        List<USchema> UnifiedView();
 
         List<NSchema> KeyValue();
 

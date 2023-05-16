@@ -1,20 +1,8 @@
-﻿using CPUT.Polyglot.NoSql.Parser;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Cassandra;
+﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
-using Microsoft.VisualBasic;
-using Neo4jClient.Cypher;
-using StackExchange.Redis;
-using Superpower.Model;
-using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using UpdatePart = CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.UpdatePart;
@@ -23,118 +11,119 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 {
     public class MongoDbGenerator : IMongoDbVisitor
     {
-        StringBuilder Query;
+        private StringBuilder _query;
+        private MongoDBFormat _format;
 
-        public MongoDbGenerator(StringBuilder query) => this.Query = query;
+        public MongoDbGenerator(StringBuilder query, MongoDBFormat format)
+        {
+            this._query = query; 
+            this._format = format;
+        }
 
         public void Visit(QueryPart query)
         {
             foreach (var expr in query.Expressions)
             {
-                if (expr is GetCollectionPart)
+                if (expr is CollectionPart)
                 {
-                    ((GetCollectionPart)expr).Accept(this);
-                }
-                else if (expr is FindPart)
-                {
-                    ((FindPart)expr).Accept(this);
-                }
-                else if (expr is UpdatePart)
-                {
-                    ((UpdatePart)expr).Accept(this);
-                }
-                else if (expr is InsertPart)
-                {
-                    ((InsertPart)expr).Accept(this);
-                }
-                else if (expr is OrderByPart)
-                {
-                    ((OrderByPart)expr).Accept(this);
+                    var collection = ((CollectionPart)expr);
+
+                    collection.Accept(this);
                 }
             }
-
-            var restrictPart = (RestrictPart?)query.Expressions.SingleOrDefault(x => x.GetType().Equals(typeof(RestrictPart)));
-
-            if(restrictPart != null)
-                restrictPart.Accept(this);
         }
 
-        public void Visit(GetCollectionPart collection)
+        public void Visit(CollectionPart collection)
         {
-            Query.Append("db.getCollection(\"" + collection.Name + "\")");
+            _query.Append("db.getCollection(\"" + collection.Target + "\")");
+
+            if(collection.Find != null)
+                collection.Find.Accept(this);
+            else if (collection.Aggregate != null)
+                collection.Aggregate.Accept(this);
+            else if (collection.Insert != null)
+                collection.Insert.Accept(this);
+            else if (collection.Update != null)
+                collection.Update.Accept(this);
         }
 
         public void Visit(FindPart find)
         {
-            Query.Append(".find(");
+            _query.Append(".find(");
 
             bool hasFilter = false;
 
-            foreach (var expr in find.Properties)
+            if(find.Condition != null)
             {
-                if (expr is ConditionPart)
-                {
-                    Query.Append("{");
+                _query.Append("{");
 
-                    ((ConditionPart)expr).Accept(this);
+                find.Condition.Accept(this);
 
-                    hasFilter = true;
+                _query.Append("}");
 
-                    Query.Append("}");
-                }
-                else if (expr is FieldPart)
-                {
-                    if(!hasFilter)
-                        Query.Append("{}");
-
-                    Query.Append(",{");
-
-                    ((FieldPart)expr).Accept(this);
-
-                    Query.Append("}");
-                }
+                hasFilter = true;
             }
 
-            Query.Append(")");
+            if (find.Field != null)
+            {
+                if (!hasFilter)
+                    _query.Append("{}");
+
+                _query.Append(",{");
+
+                find.Field.Accept(this);
+
+                _query.Append("}");
+            }
+
+            _query.Append(")");
+
+            if (find.OrderBy != null)
+                find.OrderBy.Accept(this);
+
+            if (find.Restrict != null)
+                find.Restrict.Accept(this);
         }
+
+        #region DML
 
         public void Visit(UpdatePart update)
         {
-            Query.Append(".updateMany(");
+            _query.Append(".updateMany(");
 
             bool hasFilter = false;
 
-            foreach (var expr in update.Properties)
+            foreach (var expr in update.Parts)
             {
                 if (expr is ConditionPart)
                 {
-                    Query.Append("{");
+                    _query.Append("{");
 
                     ((ConditionPart)expr).Accept(this);
 
                     hasFilter = true;
 
-                    Query.Append("}");
+                    _query.Append("}");
                 }
                 else if (expr is SetPart)
                 {
                     if (!hasFilter)
-                        Query.Append("{}");
+                        _query.Append("{}");
 
-                    Query.Append(",{");
+                    _query.Append(",{");
 
                     ((SetPart)expr).Accept(this);
 
-                    Query.Append("}");
+                    _query.Append("}");
                 }
             }
 
-            Query.Append(")");
+            _query.Append(")");
         }
 
         public void Visit(SetPart set)
         {
-            Query.Append("$set: {");
+            _query.Append("$set: {");
 
             foreach (var expr in set.Properties)
             {
@@ -147,56 +136,59 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                     ((SeparatorPart)expr).Accept(this); ;
                 }
             }
-            Query.Append("}");
+            _query.Append("}");
         }
 
         public void Visit(SetValuePart setValue)
         {
             string[] types = { "$gt", "$gte", "$lt", "$lte" };
-            Query.Append("\"" + setValue.Left.Name + "\"");
+            
+            _query.Append("\"" + setValue.Left.Name + "\"");
 
             if (types.Contains(setValue.Operator.Type))
             {
-                Query.Append(": { ");
-                Query.Append(setValue.Operator.Type + " : ");
+                _query.Append(": { ");
+                _query.Append(setValue.Operator.Type + " : ");
 
                 if (setValue.Right.Type == "string")
-                    Query.Append("\"" + setValue.Right.Name + "\"");
+                    _query.Append("\"" + setValue.Right.Name + "\"");
                 else if (setValue.Right.Type == "int")
-                    Query.Append("NumberLong(" + setValue.Right.Name + ")");
+                    _query.Append("NumberLong(" + setValue.Right.Name + ")");
                 else
-                    Query.Append(setValue.Right.Name);
+                    _query.Append(setValue.Right.Name);
 
-                Query.Append(" } ");
+                _query.Append(" } ");
             }
             else
             {
-                Query.Append(" " + setValue.Operator.Type + " ");
+                _query.Append(" " + setValue.Operator.Type + " ");
 
                 if (setValue.Right.Type == "string")
-                    Query.Append("\"" + setValue.Right.Name + "\"");
+                    _query.Append("\"" + setValue.Right.Name + "\"");
                 else
-                    Query.Append(setValue.Right.Name);
+                    _query.Append(setValue.Right.Name);
             }
         }
 
         public void Visit(InsertPart insert)
         {
-            Query.Append(".insertMany([");
+            _query.Append(".insertMany([");
 
-            foreach (var expr in insert.Properties)
+            foreach(var expr in insert.Parts)
             {
                 if (expr is AddPart)
                 {
-                    Query.Append("{");
+                    _query.Append("{");
 
                     ((AddPart)expr).Accept(this);
 
-                    Query.Append("}");
+                    _query.Append("}");
                 }
+                else if (expr is SeparatorPart)
+                    ((SeparatorPart)expr).Accept(this);
             }
 
-            Query.Append("])");
+            _query.Append("])");
         }
 
         public void Visit(AddPart add)
@@ -214,16 +206,155 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             }
         }
 
+        #endregion
+
+        #region Aggregation
+
+        public void Visit(AggregatePart aggregate)
+        {
+            var blockAdded = false;
+
+            _query.Append(".aggregate([");
+
+            if (aggregate.Match != null)
+            {
+                aggregate.Match.Accept(this);
+
+                blockAdded = true;
+            }
+
+            if (aggregate.Unwind != null)
+            {
+                if (blockAdded)
+                    _query.Append(",");
+
+                aggregate.Unwind.Accept(this);
+
+                if (!blockAdded)
+                    blockAdded = true;
+            }
+
+            if (aggregate.Project != null)
+            {
+                if (blockAdded)
+                    _query.Append(",");
+
+                aggregate.Project.Accept(this);
+
+                if (!blockAdded)
+                    blockAdded = true;
+            }
+
+            if (aggregate.GroupBy != null)
+            {
+                if (blockAdded)
+                    _query.Append(",");
+
+                aggregate.GroupBy.Accept(this);
+            }
+
+            if (aggregate.OrderBy != null)
+                aggregate.OrderBy.Accept(this);
+
+            if (aggregate.Restrict != null)
+                aggregate.Restrict.Accept(this);
+
+            _query.Append("])");
+        }
+
+        public void Visit(MatchPart match)
+        {
+            _query.Append("{ $match : {");
+
+            var condition = (ConditionPart)match.Properties.SingleOrDefault(x => x.GetType().Equals(typeof(ConditionPart)));
+
+            if (condition != null)
+                condition.Accept(this);
+
+            _query.Append("}}");
+        }
+
+        public void Visit(UnwindPart unwind)
+        {
+            if (unwind.Fields.Count() > 0)
+            {
+                _query.Append("{ $unwind : {");
+
+                foreach (var exp in unwind.Fields)
+                    exp.Accept(this);
+
+                _query.Append("}}");
+            }
+        }
+
+        public void Visit(ProjectPart project)
+        {
+            if (project.Fields.Count() > 0)
+            {
+                _query.Append("{ $project : { _id: \"$_id\", ");
+
+                foreach (var part in project.Fields)
+                    part.Accept(this);
+                    
+                _query.Append("}}");
+            }
+        }
+
+        public void Visit(ProjectFieldPart field)
+        {
+            _query.Append(field.Alias + " : \"$" + field.Property + "\"");
+        }
+
+        public void Visit(GroupByPart groupBy)
+        {
+            if (groupBy.Fields.Count() > 0)
+            {
+                _query.Append("{ $group : { _id: \"$_id\", ");
+
+                foreach (var part in groupBy.Fields)
+                    part.Accept(this);
+
+                _query.Append("}}");
+            }
+        }
+        
+        public void Visit(GroupByFieldPart field)
+        {
+            _query.Append(field.Alias + " : { \"$first\" : \"$" + field.Property + "\"}");
+        }
+
+        public void Visit(NativeFunctionPart function)
+        {
+            if(function.Type.ToLower() == "count")
+                _query.Append( function.Alias + ": { $" + function.Type.ToLower() + ": {}");
+            else
+            {
+                _query.Append(function.Alias + ": { $" + function.Type.ToLower() + ":");
+
+                function.PropertyPart.Accept(this);
+            }
+
+            _query.Append("}");
+        }
+
+        public void Visit(FunctionFieldPart functionProperty)
+        {
+            _query.Append( " \"$" + functionProperty.Property + "\"");
+        }
+
+        #endregion
+
         public void Visit(ConditionPart condition)
         {
-            var logicParts = condition.Logic.Where(x => x.GetType().Equals(typeof(LogicalPart))).Cast<LogicalPart>().ToList().OrderByDescending(x => x.Compare?.Type);
-            var conditionParts = condition.Logic.Where(x => x.GetType().Equals(typeof(ConditionPart))).Cast<ConditionPart>().ToList();
-            var compareParts = logicParts.Where(x => !string.IsNullOrEmpty( x.Compare.Type)).Select(x => x.Compare);
+            var logicParts = condition.Logic.Where(x => x.GetType().Equals(typeof(LogicalPart))).Cast<LogicalPart>().ToList();//.OrderByDescending(x => x.Compare?.Type);
 
             int logicCount = 0;
             bool openCollection = false;
             
             string? prevType = string.Empty;
+
+            if (logicParts.Count > 1)
+                logicParts[0].Compare.Type = logicParts[1].Compare.Type;
 
             foreach (var logic in logicParts)
             {
@@ -234,7 +365,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 {
                     if(openCollection)
                     {
-                        Query.Append("],");
+                        _query.Append("],");
                         openCollection = false;
                         logicCount = 0;
                     }
@@ -243,7 +374,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
                     if (logicCount == 0 && logicParts.Count() > 1)
                     {
-                        Query.Append("[");
+                        _query.Append("[");
                         openCollection = true;
                     }
                 }
@@ -251,13 +382,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 if (logicParts.Count() > 1)
                 {
                     if(logicCount > 0)
-                        Query.Append(",");
+                        _query.Append(",");
 
-                    Query.Append("{");  
+                    _query.Append("{");  
 
                     logic.Accept(this);
 
-                    Query.Append("}");
+                    _query.Append("}");
                 }
                 else
                     logic.Accept(this);
@@ -268,7 +399,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
             if (openCollection)
             {
-                Query.Append("]");
+                _query.Append("]");
                 openCollection = false;
             }
         }
@@ -276,30 +407,30 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         public void Visit(LogicalPart logical)
         {
             string[] types = { "$gt", "$gte", "$lt", "$lte" };
-            Query.Append("\"" + logical.Left.Name + "\"");
+            _query.Append("\"" + logical.Left.Name + "\"");
 
             if (types.Contains(logical.Operator.Type))
             {
-                Query.Append(": { ");
-                Query.Append( logical.Operator.Type + " : ");
+                _query.Append(": { ");
+                _query.Append( logical.Operator.Type + " : ");
 
                 if (logical.Right.Type == "string")
-                    Query.Append("\"" + logical.Right.Name + "\"" );
+                    _query.Append("\"" + logical.Right.Name + "\"" );
                 else if (logical.Right.Type == "int")
-                    Query.Append("NumberLong(" + logical.Right.Name + ")") ;
+                    _query.Append("NumberLong(" + logical.Right.Name + ")") ;
                 else
-                    Query.Append(logical.Right.Name);
+                    _query.Append(logical.Right.Name);
 
-                Query.Append(" } ");
+                _query.Append(" } ");
             }
             else
             {
-                Query.Append(" " + logical.Operator.Type + " ");
+                _query.Append(" " + logical.Operator.Type + " ");
 
                 if (logical.Right.Type == "string")
-                    Query.Append("\"" + logical.Right.Name + "\"");
+                    _query.Append("\"" + logical.Right.Name + "\"");
                 else
-                    Query.Append(logical.Right.Name);
+                    _query.Append(logical.Right.Name);
             }
         }
 
@@ -311,7 +442,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 {
                     ((PropertyPart)expr).Accept(this);
                          
-                    Query.Append(" : 1"); 
+                    _query.Append(" : 1"); 
                 }
                 else if (expr is SeparatorPart)
                 {
@@ -320,62 +451,59 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             }
         }
 
-        public void Visit(RestrictPart restrict)
-        {
-            Query.Append(" .limit(" + restrict.Limit.ToString() + ")");
-        }
-
         public void Visit(PropertyPart property)
         {
-            //if (!string.IsNullOrEmpty(property.AliasIdentifier))
-            //    Query.Append(property.AliasIdentifier + ".");
+            _query.Append(property.Name);
+        }
 
-            Query.Append(property.Name);
-
-            if (!string.IsNullOrEmpty(property.AliasName))
-                Query.Append("AS " + property.AliasName);
+        public void Visit(UnwindJsonPart unwindJson)
+        {
+            _query.Append("path: \"$" + unwindJson.Name + "\"");
         }
 
         public void Visit(SeparatorPart separator)
         {
-            Query.Append(separator.Delimiter + " ");
+            _query.Append(separator.Delimiter + " ");
         }
 
         public void Visit(OperatorPart operatorPart)
         {
-            Query.Append(" " + operatorPart.Type + " ");
+            _query.Append(" " + operatorPart.Type + " ");
         }
 
         public void Visit(ComparePart comparePart)
         {
-            Query.Append("\"" + comparePart.Type + "\" : ");
-        }
-
-        public void Visit(CreateCollectionPart createCollectionPart)
-        {
-            throw new NotImplementedException();
+            _query.Append("\"" + comparePart.Type + "\" : ");
         }
 
         public void Visit(OrderByPart orderBy)
         {
-            Query.Append("._addSpecial(\"$orderby\", {" + orderBy.Name);
+            if (_format == MongoDBFormat.Aggregate_Order)
+                _query.Append(", { $sort : { " + orderBy.Name + " : 1 } }");
+            else
+            {
+                _query.Append("._addSpecial(\"$orderby\", {" + orderBy.Name);
 
-            orderBy.Direction.Accept(this);
+                orderBy.Direction.Accept(this);
 
-            Query.Append("})");
+                _query.Append("})");
+            }
+        }
+
+        public void Visit(RestrictPart restrict)
+        {
+            if (_format == MongoDBFormat.Aggregate_Order)
+                _query.Append(", { $limit : " + restrict.Limit + " }");
+            else
+                _query.Append(" .limit(" + restrict.Limit.ToString() + ")");
         }
 
         public void Visit(DirectionPart direction)
         {
             if (direction.Type == "DESC")
-                Query.Append(" : -1 ");
+                _query.Append(" : -1 ");
             else
-                Query.Append(" : 1 ");
-        }
-
-        public void Visit(AggregatePart aggregatePart)
-        {
-            throw new NotImplementedException();
+                _query.Append(" : 1 ");
         }
     }
 }

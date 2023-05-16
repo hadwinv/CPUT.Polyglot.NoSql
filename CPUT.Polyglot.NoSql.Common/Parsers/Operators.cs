@@ -35,18 +35,27 @@
             Comma
         }
 
-        public enum DirectionType
+        public enum OrderType
         {
             None,
             Asc,
             Desc
         }
 
-        public enum NodeDirection
+        public enum DirectionType
         {
             None,
             Forward,
-            Backward
+            Backward,
+            Left,
+            Right
+        }
+        
+        public enum MongoDBFormat
+        {
+            None,
+            Aggregate_Order,
+            Find_Order
         }
     }
 }

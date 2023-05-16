@@ -17,11 +17,15 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                 yield break;
 
             var keywordTracking = new List<string>();
-            var bracketsOpen = false;
+            var outerBracketsOpen = false;
+            var squareBracketsOpen = false;
+            var innerBracketsOpen = false;
             var parenDepth = 0;
             var textOpen = false;
             var lhs = false;
             var previousText = string.Empty;
+
+            var referenceAdded = false;
 
             do
             {
@@ -50,17 +54,45 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                         if (keywordTracking[keywordTracking.Count - 1] == "FETCH")
                         {
                             if (next.Value == '.')
-                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
-                            else if (text == "AS")
-                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
-                            else if (previousText == "AS")
                             {
-                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+                                if(!referenceAdded)
+                                {
+                                    yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
+                                    
+                                    referenceAdded = true;
+                                }
+                                else
+                                {
+                                    if(next.Value == '.')
+                                    {
+                                        do
+                                        {
+                                            next = next.Remainder.ConsumeChar();
+                                        } while (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_') );
 
-                                previousText = string.Empty;
+                                        yield return Result.Value(Lexicons.JSON_PROPERTY, wordStart, next.Location);
+                                    }
+                                    else
+                                        yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+
+                                    referenceAdded = false;
+                                }
                             }
                             else
-                                yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+                            {
+                                if (text == "AS")
+                                    yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                                else if (previousText == "AS")
+                                {
+                                    yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+
+                                    previousText = string.Empty;
+                                }
+                                else
+                                    yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+                                
+                                referenceAdded = false;
+                            }
 
                             previousText = text;
                         }
@@ -86,25 +118,55 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                             || keywordTracking[keywordTracking.Count - 1] == "LINK_ON"
                             || keywordTracking[keywordTracking.Count - 1] == "FILTER_ON")
                         {
-                           
                             if (!lhs)
                                 lhs = true;
-                            else
-                                lhs = false;
 
                             if (next.Value == '.')
-                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
-                            else if (text == "AS")
-                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
-                            else if (previousText == "AS")
                             {
-                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
+                                if (!referenceAdded)
+                                {
+                                    yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
 
-                                previousText = string.Empty;
+                                    referenceAdded = true;
+                                }
+                                else
+                                {
+                                    if (next.Value == '.')
+                                    {
+                                        do
+                                        {
+                                            next = next.Remainder.ConsumeChar();
+                                        } while (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_'));
+
+                                        yield return Result.Value(Lexicons.JSON_PROPERTY, wordStart, next.Location);
+                                    }
+                                    else
+                                        yield return Result.Value(PropertyOrFunction.Parse(text), wordStart, next.Location);
+
+                                    referenceAdded = false;
+                                }
                             }
                             else
-                                yield return Result.Value(TermOrFunction.Parse(text), wordStart, next.Location);
+                            {
+                                if (next.Value == '.')
+                                    yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
+                                else if (text == "AS")
+                                    yield return Result.Value(Lexicons.AS, wordStart, next.Location);
+                                else if (previousText == "AS")
+                                {
+                                    yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
 
+                                    previousText = string.Empty;
+                                }
+                                else
+                                {
+                                    if (referenceAdded)
+                                        referenceAdded = false;
+
+                                    yield return Result.Value(TermOrFunction.Parse(text), wordStart, next.Location);
+                                }
+                            }
+                           
                             previousText = text;
                         }
                         else if (keywordTracking[keywordTracking.Count - 1] == "GROUP_BY")
@@ -172,22 +234,65 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                         yield return Result.Empty<Lexicons>(next.Location, $"unrecognized `{next.Value}`");
 
                     next = next.Remainder.ConsumeChar(); // Skip the character anyway
+
+                    if (lhs)
+                        lhs = false;
                 }
                 else if (next.Value == '{')
                 {
-                    if (bracketsOpen)
+                    if (outerBracketsOpen && !squareBracketsOpen)
+                    {
                         yield return Result.Empty<Lexicons>(next.Location, "Unexpected left bracket");
 
-                    bracketsOpen = true;
+                    }
+                    else if(outerBracketsOpen && squareBracketsOpen)
+                    {
+                        yield return Result.Value(Lexicons.LEFT_CURLY_BRACKET, next.Location, next.Remainder);
+
+                        innerBracketsOpen = true;
+                    }
+
+                    if(!outerBracketsOpen)
+                        outerBracketsOpen = true;
 
                     next = next.Remainder.ConsumeChar();
                 }
                 else if (next.Value == '}')
                 {
-                    if (!bracketsOpen)
+                    if (!outerBracketsOpen && squareBracketsOpen)
                         yield return Result.Empty<Lexicons>(next.Location, "Unexpected right bracket");
+                    else if(outerBracketsOpen && squareBracketsOpen)
+                    {
+                        yield return Result.Value(Lexicons.RIGHT_CURLY_BRACKET, next.Location, next.Remainder);
 
-                    bracketsOpen = false;
+                        innerBracketsOpen = false;
+                    }
+
+                    if(outerBracketsOpen && !squareBracketsOpen)
+                        outerBracketsOpen = false;
+
+                    next = next.Remainder.ConsumeChar();
+                }
+                else if (next.Value == '[')
+                {
+                    if (squareBracketsOpen)
+                        yield return Result.Empty<Lexicons>(next.Location, "Unexpected left square bracket");
+                    else
+                        yield return Result.Value(Lexicons.LEFT_BRACKET, next.Location, next.Remainder);
+
+                    squareBracketsOpen = true;
+
+                    next = next.Remainder.ConsumeChar();
+                }
+                    
+                else if (next.Value == ']')
+                {
+                    if (!squareBracketsOpen)
+                        yield return Result.Empty<Lexicons>(next.Location, "Unexpected right square bracket");
+                    else
+                        yield return Result.Value(Lexicons.RIGHT_BRACKET, next.Location, next.Remainder);
+
+                    squareBracketsOpen = false;
 
                     next = next.Remainder.ConsumeChar();
                 }
@@ -222,20 +327,13 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                 {
                     if (char.IsDigit(next.Value))
                     {
-                        if (lhs)
-                            lhs = false;
-
                         var integer = Numerics.Integer(next.Location);
                         yield return Result.Value(Lexicons.NUMBER, next.Location, integer.Remainder);
                         next = integer.Remainder.ConsumeChar();
                     }
                     else if (next.Value == Convert.ToChar("'"))
                     {
-                        if (lhs)
-                            lhs = false;
-
                         textOpen = true;
-                        //word += next.Value;
                         next = next.Remainder.ConsumeChar();
 
                         var wordStart = next.Location;
