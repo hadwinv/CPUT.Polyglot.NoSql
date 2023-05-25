@@ -1,4 +1,6 @@
-﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+﻿using CPUT.Polyglot.NoSql.Models.Views;
+using CPUT.Polyglot.NoSql.Models.Views.Native;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
@@ -9,6 +11,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
@@ -24,7 +27,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 if (DeclareExpr != null)
                 {
-                    var expr = DeclareExpr.Value.SingleOrDefault(x => x.GetType().Equals(typeof(FunctionExpr))) as FunctionExpr;
+                    dynamic? expr = DeclareExpr.Value.FirstOrDefault(x => x.GetType().Equals(typeof(FunctionExpr))) as FunctionExpr;
 
                     if (expr != null)
                     {
@@ -33,6 +36,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         {
                             return true;
                         }
+                    }
+                    else
+                    {
+                        expr = DeclareExpr.Value.FirstOrDefault(x => x.GetType().Equals(typeof(JsonExpr))) as JsonExpr;
+
+                        if (expr != null)
+                            return true;
                     }
                 }
 
@@ -212,7 +222,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     if (DeclareExpr != null)
                     {
                         //unwind complex field i.e. json
-                        col.Aggregate.Unwind = new UnwindPart(GetUnwindPart(Target).ToArray());
+                        col.Aggregate.Unwind = new UnwindGroupPart(GetUnwindPart(Target).ToArray());
 
                         //get staging property fields
                         col.Aggregate.Project = new ProjectPart(GetProjectPart().ToArray());
@@ -299,14 +309,35 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         if (linkage != null)
                         {
-                            ////get all linked properties, model, etc
+                            //get all linked properties, model, etc
                             var native = Assistor.NSchema
                                   .SelectMany(s => s.Model)
                                   .Where(x => x.Name == linkage.Source && x.Type == "collection")
                                   .FirstOrDefault();
 
                             if (native != null)
+                            {
                                 collections.Add(new CollectionPart(native.Name, data.Value, data.AliasIdentifier));
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            var native = Assistor.NSchema
+                                  .SelectMany(s => s.Model)
+                                  .Where(x => x.Type == "collection")
+                                  .FirstOrDefault();
+
+                            if (native != null)
+                            {
+                                var unified = Assistor.USchema
+                                    .Select(x => x.View)
+                                    .Where(x => x.Linkages.Exists(x => x.Source == native.Name && x.Storage == Target))
+                                    .First();
+
+                                collections.Add(new CollectionPart(native.Name, unified.Name, unified.Name.Substring(0, 1)));
+                                break;
+                            }
                         }
                     }
                 }
@@ -397,10 +428,26 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         }
                     }
                 }
-
-                if (parts.Count > 0)
-                    parts.RemoveAt(parts.Count - 1);
             }
+            else if(DeclareExpr != null)
+            {
+                //set _id column first
+                foreach (var declare in DeclareExpr.Value)
+                {
+                    dynamic baseExpr = declare is PropertyExpr ? ((PropertyExpr)declare) : ((JsonExpr)declare);
+
+                    var property = GetMappedProperty(baseExpr, Target);
+
+                    if (property != null)
+                    {
+                        parts.Add(new ProjectFieldPart(baseExpr, property, true));
+                        parts.Add(new SeparatorPart(","));
+                    }
+                }
+            }
+
+            if (parts.Count > 0)
+                parts.RemoveAt(parts.Count - 1);
 
             return parts.ToArray();
         }
@@ -575,6 +622,45 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             if (parts.Count > 0)
                 parts.RemoveAt(parts.Count - 1);
+
+            return parts.ToArray();
+        }
+
+        private UnwindJsonPart? GetJsonPart(BaseExpr baseExpr, string database)
+        {
+            if (baseExpr is JsonExpr)
+            {
+                var link = GetMappedProperty(baseExpr, database);
+
+                return new UnwindJsonPart(link, (JsonExpr)baseExpr);
+            }
+            else if (baseExpr is FunctionExpr)
+            {
+                foreach (var expr in ((FunctionExpr)baseExpr).Value)
+                    return GetJsonPart(expr, database);
+            }
+
+            return default;
+        }
+
+        private UnwindJsonPart[] GetUnwindPart(string database)
+        {
+            var parts = new List<UnwindJsonPart>();
+
+            if (DeclareExpr != null)
+            {
+                foreach (var expr in DeclareExpr.Value)
+                {
+                    var json = GetJsonPart(expr, database);
+
+                    //"register.course.subjects"
+                    if (json != null)
+                    {
+                        if(!parts.Exists(x => x.Name == json.Name))
+                            parts.Add(json);
+                    }
+                }
+            }
 
             return parts.ToArray();
         }

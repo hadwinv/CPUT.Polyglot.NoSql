@@ -3,6 +3,7 @@ using CPUT.Polyglot.NoSql.Interface;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Mapper;
+using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Parser;
 using CPUT.Polyglot.NoSql.Parser.Tokenizers;
@@ -10,10 +11,13 @@ using CPUT.Polyglot.NoSql.Translator;
 using CPUT.Polyglot.NoSql.Translator.Events;
 using FluentAssertions;
 using Moq;
+using Neo4jClient.Cypher;
 using NUnit.Framework;
 using Superpower;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 {
@@ -761,6 +765,151 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             
             var input = @"FETCH { student_no, nsum(marks) }
                     DATA_MODEL { transcript}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, SUM(marks) as marks FROM grades").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, navg(marks) }
+                    DATA_MODEL { transcript}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, AVG(marks) as marks FROM grades").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNCount_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, ncount(marks) }
+                    DATA_MODEL { transcript}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, COUNT(marks) as marks FROM grades").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNMIN_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, nmin(marks) }
+                    DATA_MODEL { transcript}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, MIN(marks) as marks FROM grades").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchNMAX_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { student_no, nmax(marks) }
+                    DATA_MODEL { transcript}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT idno, MAX(marks) as marks FROM grades").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Cassandra_FetchWithFilterNSUM_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { student_no, nsum(marks) }
+                    DATA_MODEL { transcript}
                     FILTER_ON {student_no = '05506604815'}
                     TARGET {  cassandra }";
 
@@ -785,10 +934,10 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Cassandra_FetchNAVG_ReturnExecutableQuery()
+        public void Cassandra_FetchWithFilterNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
-            
+
             var input = @"FETCH { student_no, navg(marks) }
                     DATA_MODEL { transcript}
                     FILTER_ON {student_no = '05506604815'}
@@ -815,10 +964,10 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Cassandra_FetchNCount_ReturnExecutableQuery()
+        public void Cassandra_FetchWithFilterNCount_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
-            
+
             var input = @"FETCH { student_no, ncount(marks) }
                     DATA_MODEL { transcript}
                     FILTER_ON {student_no = '05506604815'}
@@ -845,10 +994,10 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Cassandra_FetchNMIN_ReturnExecutableQuery()
+        public void Cassandra_FetchWithFilterNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
-            
+
             var input = @"FETCH { student_no, nmin(marks) }
                     DATA_MODEL { transcript}
                     FILTER_ON {student_no = '05506604815'}
@@ -875,10 +1024,10 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Cassandra_FetchNMAX_ReturnExecutableQuery()
+        public void Cassandra_FetchWithFilterNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
-            
+
             var input = @"FETCH { student_no, nmax(marks) }
                     DATA_MODEL { transcript}
                     FILTER_ON {student_no = '05506604815'}
@@ -1179,6 +1328,65 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
+        public void MongoDB_FetchUnwindedProperties_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { t.subject.name, t.subject.duration }
+                    DATA_MODEL { transcript AS t}
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate([{ $unwind : {path: \"$register.course.subjects\"}},{ $project : { _id: \"$_id\", name : \"$register.course.subjects.name\", duration : \"$register.course.subjects.duration\" }}])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void MongoDB_FetchUnwindedPropertiesWithFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { t.subject.name, t.subject.duration }
+                    DATA_MODEL { transcript AS t}
+                    FILTER_ON { t.subject.duration > 0 }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate([{ $match : {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }},{ $unwind : {path: \"$register.course.subjects\"}},{ $project : { _id: \"$_id\", name : \"$register.course.subjects.name\", duration : \"$register.course.subjects.duration\" }}])").Replace(" ", "")
+            );
+        }
+
+        [Test]
         public void MongoDB_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
@@ -1381,7 +1589,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchNSUM_ReturnExecutableQuery()
+        public void MongoDB_FetchWithFilterNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1440,7 +1648,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
     
         [Test]
     
-        public void MongoDB_FetchNCOUNT_ReturnExecutableQuery()
+        public void MongoDB_FetchWithFilterNCOUNT_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1498,7 +1706,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchNAVG_ReturnExecutableQuery()
+        public void MongoDB_FetchWithFilterNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1556,7 +1764,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchNMIN_ReturnExecutableQuery()
+        public void MongoDB_FetchWithFilterNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1614,7 +1822,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MongoDB_FetchNMAX_ReturnExecutableQuery()
+        public void MongoDB_FetchWithFilterNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1652,6 +1860,252 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
                 "       \"$and\" : [" +
                 "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
                 "       ]}}," +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $max: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+        );
+        }
+
+        [Test]
+        public void MongoDB_FetchNSUM_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nsum(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $sum: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+
+        public void MongoDB_FetchWithNCOUNT_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, ncount(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $count: {}}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void MongoDB_FetchNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, navg(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $avg: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+        );
+        }
+
+        [Test]
+        public void MongoDB_FetchNMIN_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nmin(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
+                "   { $unwind : {" +
+                "       path: \"$register.course.subjects\"}}," +
+                "   { $project : { " +
+                "       _id: \"$_id\", " +
+                "       name : \"$name\", " +
+                "       surname : \"$surname\", " +
+                "       id_number : \"$id_number\", " +
+                "       subjects : \"$register.course.subjects\"}}," +
+                "   { $group : { " +
+                "       _id: \"$_id\", " +
+                "       name : { \"$first\" : \"$name\"}, " +
+                "       surname : { \"$first\" : \"$surname\"}, " +
+                "       id_number : { \"$first\" : \"$id_number\"}, " +
+                "       duration: { $min: \"$subjects.duration\"}}}, " +
+                "   { $sort : { name : 1 } }, " +
+                "   { $limit : 2 }])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void MongoDB_FetchNMAX_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nmax(t.subject.duration) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate(" +
+                "[" +
                 "   { $unwind : {" +
                 "       path: \"$register.course.subjects\"}}," +
                 "   { $project : { " +
@@ -1971,6 +2425,36 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, mar.Score").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedWithFilters_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { gradedsymbol, marks }
+                        DATA_MODEL { transcript}
+                        FILTER_ON { marks > 0 AND gradedsymbol = 'A' }
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (pro:Progress) UNWIND apoc.convert.fromJsonList( pro.marks) as mar WITH mar WHERE mar.Score > 0 AND mar.Grade = \"A\" RETURN mar.Grade, mar.Score").Replace(" ", "")
             );
         }
 
@@ -2379,6 +2863,155 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pro:Progress ) UNWIND apoc.convert.fromJsonList(pro.marks) as mar RETURN mar.Grade, MAX(mar.Score) as Score").Replace(" ", "")
+            );
+        }
+       
+        [Test]
+        public void Neo4j_FetchUnwindedNSUMWithFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, nsum(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c}
+                        FILTER_ON { t.marks > 0 }
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+            ;
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var transformed = _translate.Convert(
+            new ConstructPayload
+            {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)  UNWIND apoc.convert.fromJsonList( t.marks) as mar WITH s, mar, c WHERE mar.Score > 0 RETURN s.title, s.name, s.surname, mar.Grade, c.name,  SUM(mar.Score) as Score LIMIT 10").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNAVGWithFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, navg(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c}
+                        FILTER_ON { t.marks > 0 }
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+            ;
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var transformed = _translate.Convert(
+            new ConstructPayload
+            {
+                BaseExpr = syntaxExpr,
+                Command = Utils.Command.FETCH
+            });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)  UNWIND apoc.convert.fromJsonList( t.marks) as mar WITH s, mar, c WHERE mar.Score > 0 RETURN s.title, s.name, s.surname, mar.Grade, c.name,  AVG(mar.Score) as Score LIMIT 10").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNCountWithFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+            
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, ncount(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c}
+                        FILTER_ON { t.marks > 0 }
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+            ;
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var transformed = _translate.Convert(
+            new ConstructPayload
+            {
+                BaseExpr = syntaxExpr,
+                Command = Utils.Command.FETCH
+            });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)  UNWIND apoc.convert.fromJsonList( t.marks) as mar WITH s, mar, c WHERE mar.Score > 0 RETURN s.title, s.name, s.surname, mar.Grade, c.name,  COUNT(mar.Score) as Score LIMIT 10").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNMINWithFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, nmin(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c}
+                        FILTER_ON { t.marks > 0 }
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+            ;
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var transformed = _translate.Convert(
+            new ConstructPayload
+            {
+                BaseExpr = syntaxExpr,
+                Command = Utils.Command.FETCH
+            });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)  UNWIND apoc.convert.fromJsonList( t.marks) as mar WITH s, mar, c WHERE mar.Score > 0 RETURN s.title, s.name, s.surname, mar.Grade, c.name,  MIN(mar.Score) as Score LIMIT 10").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Neo4j_FetchUnwindedNMAXWithFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, nmax(t.marks) }
+                        DATA_MODEL { student AS s, transcript AS t, course AS c}
+                        FILTER_ON { t.marks > 0 }
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+            ;
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var transformed = _translate.Convert(
+            new ConstructPayload
+            {
+                BaseExpr = syntaxExpr,
+                Command = Utils.Command.FETCH
+            });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (t:Progress)<-[:TRANSCRIPT]-(s:Pupil)-[:ENROLLED_IN]->(c:Course)  UNWIND apoc.convert.fromJsonList( t.marks) as mar WITH s, mar, c WHERE mar.Score > 0 RETURN s.title, s.name, s.surname, mar.Grade, c.name,  MAX(mar.Score) as Score LIMIT 10").Replace(" ", "")
             );
         }
 

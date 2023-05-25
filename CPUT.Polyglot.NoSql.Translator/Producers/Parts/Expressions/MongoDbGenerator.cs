@@ -33,67 +33,67 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             }
         }
 
-        public void Visit(CollectionPart collection)
+        public void Visit(CollectionPart part)
         {
-            _query.Append("db.getCollection(\"" + collection.Target + "\")");
+            _query.Append("db.getCollection(\"" + part.Target + "\")");
 
-            if(collection.Find != null)
-                collection.Find.Accept(this);
-            else if (collection.Aggregate != null)
-                collection.Aggregate.Accept(this);
-            else if (collection.Insert != null)
-                collection.Insert.Accept(this);
-            else if (collection.Update != null)
-                collection.Update.Accept(this);
+            if(part.Find != null)
+                part.Find.Accept(this);
+            else if (part.Aggregate != null)
+                part.Aggregate.Accept(this);
+            else if (part.Insert != null)
+                part.Insert.Accept(this);
+            else if (part.Update != null)
+                part.Update.Accept(this);
         }
 
-        public void Visit(FindPart find)
+        public void Visit(FindPart part)
         {
             _query.Append(".find(");
 
             bool hasFilter = false;
 
-            if(find.Condition != null)
+            if(part.Condition != null)
             {
                 _query.Append("{");
 
-                find.Condition.Accept(this);
+                part.Condition.Accept(this);
 
                 _query.Append("}");
 
                 hasFilter = true;
             }
 
-            if (find.Field != null)
+            if (part.Field != null)
             {
                 if (!hasFilter)
                     _query.Append("{}");
 
                 _query.Append(",{");
 
-                find.Field.Accept(this);
+                part.Field.Accept(this);
 
                 _query.Append("}");
             }
 
             _query.Append(")");
 
-            if (find.OrderBy != null)
-                find.OrderBy.Accept(this);
+            if (part.OrderBy != null)
+                part.OrderBy.Accept(this);
 
-            if (find.Restrict != null)
-                find.Restrict.Accept(this);
+            if (part.Restrict != null)
+                part.Restrict.Accept(this);
         }
 
         #region DML
 
-        public void Visit(UpdatePart update)
+        public void Visit(UpdatePart part)
         {
             _query.Append(".updateMany(");
 
             bool hasFilter = false;
 
-            foreach (var expr in update.Parts)
+            foreach (var expr in part.Parts)
             {
                 if (expr is ConditionPart)
                 {
@@ -121,11 +121,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append(")");
         }
 
-        public void Visit(SetPart set)
+        public void Visit(SetPart part)
         {
             _query.Append("$set: {");
 
-            foreach (var expr in set.Properties)
+            foreach (var expr in part.Properties)
             {
                 if (expr is SetValuePart)
                 {
@@ -139,42 +139,42 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append("}");
         }
 
-        public void Visit(SetValuePart setValue)
+        public void Visit(SetValuePart part)
         {
             string[] types = { "$gt", "$gte", "$lt", "$lte" };
             
-            _query.Append("\"" + setValue.Left.Name + "\"");
+            _query.Append("\"" + part.Left.Name + "\"");
 
-            if (types.Contains(setValue.Operator.Type))
+            if (types.Contains(part.Operator.Type))
             {
                 _query.Append(": { ");
-                _query.Append(setValue.Operator.Type + " : ");
+                _query.Append(part.Operator.Type + " : ");
 
-                if (setValue.Right.Type == "string")
-                    _query.Append("\"" + setValue.Right.Name + "\"");
-                else if (setValue.Right.Type == "int")
-                    _query.Append("NumberLong(" + setValue.Right.Name + ")");
+                if (part.Right.Type == "string")
+                    _query.Append("\"" + part.Right.Name + "\"");
+                else if (part.Right.Type == "int")
+                    _query.Append("NumberLong(" + part.Right.Name + ")");
                 else
-                    _query.Append(setValue.Right.Name);
+                    _query.Append(part.Right.Name);
 
                 _query.Append(" } ");
             }
             else
             {
-                _query.Append(" " + setValue.Operator.Type + " ");
+                _query.Append(" " + part.Operator.Type + " ");
 
-                if (setValue.Right.Type == "string")
-                    _query.Append("\"" + setValue.Right.Name + "\"");
+                if (part.Right.Type == "string")
+                    _query.Append("\"" + part.Right.Name + "\"");
                 else
-                    _query.Append(setValue.Right.Name);
+                    _query.Append(part.Right.Name);
             }
         }
 
-        public void Visit(InsertPart insert)
+        public void Visit(InsertPart part)
         {
             _query.Append(".insertMany([");
 
-            foreach(var expr in insert.Parts)
+            foreach(var expr in part.Parts)
             {
                 if (expr is AddPart)
                 {
@@ -191,9 +191,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append("])");
         }
 
-        public void Visit(AddPart add)
+        public void Visit(AddPart part)
         {
-            foreach (var expr in add.Properties)
+            foreach (var expr in part.Properties)
             {
                 if (expr is SetValuePart)
                 {
@@ -210,63 +210,63 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         #region Aggregation
 
-        public void Visit(AggregatePart aggregate)
+        public void Visit(AggregatePart part)
         {
             var blockAdded = false;
 
             _query.Append(".aggregate([");
 
-            if (aggregate.Match != null)
+            if (part.Match != null)
             {
-                aggregate.Match.Accept(this);
+                part.Match.Accept(this);
 
                 blockAdded = true;
             }
 
-            if (aggregate.Unwind != null)
+            if (part.Unwind != null)
             {
                 if (blockAdded)
                     _query.Append(",");
 
-                aggregate.Unwind.Accept(this);
+                part.Unwind.Accept(this);
 
                 if (!blockAdded)
                     blockAdded = true;
             }
 
-            if (aggregate.Project != null)
+            if (part.Project != null)
             {
                 if (blockAdded)
                     _query.Append(",");
 
-                aggregate.Project.Accept(this);
+                part.Project.Accept(this);
 
                 if (!blockAdded)
                     blockAdded = true;
             }
 
-            if (aggregate.GroupBy != null)
+            if (part.GroupBy != null)
             {
                 if (blockAdded)
                     _query.Append(",");
 
-                aggregate.GroupBy.Accept(this);
+                part.GroupBy.Accept(this);
             }
 
-            if (aggregate.OrderBy != null)
-                aggregate.OrderBy.Accept(this);
+            if (part.OrderBy != null)
+                part.OrderBy.Accept(this);
 
-            if (aggregate.Restrict != null)
-                aggregate.Restrict.Accept(this);
+            if (part.Restrict != null)
+                part.Restrict.Accept(this);
 
             _query.Append("])");
         }
 
-        public void Visit(MatchPart match)
+        public void Visit(MatchPart part)
         {
             _query.Append("{ $match : {");
 
-            var condition = (ConditionPart)match.Properties.SingleOrDefault(x => x.GetType().Equals(typeof(ConditionPart)));
+            var condition = (ConditionPart)part.Properties.SingleOrDefault(x => x.GetType().Equals(typeof(ConditionPart)));
 
             if (condition != null)
                 condition.Accept(this);
@@ -274,79 +274,79 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append("}}");
         }
 
-        public void Visit(UnwindPart unwind)
+        public void Visit(UnwindGroupPart part)
         {
-            if (unwind.Fields.Count() > 0)
+            if (part.Fields.Count() > 0)
             {
                 _query.Append("{ $unwind : {");
 
-                foreach (var exp in unwind.Fields)
+                foreach (var exp in part.Fields)
                     exp.Accept(this);
 
                 _query.Append("}}");
             }
         }
 
-        public void Visit(ProjectPart project)
+        public void Visit(ProjectPart part)
         {
-            if (project.Fields.Count() > 0)
+            if (part.Fields.Count() > 0)
             {
                 _query.Append("{ $project : { _id: \"$_id\", ");
 
-                foreach (var part in project.Fields)
-                    part.Accept(this);
+                foreach (var field in part.Fields)
+                    field.Accept(this);
                     
                 _query.Append("}}");
             }
         }
 
-        public void Visit(ProjectFieldPart field)
+        public void Visit(ProjectFieldPart part)
         {
-            _query.Append(field.Alias + " : \"$" + field.Property + "\"");
+            _query.Append(part.Alias + " : \"$" + part.Property + "\"");
         }
 
-        public void Visit(GroupByPart groupBy)
+        public void Visit(GroupByPart part)
         {
-            if (groupBy.Fields.Count() > 0)
+            if (part.Fields.Count() > 0)
             {
                 _query.Append("{ $group : { _id: \"$_id\", ");
 
-                foreach (var part in groupBy.Fields)
-                    part.Accept(this);
+                foreach (var field in part.Fields)
+                    field.Accept(this);
 
                 _query.Append("}}");
             }
         }
         
-        public void Visit(GroupByFieldPart field)
+        public void Visit(GroupByFieldPart part)
         {
-            _query.Append(field.Alias + " : { \"$first\" : \"$" + field.Property + "\"}");
+            _query.Append(part.Alias + " : { \"$first\" : \"$" + part.Property + "\"}");
         }
 
-        public void Visit(NativeFunctionPart function)
+        public void Visit(NativeFunctionPart part)
         {
-            if(function.Type.ToLower() == "count")
-                _query.Append( function.Alias + ": { $" + function.Type.ToLower() + ": {}");
+            if(part.Type.ToLower() == "count")
+                _query.Append( part.Alias + ": { $" + part.Type.ToLower() + ": {}");
             else
             {
-                _query.Append(function.Alias + ": { $" + function.Type.ToLower() + ":");
+                _query.Append(part.Alias + ": { $" + part.Type.ToLower() + ":");
 
-                function.PropertyPart.Accept(this);
+                part.PropertyPart.Accept(this);
             }
 
             _query.Append("}");
         }
 
-        public void Visit(FunctionFieldPart functionProperty)
+        public void Visit(FunctionFieldPart part)
         {
-            _query.Append( " \"$" + functionProperty.Property + "\"");
+            _query.Append( " \"$" + part.Property + "\"");
         }
 
         #endregion
 
-        public void Visit(ConditionPart condition)
+        public void Visit(ConditionPart part)
         {
-            var logicParts = condition.Logic.Where(x => x.GetType().Equals(typeof(LogicalPart))).Cast<LogicalPart>().ToList();//.OrderByDescending(x => x.Compare?.Type);
+            var logicParts = part.Logic.Where(x => x.GetType().Equals(typeof(LogicalPart))).Cast<LogicalPart>().ToList();//.OrderByDescending(x => x.Compare?.Type);
 
             int logicCount = 0;
             bool openCollection = false;
@@ -404,39 +404,49 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             }
         }
 
-        public void Visit(LogicalPart logical)
+        public void Visit(LogicalPart part)
         {
             string[] types = { "$gt", "$gte", "$lt", "$lte" };
-            _query.Append("\"" + logical.Left.Name + "\"");
+            _query.Append("\"" + part.Left.Name + "\"");
 
-            if (types.Contains(logical.Operator.Type))
+            if (types.Contains(part.Operator.Type))
             {
                 _query.Append(": { ");
-                _query.Append( logical.Operator.Type + " : ");
+                _query.Append( part.Operator.Type + " : ");
 
-                if (logical.Right.Type == "string")
-                    _query.Append("\"" + logical.Right.Name + "\"" );
-                else if (logical.Right.Type == "int")
-                    _query.Append("NumberLong(" + logical.Right.Name + ")") ;
+                if (part.Right.Type == "string")
+                    _query.Append("\"" + part.Right.Name + "\"" );
+                else if (part.Right.Type == "int")
+                    _query.Append("NumberLong(" + part.Right.Name + ")") ;
                 else
-                    _query.Append(logical.Right.Name);
+                    _query.Append(part.Right.Name);
 
                 _query.Append(" } ");
             }
             else
             {
-                _query.Append(" " + logical.Operator.Type + " ");
+                _query.Append(" " + part.Operator.Type + " ");
 
-                if (logical.Right.Type == "string")
-                    _query.Append("\"" + logical.Right.Name + "\"");
+                if (part.Right.Type == "string")
+                    _query.Append("\"" + part.Right.Name + "\"");
                 else
-                    _query.Append(logical.Right.Name);
+                    _query.Append(part.Right.Name);
             }
         }
 
-        public void Visit(FieldPart field)
+        public void Visit(OperatorPart part)
         {
-            foreach (var expr in field.Fields)
+            _query.Append(" " + part.Type + " ");
+        }
+
+        public void Visit(ComparePart part)
+        {
+            _query.Append("\"" + part.Type + "\" : ");
+        }
+
+        public void Visit(FieldPart part)
+        {
+            foreach (var expr in part.Fields)
             {
                 if (expr is PropertyPart)
                 {
@@ -451,56 +461,46 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             }
         }
 
-        public void Visit(PropertyPart property)
+        public void Visit(PropertyPart part)
         {
-            _query.Append(property.Name);
+            _query.Append(part.Name);
         }
 
-        public void Visit(UnwindJsonPart unwindJson)
+        public void Visit(UnwindJsonPart part)
         {
-            _query.Append("path: \"$" + unwindJson.Name + "\"");
+            _query.Append("path: \"$" + part.Name + "\"");
         }
 
-        public void Visit(SeparatorPart separator)
-        {
-            _query.Append(separator.Delimiter + " ");
-        }
-
-        public void Visit(OperatorPart operatorPart)
-        {
-            _query.Append(" " + operatorPart.Type + " ");
-        }
-
-        public void Visit(ComparePart comparePart)
-        {
-            _query.Append("\"" + comparePart.Type + "\" : ");
-        }
-
-        public void Visit(OrderByPart orderBy)
+        public void Visit(OrderByPart part)
         {
             if (_format == MongoDBFormat.Aggregate_Order)
-                _query.Append(", { $sort : { " + orderBy.Name + " : 1 } }");
+                _query.Append(", { $sort : { " + part.Name + " : 1 } }");
             else
             {
-                _query.Append("._addSpecial(\"$orderby\", {" + orderBy.Name);
+                _query.Append("._addSpecial(\"$orderby\", {" + part.Name);
 
-                orderBy.Direction.Accept(this);
+                part.Direction.Accept(this);
 
                 _query.Append("})");
             }
         }
 
-        public void Visit(RestrictPart restrict)
+        public void Visit(RestrictPart part)
         {
             if (_format == MongoDBFormat.Aggregate_Order)
-                _query.Append(", { $limit : " + restrict.Limit + " }");
+                _query.Append(", { $limit : " + part.Limit + " }");
             else
-                _query.Append(" .limit(" + restrict.Limit.ToString() + ")");
+                _query.Append(" .limit(" + part.Limit.ToString() + ")");
         }
 
-        public void Visit(DirectionPart direction)
+        public void Visit(SeparatorPart part)
         {
-            if (direction.Type == "DESC")
+            _query.Append(part.Delimiter + " ");
+        }
+
+        public void Visit(DirectionPart part)
+        {
+            if (part.Type == "DESC")
                 _query.Append(" : -1 ");
             else
                 _query.Append(" : 1 ");

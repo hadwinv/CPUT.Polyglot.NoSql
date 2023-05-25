@@ -4,7 +4,7 @@ using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 
-namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
+namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb
 {
     public class UnwindJsonPart : IExpression
     {
@@ -29,22 +29,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
             UnwindAliasIdentifier = link.Reference.Substring(0, 2).ToLower();
         }
 
-        public UnwindJsonPart(PropertyExpr expr, Model model, string alias)
-        {
-            Name = alias;//expr.Value;
-
-            if (!string.IsNullOrEmpty(expr.AliasIdentifier))
-                AliasIdentifier = expr.AliasIdentifier;
-            else
-                AliasIdentifier = model.Name.Substring(0, 3).ToLower();
-
-            UnwindAliasIdentifier = alias.Substring(0, 3).ToLower();
-        }
-
-
         public void Accept(INeo4jVisitor visitor)
         {
-            visitor.Visit(this);
+            throw new NotImplementedException();
         }
 
         public void Accept(ICassandraVisitor visitor)

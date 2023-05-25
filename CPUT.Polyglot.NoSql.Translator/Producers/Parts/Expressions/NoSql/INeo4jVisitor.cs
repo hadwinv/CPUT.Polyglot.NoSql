@@ -48,10 +48,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         
         void Visit(NativeFunctionPart functionPart);
         
-        void Visit(UnwindPart unwindPart);
+        void Visit(UnwindGroupPart unwindPart);
         
-        void Visit(UnwindPropertyPart unwindPropertyPart);
+        //void Visit(UnwindPropertyPart unwindPropertyPart);
         
-        void Visit(UnwindJsonPart unwindJsonPart);
+        //void Visit(UnwindJsonPart unwindJsonPart);
+        void Visit(WithPart withPart);
+        void Visit(WithAliasPart withAliasPart);
+        void Visit(UnwindGraphPart unwindGraphPart);
     }
 }

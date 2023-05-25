@@ -50,7 +50,8 @@
 			"linkages": [
 				{
 					"storage": "graph",
-					"source": "Faculty"
+					"source": "Faculty",
+					"type": "direct"
 				}
 			]
 		}
@@ -95,7 +96,8 @@
 			"linkages": [
 				{
 					"storage": "graph",
-					"source": "Course"
+					"source": "Course",
+					"type": "direct"
 				}
 			]
 		}
@@ -175,7 +177,8 @@
 			"linkages": [
 				{
 					"storage": "graph",
-					"source": "Subject"
+					"source": "Subject",
+					"type": "direct"
 				}
 			]
 		}
@@ -605,7 +608,7 @@
 						},
 						{
 							"target": "mongodb",
-							"property": "id",
+							"property": "_id",
 							"reference": "students"
 						}
 					]
@@ -662,11 +665,13 @@
 			"linkages": [
 				{
 					"storage": "cassandra",
-					"source": "grades"
+					"source": "grades",
+					"type":  "direct"
 				},
 				{
 					"storage": "graph",
-					"source": "Progress"
+					"source": "Progress",
+					"type": "direct"
 				}
 			]
 		}

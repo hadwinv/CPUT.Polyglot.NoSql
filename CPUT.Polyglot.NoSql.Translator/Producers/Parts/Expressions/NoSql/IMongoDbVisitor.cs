@@ -27,7 +27,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         void Visit(OrderByPart orderByPart);
         void Visit(AggregatePart aggregatePart);
         void Visit(MatchPart matchPart);
-        void Visit(UnwindPart unwindPart);
+        void Visit(UnwindGroupPart unwindPart);
         void Visit(GroupByPart groupPart);
         void Visit(ProjectPart projectPart);
         void Visit(UnwindJsonPart unwindJsonPart);

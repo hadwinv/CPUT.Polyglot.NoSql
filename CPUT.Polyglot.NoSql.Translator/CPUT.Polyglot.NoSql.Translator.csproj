@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Remove="Producers\Parts\Expressions\NoSql\MongoDb\MatchPart.cs" />
     <Compile Remove="Producers\Parts\Expressions\NoSql\MongoDb\UnwindPart.cs" />
+    <Compile Remove="Producers\Parts\Expressions\NoSql\Shared\UnwindPropertyPart.cs" />
   </ItemGroup>
 
   <ItemGroup>

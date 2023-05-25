@@ -8,9 +8,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 {
     public class RedisGenerator : IRedisVisitor
     {
-        StringBuilder Query;
+        private StringBuilder _query;
 
-        public RedisGenerator(StringBuilder query) => this.Query = query;
+        public RedisGenerator(StringBuilder query) => this._query = query;
 
         public void Visit(QueryPart query)
         {
@@ -26,35 +26,35 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 }
                 else if (expr is NoSql.Redis.SetKeyValuePart)
                 {
-                    if(Query.Length > 0)
-                        Query.Append(";");
+                    if(_query.Length > 0)
+                        _query.Append(";");
 
                     ((SetKeyValuePart)expr).Accept(this);
                 }
             }
         }
 
-        public void Visit(GetPart get)
+        public void Visit(GetPart part)
         {
-            get.Property.Accept(this);
+            part.Property.Accept(this);
         }
 
-        public void Visit(KeyPart keyPart)
+        public void Visit(KeyPart part)
         {
-            Query.Append("KEYS " + keyPart.Value);
+            _query.Append("KEYS " + part.Value);
         }
 
-        public void Visit(SetKeyValuePart set)
+        public void Visit(SetKeyValuePart part)
         {
-            Query.Append("SET " + set.Key + " " + set.Value);
+            _query.Append("SET " + part.Key + " " + part.Value);
         }
 
-        public void Visit(PropertyPart property)
+        public void Visit(PropertyPart part)
         {
-            if (property.Type == "string")
-                Query.Append("GET \"" + property.Name + "\"");
+            if (part.Type == "string")
+                _query.Append("GET \"" + part.Name + "\"");
             else
-                Query.Append("GET " + property.Name);
+                _query.Append("GET " + part.Name);
         }
     }
 }

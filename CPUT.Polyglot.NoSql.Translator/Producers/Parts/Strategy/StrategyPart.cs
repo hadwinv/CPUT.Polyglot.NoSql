@@ -5,6 +5,7 @@ using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
@@ -199,40 +200,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return part;
         }
 
-        protected UnwindJsonPart[] GetUnwindPart(string database)
-        {
-            var parts = new List<UnwindJsonPart>();
-
-            if (DeclareExpr != null)
-            {
-                foreach (var expr in DeclareExpr.Value)
-                {
-                    var json = GetJsonPart(expr, database);
-
-                    if (json != null)
-                        parts.Add(json);
-                }
-            }
-
-            return parts.ToArray();
-        }
-
-        protected UnwindJsonPart? GetJsonPart(BaseExpr baseExpr, string database)
-        {
-            if (baseExpr is JsonExpr)
-            {
-                var link = GetMappedProperty(baseExpr, database);
-
-                return new UnwindJsonPart(link, (JsonExpr)baseExpr);
-            }
-            else if (baseExpr is FunctionExpr)
-            {
-                foreach (var expr in ((FunctionExpr)baseExpr).Value)
-                    return GetJsonPart(expr, database);
-            }
-
-            return default;
-        }
-
+        
     }
 }

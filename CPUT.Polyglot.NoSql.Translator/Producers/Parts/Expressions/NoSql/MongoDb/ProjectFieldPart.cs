@@ -13,7 +13,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
         internal bool IsFirstKey { get; set; }
 
-        public ProjectFieldPart(BaseExpr baseExpr, Link mapping)
+        public ProjectFieldPart(BaseExpr baseExpr, Link mapping, bool standard = default)
         {
             Property = mapping.Property;
             Alias = Property;
@@ -30,11 +30,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
                     if (child != null)
                     {
-                        Property = Assistor.UnwindPropertyName(child);
+                        var fullPath = Assistor.UnwindPropertyName(child);
+                        var path = fullPath.Split(".");
 
-                        var path = Property.Split(".");
-
-                        Alias = path[path.Length - 1];
+                        if (!standard)
+                        {
+                            Property = fullPath;
+                            Alias = path[path.Length - 1];
+                        }
+                        else
+                        {
+                            Property = fullPath + "." + mapping.Property;
+                            Alias = mapping.Property;
+                        }
                     }
                 }
             }

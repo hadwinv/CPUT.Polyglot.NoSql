@@ -2,11 +2,11 @@
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
 {
-    public class UnwindPart : IExpression
+    public class UnwindGroupPart : IExpression
     {
         internal IExpression[] Fields { get; set; }
 
-        public UnwindPart(IExpression[] fields)
+        public UnwindGroupPart(IExpression[] fields)
         {
             Fields = fields;
         }

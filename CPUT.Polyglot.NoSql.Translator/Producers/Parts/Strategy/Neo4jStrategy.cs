@@ -21,6 +21,8 @@ using Cassandra.Mapping;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using System.Xml.Linq;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
@@ -28,8 +30,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     {
         protected string Target = "neo4j";
 
-        private IExpression[] _unwindParts { get; set; }
-
+        private IExpression[]? _unwindParts { get; set; }
         public IExpression[] UnwindParts { 
             get
             {
@@ -39,7 +40,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 return _unwindParts;
             }
         }
-
 
         public override string Alter()
         {
@@ -128,7 +128,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         #region Expression Parts
 
         #region Select
-
+        
         public List<IExpression> ConvertToSelectModel()
         {
             var parts = new List<IExpression>();
@@ -138,14 +138,22 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             if (parts.Count > 0)
             {
-                if (this.FilterExpr != null)
-                    parts.Add(new ConditionPart(GetLogicalPart().ToArray()));
-
                 //get unwind fields
                 parts.AddRange(UnwindParts);
 
                 //get property fields
-                parts.Add(new ReturnPart(GetPropertyPart().ToArray()));
+                var properties = GetPropertyPart();
+
+                if (this.FilterExpr != null)
+                {
+                    if (parts.Count > 1)
+                        parts.Add(new WithPart(GetWithParts(properties.ToArray())));
+
+                    parts.Add(new ConditionPart(GetLogicalPart().ToArray()));
+                }
+
+                //get property fields
+                parts.Add(new ReturnPart(properties.ToArray()));
 
                 if (OrderByExpr != null)
                     parts.Add(GetOrderPart(Target));
@@ -153,6 +161,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 if (this.RestrictExpr != null)
                     parts.Add(new RestrictPart(this.RestrictExpr.Value));
             }
+
+            ////apply correct aliases
+            //FindAndApplyUnwindedAlias(ref parts);
 
             return parts;
         }
@@ -164,8 +175,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         public List<IExpression> ConvertToUpdateModel()
         {
             var parts = new List<IExpression>();
-
-            // var innerParts = new List<IExpression>();
 
             parts.Add(new MatchPart(GetNodePart().ToArray()));
 
@@ -181,8 +190,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                 if (this.RestrictExpr != null)
                     parts.Add(new RestrictPart(this.RestrictExpr.Value));
-
-               
             }
 
             return parts;
@@ -249,6 +256,35 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return parts.ToArray();
         }
 
+        private IExpression[] GetWithParts(IExpression[] properties)
+        {
+            var parts = new List<IExpression>();
+          
+            if (properties != null)
+            {
+                foreach (var part in properties)
+                {
+                    if (part is PropertyPart)
+                    {
+                        var property = (PropertyPart)part;
+
+                        var aliases = parts.Where(x => x.GetType().Equals(typeof(WithAliasPart))).Select(x => (WithAliasPart)x).ToList();
+
+                        if (!aliases.Exists(x => ((WithAliasPart)x).Value == property.AliasIdentifier))
+                        {
+                            parts.Add(new WithAliasPart(property.AliasIdentifier));
+                            parts.Add(new SeparatorPart(","));
+                        }
+                    }
+                }
+            }
+
+            if (parts.Count > 0)
+                parts.RemoveAt(parts.Count - 1);
+
+            return parts.ToArray();
+        }
+
         private LogicalPart[] GetLogicalPart()
         {
             var parts = new List<LogicalPart>();
@@ -297,8 +333,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 .Where(x => x.Property == mappedProperty.Property)
                                 .First();
 
-                            //apply correct alias
-                            ApplyUnwindedAlias(mappedProperty, ref propertyExpr);
+                            ////apply correct alias
+                            //ApplyUnwindedAlias(mappedProperty, ref propertyExpr);
 
                             parts.Add(new PropertyPart(mappedProperty, propertyExpr));
                             parts.Add(new SeparatorPart(","));
@@ -310,14 +346,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         foreach (var func in expr.Value)
                         {
-                            var @base = (PropertyExpr)func;
+                            var propertyExpr = (PropertyExpr)func;
 
-                            //if (func is PropertyExpr)
-                            //    @base = (PropertyExpr)func;
-                            //else
-                            //    @base = (JsonExpr)func;
-
-                            var mappedProperty = GetMappedProperty(@base, Target);
+                            var mappedProperty = GetMappedProperty(propertyExpr, Target);
 
                             if (mappedProperty != null)
                             {
@@ -326,11 +357,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                             .Where(x => x.Property == mappedProperty.Property)
                                             .First();
 
-                                //apply correct alias
-                                ApplyUnwindedAlias(mappedProperty, ref @base);
+                                ////apply correct alias
+                                //ApplyUnwindedAlias(mappedProperty, ref propertyExpr);
 
                                 parts.Add(new NativeFunctionPart(
-                                        new PropertyPart( mappedProperty, @base), expr.Type)
+                                        new PropertyPart(mappedProperty, propertyExpr), expr.Type)
                                     );
                                 parts.Add(new SeparatorPart(","));
                             }
@@ -378,7 +409,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                                 if (!models.Exists(x => x.Name == parentModel.Name))
                                 {
-                                    innerParts.Add(new UnwindJsonPart(propertyExpr, parentModel, model.Name));
+                                    innerParts.Add(new UnwindGraphPart(propertyExpr, parentModel, model));
                                     innerParts.Add(new SeparatorPart(","));
 
                                     models.Add(parentModel);
@@ -412,7 +443,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                                     if (!models.Exists(x => x.Name == parentModel.Name))
                                     {
-                                        innerParts.Add(new UnwindJsonPart(propertyExpr, parentModel, model.Name));
+                                        innerParts.Add(new UnwindGraphPart(propertyExpr, parentModel, model));
                                         innerParts.Add(new SeparatorPart(","));
 
                                         models.Add(parentModel);
@@ -426,14 +457,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 if (innerParts.Count > 0)
                 {
                     innerParts.RemoveAt(innerParts.Count - 1);
-                    parts.Add(new UnwindPart(innerParts.ToArray()));
+                    parts.Add(new UnwindGroupPart(innerParts.ToArray()));
                 }
             }
 
             return parts.ToArray();
         }
 
-        private IExpression[] GetInsertValuePart(bool insert)
+        private IExpression[] GetInsertValuePart(bool add)
         {
             var parts = new List<IExpression>();
 
@@ -455,7 +486,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                             var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                            if (insert)
+                            if (add)
                                 exprs.Add(new InsertNodePart(leftPart, operatorPart, rightPart));
                             else
                                 exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
@@ -467,7 +498,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     if (exprs.Count > 0)
                         exprs.RemoveAt(exprs.Count - 1);
 
-                    if (insert)
+                    if (add)
                         parts.Add(new ValuesPart(exprs.ToArray()));
                     else
                         parts.Add(new SetPart(exprs.ToArray()));
@@ -481,29 +512,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             return parts.ToArray();
         }
-
-        private void ApplyUnwindedAlias(Link mappedProperty, ref PropertyExpr propertyExpr)
-        {
-            if (UnwindParts != null && UnwindParts.Count() > 0)
-            {
-                var unwind = (UnwindPart?)UnwindParts.SingleOrDefault(x => x.GetType().Equals(typeof(UnwindPart)));
-
-                if (unwind != null)
-                {
-                    foreach (var field in unwind.Fields.Where(x => x.GetType().Equals(typeof(UnwindJsonPart))))
-                    {
-                        var unwindJsonPart = (UnwindJsonPart)field;
-
-                        if (unwindJsonPart.Name == mappedProperty.Reference)
-                        {
-                            propertyExpr.AliasIdentifier = unwindJsonPart.UnwindAliasIdentifier;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
+        
         #endregion
     }
 }

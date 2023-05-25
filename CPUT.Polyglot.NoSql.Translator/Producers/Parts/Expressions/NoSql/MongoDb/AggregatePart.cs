@@ -7,7 +7,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
     {
         internal MatchPart? Match { get; set; }
 
-        internal UnwindPart? Unwind { get; set; }
+        internal UnwindGroupPart? Unwind { get; set; }
 
         internal ProjectPart? Project { get; set; }
 
@@ -21,7 +21,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
         {
         }
             
-        public AggregatePart(MatchPart? match, UnwindPart? unwind, ProjectPart? project, GroupByPart? groupBy, OrderByPart? orderBy, RestrictPart? restrict)
+        public AggregatePart(MatchPart? match, UnwindGroupPart? unwind, ProjectPart? project, GroupByPart? groupBy, OrderByPart? orderBy, RestrictPart? restrict)
         {
             Match = match;
             Unwind = unwind;
