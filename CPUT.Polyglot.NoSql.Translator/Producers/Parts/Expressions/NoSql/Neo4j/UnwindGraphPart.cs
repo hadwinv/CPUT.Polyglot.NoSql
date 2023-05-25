@@ -1,12 +1,6 @@
 ﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
-using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
 {

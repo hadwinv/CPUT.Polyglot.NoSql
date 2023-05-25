@@ -1,7 +1,6 @@
 ﻿using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Common.Parsers;
 using CPUT.Polyglot.NoSql.Interface.Logic;
-using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Logic.Core.Handler;
 using CPUT.Polyglot.NoSql.Models.Translator;
@@ -17,7 +16,6 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
     {
         private IValidator _validator;
         private ITranslate _translate;
-        private ISchema _schema;
 
         public FetchHandler(IValidator validator, ITranslate translate) : base(validator, translate)
         {

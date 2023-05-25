@@ -1,6 +1,4 @@
-﻿using CPUT.Polyglot.NoSql.Models.Views;
-using CPUT.Polyglot.NoSql.Models.Views.Native;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
@@ -11,7 +9,6 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
@@ -21,7 +18,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     {
         protected string Target = "mongodb";
 
-        private bool _aggregate
+        #region private variables
+
+        private bool _doAggregation
         {
             get
             {
@@ -50,41 +49,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             }
         }
 
-        public override string Alter()
-        {
-            //            --Add the join_date column in employees collection.
-            //db.employees.update(
-            //{ },
-            //{ $set: { join_date: "" } },
-            //{ multi: true }
-            //)
-            //            --Remove the join_date column from employees table
-            //db.employees.update(
-            //{ },
-            //{ $unset: { join_date: "" } },
-            //{ multi: true }
-            //)
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public override string Create()
-        {
-//            db.employees.insert( {
-//            emp_id: "RAM",
-//age: 50,
-//status: "A"
-//} )
-
-//Or
-
-//db.createCollection("employees");
-            throw new NotImplementedException();
-        }
-
-        public override string Describe()
-        {
-            throw new NotImplementedException();
-        }
 
         public override string Fetch()
         {
@@ -94,7 +60,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             MongoDBFormat format;
 
             //set expression parts
-            if (_aggregate)
+            if (_doAggregation)
             {
                 targetQuery = CreateAggregateModel();
                 format = MongoDBFormat.Aggregate_Order;

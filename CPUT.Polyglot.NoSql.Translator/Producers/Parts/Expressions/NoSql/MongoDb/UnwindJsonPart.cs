@@ -1,6 +1,4 @@
-﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
-using CPUT.Polyglot.NoSql.Models.Views.Shared;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+﻿using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 

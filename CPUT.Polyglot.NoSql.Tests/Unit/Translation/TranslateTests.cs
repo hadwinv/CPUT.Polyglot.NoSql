@@ -3,7 +3,6 @@ using CPUT.Polyglot.NoSql.Interface;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Mapper;
-using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Parser;
 using CPUT.Polyglot.NoSql.Parser.Tokenizers;
@@ -11,13 +10,10 @@ using CPUT.Polyglot.NoSql.Translator;
 using CPUT.Polyglot.NoSql.Translator.Events;
 using FluentAssertions;
 using Moq;
-using Neo4jClient.Cypher;
 using NUnit.Framework;
 using Superpower;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 {

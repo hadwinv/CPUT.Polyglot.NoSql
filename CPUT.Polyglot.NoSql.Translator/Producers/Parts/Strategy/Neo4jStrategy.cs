@@ -1,9 +1,5 @@
 ﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
-using CPUT.Polyglot.NoSql.Models.Views.Shared;
-using CPUT.Polyglot.NoSql.Models.Views;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
@@ -16,13 +12,6 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
-using CPUT.Polyglot.NoSql.Models.Translator;
-using Cassandra.Mapping;
-using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
-using System.Xml.Linq;
-using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
@@ -30,8 +19,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     {
         protected string Target = "neo4j";
 
+        #region private variables
+
         private IExpression[]? _unwindParts { get; set; }
-        public IExpression[] UnwindParts { 
+        public IExpression[] UnwindParts
+        {
             get
             {
                 if (_unwindParts == null)
@@ -41,20 +33,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             }
         }
 
-        public override string Alter()
-        {
-            throw new NotImplementedException();
-        }
 
-        public override string Create()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Describe()
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
         public override string Fetch()
         {

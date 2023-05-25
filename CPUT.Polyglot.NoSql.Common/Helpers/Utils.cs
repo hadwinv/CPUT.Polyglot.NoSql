@@ -9,9 +9,6 @@
             FETCH,
             MODIFY,
             ADD,
-            CREATE,
-            ALTER,
-            DESCRIBE,
             NONE,
         }
 

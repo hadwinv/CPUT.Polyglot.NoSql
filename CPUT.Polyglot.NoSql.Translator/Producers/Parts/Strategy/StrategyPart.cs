@@ -5,7 +5,6 @@ using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
-using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
@@ -45,12 +44,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
         public abstract string Add();
 
-        public abstract string Alter();
-
-        public abstract string Create();
-
-        public abstract string Describe();
-
         #endregion
 
         public string Query(CreatePart request)
@@ -73,12 +66,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 return Add();
             else if (request.Command == Command.MODIFY)
                 return Modify();
-            else if (request.Command == Command.ALTER)
-                return Alter();
-            else if (request.Command == Command.CREATE)
-                return Create();
-            else if (request.Command == Command.DESCRIBE)
-                return Describe();
 
             return string.Empty;
         }

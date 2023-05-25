@@ -5,7 +5,6 @@ using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Logic.Core.DML;
 using CPUT.Polyglot.NoSql.Logic.Core.Events;
-using CPUT.Polyglot.NoSql.Logic.Core.Handler;
 using CPUT.Polyglot.NoSql.Models;
 using CPUT.Polyglot.NoSql.Parser.Tokenizers;
 using System;
@@ -30,9 +29,6 @@ namespace CPUT.Polyglot.NoSql.Logic
             _commandEvent.Add((int)Utils.Command.FETCH, new FetchHandler(validator, translate));
             _commandEvent.Add((int)Utils.Command.MODIFY, new ModifyHandler(validator, translate));
             _commandEvent.Add((int)Utils.Command.ADD, new AddHandler(validator, translate));
-            _commandEvent.Add((int)Utils.Command.CREATE, new CreateHandler(validator, translate));
-            _commandEvent.Add((int)Utils.Command.ALTER, new AlterHandler(validator, translate));
-            _commandEvent.Add((int)Utils.Command.DESCRIBE, new DescribeHandler(validator, translate));
         }
 
         public void DataLoad()
@@ -119,18 +115,6 @@ namespace CPUT.Polyglot.NoSql.Logic
             else if (query.ToUpper().Contains("MODIFY"))
             {
                 return Utils.Command.MODIFY;
-            }
-            else if (query.ToUpper().Contains("CREATE"))
-            {
-                return Utils.Command.CREATE;
-            }
-            else if (query.ToUpper().Contains("ALTER"))
-            {
-                return Utils.Command.ALTER;
-            }
-            else if (query.ToUpper().Contains("DECRIBE"))
-            {
-                return Utils.Command.DESCRIBE;
             }
 
             return Utils.Command.NONE;

@@ -20,21 +20,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     {
         protected string Target = "cassandra";
 
-        public override string Alter()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Create()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override string Describe()
-        {
-            throw new NotImplementedException();
-        }
-
         public override string Fetch()
         {
             Console.WriteLine("Starting Cassandra - Fetch");
