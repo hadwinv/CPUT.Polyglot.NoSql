@@ -14,17 +14,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
         internal RestrictPart? Restrict { get; set; }
 
-        public FindPart()
-        {
-
-        }
-        //public FindPart(ConditionPart? condition, FieldPart? field, OrderByPart? orderBy, RestrictPart? restrict)
-        //{
-        //    Condition = condition;
-        //    Field = field;
-        //    OrderBy = orderBy;
-        //    Restrict = restrict;
-        //}
+        public FindPart() { }
 
         public void Accept(INeo4jVisitor visitor)
         {

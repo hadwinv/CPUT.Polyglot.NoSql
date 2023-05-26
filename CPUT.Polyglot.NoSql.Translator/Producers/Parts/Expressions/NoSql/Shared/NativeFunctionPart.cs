@@ -6,7 +6,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
 {
     public class NativeFunctionPart : IExpression
     {
-        internal IExpression PropertyPart { get; set; }
+        internal IExpression Property { get; set; }
 
         internal string Alias { get; set; }
 
@@ -22,10 +22,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
             [AggregateType.NMin] = "MIN"
         };
 
-        public NativeFunctionPart(IExpression propertyPart, AggregateType type)
+        public NativeFunctionPart(IExpression property, AggregateType type)
         {
-            PropertyPart = propertyPart;
-            Alias = propertyPart is FunctionFieldPart ? ((FunctionFieldPart)propertyPart).Alias : string.Empty; 
+            Property = property;
+            Alias = property is FunctionFieldPart ? ((FunctionFieldPart)property).Alias : string.Empty; 
             Type = _keywords[type];
         }
 

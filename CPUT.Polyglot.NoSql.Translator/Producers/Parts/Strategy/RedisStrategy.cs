@@ -85,7 +85,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             else
                 query.Append("Cannot generate Redis command");
 
-            //Console.WriteLine(query);
+            Console.WriteLine(query);
 
             return query.ToString();
         }

@@ -1,5 +1,6 @@
 ﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 
 namespace CPUT.Polyglot.NoSql.Parser.Syntax.Statement.DML
 {

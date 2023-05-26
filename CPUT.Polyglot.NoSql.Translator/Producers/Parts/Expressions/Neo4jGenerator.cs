@@ -198,7 +198,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             _query.Append("CREATE ( ");
 
-            foreach (var expr in part.Parts)
+            foreach (var expr in part.Properties)
             {
                 if (expr is NodePart)
                     ((NodePart)expr).Accept(this);
@@ -267,12 +267,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             _query.Append(" " + part.Type + "(");
 
-            part.PropertyPart.Accept(this);
+            part.Property.Accept(this);
 
             _query.Append(") as ");
 
-            if (part.PropertyPart is PropertyPart)
-                _query.Append(((PropertyPart)part.PropertyPart).Name);
+            if (part.Property is PropertyPart)
+                _query.Append(((PropertyPart)part.Property).Name);
         }
 
         public void Visit(UnwindGroupPart part)
@@ -387,7 +387,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(OrderByPart part)
         {
-            _query.Append(" ORDER BY " + part.AliasIdentifier + "." +  part.Name + " ");
+            _query.Append(" ORDER BY ");
+
+            foreach(var field in part.Fields)
+                field.Accept(this);
+        }
+
+        public void Visit(OrderByPropertyPart part)
+        {
+            _query.Append( part.AliasIdentifier + "." + part.Name + " ");
 
             part.Direction.Accept(this);
         }

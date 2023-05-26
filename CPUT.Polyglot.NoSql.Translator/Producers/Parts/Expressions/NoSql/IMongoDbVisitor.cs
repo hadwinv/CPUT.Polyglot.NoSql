@@ -35,5 +35,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         void Visit(GroupByFieldPart groupByFieldPart);
         void Visit(NativeFunctionPart nFunctionPart);
         void Visit(FunctionFieldPart functionPropertyPart);
+        void Visit(OrderByPropertyPart orderByFieldPart);
     }
 }

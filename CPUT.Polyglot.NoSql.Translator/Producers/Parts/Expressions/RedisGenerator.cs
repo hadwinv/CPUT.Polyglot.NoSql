@@ -16,21 +16,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             foreach (var expr in query.Expressions)
             {
-                if (expr is GetPart)
+                if (expr is SetKeyValuePart)
                 {
-                    ((GetPart)expr).Accept(this);
-                }
-                else if (expr is KeyPart)
-                {
-                    ((KeyPart)expr).Accept(this);
-                }
-                else if (expr is NoSql.Redis.SetKeyValuePart)
-                {
-                    if(_query.Length > 0)
+                    if (_query.Length > 0)
                         _query.Append(";");
-
-                    ((SetKeyValuePart)expr).Accept(this);
                 }
+
+                expr.Accept(this);
             }
         }
 

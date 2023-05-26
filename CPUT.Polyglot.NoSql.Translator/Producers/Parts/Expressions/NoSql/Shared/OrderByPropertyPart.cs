@@ -1,23 +1,32 @@
 ﻿using CPUT.Polyglot.NoSql.Models.Views.Shared;
-using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
 {
-    public class OrderByPart : IExpression
+    public class OrderByPropertyPart : IExpression
     {
-        internal IExpression[] Fields { get; set; }
-        //internal string Name { get; set; }
+        internal string Name { get; set; }
 
-        //internal string AliasIdentifier { get; set; }
+        internal string AliasIdentifier { get; set; }
 
-        //internal DirectionPart Direction { get; set; }
+        internal DirectionPart Direction { get; set; }
 
-        public OrderByPart(IExpression[] fields)
+        public OrderByPropertyPart(Link mappedProperty, OrderByPropertyExpr expr)
         {
-            Fields = fields;
+            Name = mappedProperty.Property;
+            AliasIdentifier = expr.AliasIdentifier;
+
+            if (string.IsNullOrEmpty(AliasIdentifier))
+                AliasIdentifier = mappedProperty.Reference.Substring(0, 3).ToLower();
+
+            Direction = new DirectionPart(expr.Direction);
 
         }
         public void Accept(INeo4jVisitor visitor)

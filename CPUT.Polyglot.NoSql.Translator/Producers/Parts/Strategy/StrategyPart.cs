@@ -3,8 +3,10 @@ using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
@@ -70,9 +72,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return string.Empty;
         }
 
-        protected Link GetMappedProperty(BaseExpr baseExpr, string database)
+        protected Link? GetMappedProperty(BaseExpr baseExpr, string database)
         {
-            Link link = new Link();
+            Link? link = new Link();
             DataExpr dataExpr = null;
 
             string value = string.Empty;
@@ -88,10 +90,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 value = ((TermExpr)baseExpr).Value;
                 aliasIndentifier = ((TermExpr)baseExpr).AliasIdentifier;
             }
-            else if (baseExpr is OrderByExpr)
+            else if (baseExpr is OrderByPropertyExpr)
             {
-                value = ((OrderByExpr)baseExpr).Value;
-                aliasIndentifier = ((OrderByExpr)baseExpr).AliasIdentifier;
+                value = ((OrderByPropertyExpr)baseExpr).Value;
+                aliasIndentifier = ((OrderByPropertyExpr)baseExpr).AliasIdentifier;
             }
             else if (baseExpr is JsonExpr)
             {
@@ -119,7 +121,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         {
                             link = unified.View.Resources
                                     .Where(x => x.Property == reference)
-                                    .SelectMany(x => x.Link.Where(z => z.Target == database)).First();
+                                    .SelectMany(x => x.Link.Where(z => z.Target == database)).FirstOrDefault();
                             break;
                         }
                         else
@@ -179,14 +181,28 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         {
             OrderByPart part = null;
 
-            var mappedProperty = GetMappedProperty(OrderByExpr, database);
+            if(OrderByExpr != null)
+            {
+                var parts = new List<IExpression>();
 
-            if (mappedProperty != null)
-                part = new OrderByPart(mappedProperty, OrderByExpr);
+                foreach(var expr in OrderByExpr.Properties)
+                {
+                    var mappedProperty = GetMappedProperty((OrderByPropertyExpr)expr, database);
 
+                    if (mappedProperty != null)
+                    {
+                        parts.Add(new OrderByPropertyPart(mappedProperty, (OrderByPropertyExpr)expr));
+                        parts.Add(new SeparatorPart(","));
+                    }
+                }
+
+                if (parts.Count > 0)
+                    parts.RemoveAt(parts.Count - 1);
+
+                part = new OrderByPart(parts.ToArray());
+            }
+            
             return part;
         }
-
-        
     }
 }

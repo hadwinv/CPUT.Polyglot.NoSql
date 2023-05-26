@@ -401,6 +401,36 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
+        public void Cassandra_FetchOrderByMoreThanOne_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+                    DATA_MODEL { student}
+                    ORDER_BY { name, surname} 
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname ASC, lastname ASC").Replace(" ", "")
+            );
+        }
+
+        [Test]
         public void Cassandra_FetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
@@ -1140,6 +1170,36 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
                 ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", { name : 1 })").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void MongoDB_FetchMoreThanOneOrderBy_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { name, surname, idnumber, dateofbirth }
+                    DATA_MODEL { student}
+                    ORDER_BY { name, surname} 
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", { name : 1 , surname : 1})").Replace(" ", "")
             );
         }
 
@@ -2214,6 +2274,37 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
+
+        [Test]
+        public void Neo4j_FetchMoreThanOneOrderBy_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { title, name, surname, idnumber, dateofbirth }
+                DATA_MODEL { student}
+                ORDER_BY { name, surname} 
+                TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pup:Pupil ) RETURN pup.title, pup.name, pup.surname, pup.idnumber, pup.dob ORDER BY pup.name ASC, pup.surname ASC").Replace(" ", "")
+            );
+        }
+
         [Test]
         public void Neo4j_FetchOrderByDesc_ReturnExecutableQuery()
         {
@@ -3158,6 +3249,5 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
     
 
         #endregion
-
     }
 }

@@ -4,11 +4,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
 {
     public class UpdatePart : IExpression
     {
-        internal IExpression[] Parts { get; set; }
+        internal IExpression[] Properties { get; set; }
 
-        public UpdatePart(IExpression[] parts)
+        public UpdatePart(IExpression[] properties)
         {
-            Parts = parts;
+            Properties = properties;
         }
 
         public void Accept(INeo4jVisitor visitor)

@@ -262,15 +262,23 @@ namespace CPUT.Polyglot.NoSql.Parser
 
         #region Order By
 
+
+
         private static TokenListParser<Lexicons, OrderByExpr> OrderBy =
             from keyword in Token.EqualTo(Lexicons.ORDER_BY)
+            from columns in (Test.ManyDelimitedBy(Token.EqualTo(Lexicons.COMMA)))
+            select new OrderByExpr(columns);
+
+            
+        private static TokenListParser<Lexicons, OrderByPropertyExpr> Test =
             from ra in Parse.Ref(() => ReferenceAlias).OptionalOrDefault()
             from dot in Parse.Ref(() => Dot).OptionalOrDefault()
             from property in Property
             from dir in Parse.Ref(() => Direction).OptionalOrDefault()
-            select new OrderByExpr(property.Value, 
+            select new OrderByPropertyExpr(property.Value,
                                    ra.HasValue ? ra.ToStringValue() : string.Empty,
                                    OperatorMapping.DirectionMap[dir.Kind]);
+
 
         #endregion
 

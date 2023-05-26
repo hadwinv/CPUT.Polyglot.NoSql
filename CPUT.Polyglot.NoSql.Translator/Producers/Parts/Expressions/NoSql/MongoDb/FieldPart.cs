@@ -5,11 +5,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
     public class FieldPart : IExpression
     {
         internal IExpression[] Fields { get; set; }
-
-        public FieldPart()
-        {
-        }
-
+       
         public FieldPart(IExpression[] fields)
         {
             Fields = fields;

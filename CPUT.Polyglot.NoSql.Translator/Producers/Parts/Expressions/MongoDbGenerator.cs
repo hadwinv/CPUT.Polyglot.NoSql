@@ -93,7 +93,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
             bool hasFilter = false;
 
-            foreach (var expr in part.Parts)
+            foreach (var expr in part.Properties)
             {
                 if (expr is ConditionPart)
                 {
@@ -174,7 +174,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             _query.Append(".insertMany([");
 
-            foreach(var expr in part.Parts)
+            foreach(var expr in part.Properties)
             {
                 if (expr is AddPart)
                 {
@@ -331,7 +331,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             {
                 _query.Append(part.Alias + ": { $" + part.Type.ToLower() + ":");
 
-                part.PropertyPart.Accept(this);
+                part.Property.Accept(this);
             }
 
             _query.Append("}");
@@ -474,15 +474,31 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         public void Visit(OrderByPart part)
         {
             if (_format == MongoDBFormat.Aggregate_Order)
-                _query.Append(", { $sort : { " + part.Name + " : 1 } }");
+            {
+                _query.Append(", { $sort : { ");
+
+                foreach (var field in part.Fields)
+                    field.Accept(this);
+
+                _query.Append(" } }");
+            }
+                
             else
             {
-                _query.Append("._addSpecial(\"$orderby\", {" + part.Name);
+                _query.Append("._addSpecial(\"$orderby\", {" );
 
-                part.Direction.Accept(this);
+                foreach (var field in part.Fields)
+                    field.Accept(this);
 
                 _query.Append("})");
             }
+        }
+
+        public void Visit(OrderByPropertyPart part)
+        {
+            _query.Append(part.Name + " ");
+
+            part.Direction.Accept(this);
         }
 
         public void Visit(RestrictPart part)

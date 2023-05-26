@@ -35,7 +35,6 @@
 
   <ItemGroup>
     <Folder Include="Unit\Logic\" />
-    <Folder Include="Unit\Schema\" />
   </ItemGroup>
 
 </Project>
