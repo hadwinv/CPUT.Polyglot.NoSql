@@ -19,7 +19,6 @@ namespace CPUT.Polyglot.NoSql.Logic
         public ServiceLogic(ICommandEvent commandEvent, 
             ITranslate translate,
             IValidator validator,
-            ISchema schema,
             IProxy proxy)
         {
             _commandEvent = commandEvent;
@@ -59,9 +58,7 @@ namespace CPUT.Polyglot.NoSql.Logic
                     var output = _commandEvent.Run(query);
 
                     foreach(var target in output.Constructs)
-                    {
                         result = _proxy.Forward(target);
-                    }
                 }
                 else
                 {

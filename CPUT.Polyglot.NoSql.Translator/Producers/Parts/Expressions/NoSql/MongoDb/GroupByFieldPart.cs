@@ -11,7 +11,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
         internal string Alias { get; set; }
 
-        public GroupByFieldPart(BaseExpr baseExpr, Link mapping)
+        public GroupByFieldPart(BaseExpr baseExpr, Link mapping, int target)
         {
             Property = mapping.Property;
             Alias = Property;
@@ -24,11 +24,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
             {
                 if (expr is JsonExpr)
                 {
-                    var child = Assistor.NSchema.SelectMany(x => x.Model.Where(x => x.Name == mapping.Reference)).FirstOrDefault();
+                    var child = Assistor.NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == mapping.Reference)).FirstOrDefault();
 
                     if (child != null)
                     {
-                        var unwindProperty = Assistor.UnwindPropertyName(child);
+                        var unwindProperty = Assistor.UnwindPropertyName(child, target);
 
                         var path = unwindProperty.Split(".");
 

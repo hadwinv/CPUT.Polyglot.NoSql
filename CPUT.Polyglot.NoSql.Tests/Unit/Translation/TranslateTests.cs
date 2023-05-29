@@ -1773,7 +1773,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
                     GROUP_BY { s.idnumber, s.name, s.surname }
                     RESTRICT_TO { 2 }
                     ORDER_BY { s.name }
-                    TARGET {  mongodb }";
+                    TARGET {  mongodb  }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -3246,7 +3246,114 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
                 ("MATCH ( sub:Subject ) RETURN sub.name, MAX(sub.cost) as cost").Replace(" ", "")
             );
         }
-    
+
+
+        #endregion
+
+
+        #region Concurrent Enquiries
+
+        [Test]
+        public void MongoDBNeo4j_FetchWithFilterNAVG_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            //var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, nmax(t.marks) }
+            //            DATA_MODEL { student AS s, transcript AS t, course AS c}
+            //            RESTRICT_TO { 10 }
+            //            TARGET {  neo4j }";
+            var input = @"FETCH { s.name, s.surname, s.idnumber, navg(t.subject.cost) }
+                    DATA_MODEL { student AS s, transcript AS t }
+                    LINK_ON { s.student_no = t.student_no }
+                    FILTER_ON { s.idnumber = '35808404617'}
+                    GROUP_BY { s.idnumber, s.name, s.surname }
+                    RESTRICT_TO { 2 }
+                    ORDER_BY { s.name }
+                    TARGET {  mongodb, neo4j  }";
+
+            // UNWIND apoc.convert.fromJsonList(pro.marks) as mar
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.FETCH
+                            });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("").Replace(" ", "")
+        );
+        }
+
+
+        //[Test]
+        //public void MongoDBNeo4j_FetchWithFilterNAVG_ReturnExecutableQuery()
+        //{
+        //    List<Constructs> results = null;
+
+        //    //var input = @"FETCH { s.title, s.name, s.surname, t.gradedsymbol, c.name, nmax(t.marks) }
+        //    //            DATA_MODEL { student AS s, transcript AS t, course AS c}
+        //    //            RESTRICT_TO { 10 }
+        //    //            TARGET {  neo4j }";
+        //    var input = @"FETCH { s.name, s.surname, s.idnumber, navg(t.subject.duration) }
+        //            DATA_MODEL { student AS s, transcript AS t }
+        //            LINK_ON { s.student_no = t.student_no }
+        //            FILTER_ON { s.idnumber = '35808404617' OR s.idnumber = '21708702176' AND t.subject.duration > 0 }
+        //            GROUP_BY { s.idnumber, s.name, s.surname }
+        //            RESTRICT_TO { 2 }
+        //            ORDER_BY { s.name }
+        //            TARGET {  mongodb, neo4j  }";
+
+        //    var tokens = new Lexer().Tokenize(input);
+
+        //    //generate abstract syntax tree
+        //    var syntaxExpr = Expressions.Select.Parse(tokens);
+
+        //    var transformed = _translate.Convert(
+        //                    new ConstructPayload
+        //                    {
+        //                        BaseExpr = syntaxExpr,
+        //                        Command = Utils.Command.FETCH
+        //                    });
+
+        //    results = transformed.Result;
+
+        //    results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+        //        ("db.getCollection(\"students\").aggregate(" +
+        //        "[" +
+        //        "   { $match : {" +
+        //        "       \"$or\" : [" +
+        //        "           {\"id_number\" : \"35808404617\"}," +
+        //        "           {\"id_number\" : \"21708702176\"}" +
+        //        "       ]," +
+        //        "       \"$and\" : [" +
+        //        "           {\"register.course.subjects.duration\": { $gt : NumberLong(0) } }" +
+        //        "       ]}}," +
+        //        "   { $unwind : {" +
+        //        "       path: \"$register.course.subjects\"}}," +
+        //        "   { $project : { " +
+        //        "       _id: \"$_id\", " +
+        //        "       name : \"$name\", " +
+        //        "       surname : \"$surname\", " +
+        //        "       id_number : \"$id_number\", " +
+        //        "       subjects : \"$register.course.subjects\"}}," +
+        //        "   { $group : { " +
+        //        "       _id: \"$_id\", " +
+        //        "       name : { \"$first\" : \"$name\"}, " +
+        //        "       surname : { \"$first\" : \"$surname\"}, " +
+        //        "       id_number : { \"$first\" : \"$id_number\"}, " +
+        //        "       duration: { $avg: \"$subjects.duration\"}}}, " +
+        //        "   { $sort : { name : 1 } }, " +
+        //        "   { $limit : 2 }])").Replace(" ", "")
+        //);
+        //}
 
         #endregion
     }

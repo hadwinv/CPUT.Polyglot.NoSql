@@ -35,6 +35,7 @@ namespace CPUT.Polyglot.NoSql.Translator
             //get targeted databases
             var targetExpr = (TargetExpr)payload.BaseExpr.ParseTree.Single(x => x.GetType().Equals(typeof(TargetExpr)));
 
+            //var targetExpr = payload.BaseExpr.ParseTree.Where(x => x.GetType().Equals(typeof(TargetExpr))).Select(x => (TargetExpr)x.v);
             //set up and run query generators
             foreach (StorageExpr storage in targetExpr.Value)
             {

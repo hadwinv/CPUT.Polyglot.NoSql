@@ -23,7 +23,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 
             //set schemas
             Assistor.USchema = _uSchema;
-            Assistor.NSchema = _nSchema;
+            
+            Assistor.Add((int)Database.MONGODB, _nSchema);
 
             //get query parts
             var query = strategy.Query(request);

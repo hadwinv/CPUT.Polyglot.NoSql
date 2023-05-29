@@ -17,7 +17,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 
         internal string Type { get; set; }
 
-        public PropertyPart(Link link, BaseExpr baseExpr)
+        public PropertyPart(Link link, BaseExpr baseExpr, int target)
         {
             Name = link.Property;
 
@@ -32,10 +32,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 
                 if (expr is JsonExpr)
                 {
-                    var child = Assistor.NSchema.SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
+                    var child = Assistor.NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
 
                     if (child != null)
-                        Name = Assistor.UnwindPropertyName(child) + "." + link.Property;
+                        Name = Assistor.UnwindPropertyName(child, target) + "." + link.Property;
                 }
             }
 

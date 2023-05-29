@@ -23,7 +23,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 
             //set schemas
             Assistor.USchema = _uSchema;
-            Assistor.NSchema = _nSchema;
+            Assistor.Add((int)Database.NEOJ4, _nSchema);
 
             //get query parts
             var native = strategy.Query(request);

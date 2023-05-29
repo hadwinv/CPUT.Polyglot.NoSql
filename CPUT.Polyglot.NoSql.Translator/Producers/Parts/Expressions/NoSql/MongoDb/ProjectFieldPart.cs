@@ -13,7 +13,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
         internal bool IsFirstKey { get; set; }
 
-        public ProjectFieldPart(BaseExpr baseExpr, Link mapping, bool standard = default)
+        public ProjectFieldPart(BaseExpr baseExpr, Link mapping,int target, bool standard = default)
         {
             Property = mapping.Property;
             Alias = Property;
@@ -26,11 +26,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
             {
                 if (expr is JsonExpr)
                 {
-                    var child = Assistor.NSchema.SelectMany(x => x.Model.Where(x => x.Name == mapping.Reference)).FirstOrDefault();
+                    var child = Assistor.NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == mapping.Reference)).FirstOrDefault();
 
                     if (child != null)
                     {
-                        var fullPath = Assistor.UnwindPropertyName(child);
+                        var fullPath = Assistor.UnwindPropertyName(child, target);
                         var path = fullPath.Split(".");
 
                         if (!standard)

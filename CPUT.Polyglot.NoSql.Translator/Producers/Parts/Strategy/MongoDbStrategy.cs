@@ -10,6 +10,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using System.Text;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
@@ -188,7 +189,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     if (DeclareExpr != null)
                     {
                         //unwind complex field i.e. json
-                        col.Aggregate.Unwind = new UnwindGroupPart(GetUnwindPart(Target).ToArray());
+                        col.Aggregate.Unwind = new UnwindGroupPart(GetUnwindPart(Target, (int)Database.MONGODB).ToArray());
 
                         //get staging property fields
                         col.Aggregate.Project = new ProjectPart(GetProjectPart().ToArray());
@@ -276,7 +277,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         if (linkage != null)
                         {
                             //get all linked properties, model, etc
-                            var native = Assistor.NSchema
+                            var native = Assistor.NSchema[(int)Database.MONGODB]
                                   .SelectMany(s => s.Model)
                                   .Where(x => x.Name == linkage.Source && x.Type == "collection")
                                   .FirstOrDefault();
@@ -289,7 +290,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         }
                         else
                         {
-                            var native = Assistor.NSchema
+                            var native = Assistor.NSchema[(int)Database.MONGODB]
                                   .SelectMany(s => s.Model)
                                   .Where(x => x.Type == "collection")
                                   .FirstOrDefault();
@@ -328,8 +329,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.MONGODB);
                         var comparePart = new ComparePart(operatorExpr.Compare, Common.Helpers.Utils.Database.MONGODB);
 
-                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
-                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.MONGODB);
+                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.MONGODB);
 
                         parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
@@ -366,7 +367,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                                     if (property != null)
                                     {
-                                        parts.Add(new ProjectFieldPart(baseExpr, property));
+                                        parts.Add(new ProjectFieldPart(baseExpr, property, (int)Database.MONGODB));
                                         parts.Add(new SeparatorPart(","));
 
                                         break;
@@ -387,7 +388,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             if (property != null)
                             {
-                                parts.Add(new ProjectFieldPart(nestedExpr, property));
+                                parts.Add(new ProjectFieldPart(nestedExpr, property, (int)Database.MONGODB));
                                 parts.Add(new SeparatorPart(","));
 
                             }
@@ -406,7 +407,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     if (property != null)
                     {
-                        parts.Add(new ProjectFieldPart(baseExpr, property, true));
+                        parts.Add(new ProjectFieldPart(baseExpr, property, (int)Database.MONGODB, true));
                         parts.Add(new SeparatorPart(","));
                     }
                 }
@@ -434,12 +435,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         if (mappedProperty != null)
                         {
-                            var properties = Assistor.NSchema
+                            var properties = Assistor.NSchema[(int)Database.MONGODB]
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .Where(x => x.Property == mappedProperty.Property)
                                 .First();
 
-                            parts.Add(new PropertyPart(mappedProperty, propertyExpr));
+                            parts.Add(new PropertyPart(mappedProperty, propertyExpr, (int)Database.MONGODB));
                             parts.Add(new SeparatorPart(","));
                         };
                     }
@@ -460,12 +461,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             if (mappedProperty != null)
                             {
-                                var properties = Assistor.NSchema
+                                var properties = Assistor.NSchema[(int)Database.MONGODB]
                                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                             .Where(x => x.Property == mappedProperty.Property)
                                             .First();
 
-                                parts.Add(new PropertyPart(mappedProperty, @base));
+                                parts.Add(new PropertyPart(mappedProperty, @base, (int)Database.MONGODB));
                                 parts.Add(new SeparatorPart(","));
                             }
                         }
@@ -507,7 +508,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                                     if (property != null)
                                     {
-                                        parts.Add(new GroupByFieldPart(baseExpr, property));
+                                        parts.Add(new GroupByFieldPart(baseExpr, property, (int)Database.MONGODB));
                                         parts.Add(new SeparatorPart(","));
 
                                         break;
@@ -530,7 +531,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             {
                                 parts.Add(
                                     new NativeFunctionPart(
-                                        new FunctionFieldPart(nestedExpr, property), expr.Type)
+                                        new FunctionFieldPart(nestedExpr, property, (int)Database.MONGODB), expr.Type)
                                     );
 
                                 parts.Add(new SeparatorPart(","));
@@ -566,8 +567,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.MONGODB);
 
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
-                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.MONGODB);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.MONGODB);
 
                             exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
                             exprs.Add(new SeparatorPart(","));
@@ -592,24 +593,24 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return parts.ToArray();
         }
 
-        private UnwindJsonPart? GetJsonPart(BaseExpr baseExpr, string database)
+        private UnwindJsonPart? GetJsonPart(BaseExpr baseExpr, string database, int target)
         {
             if (baseExpr is JsonExpr)
             {
                 var link = GetMappedProperty(baseExpr, database);
 
-                return new UnwindJsonPart(link, (JsonExpr)baseExpr);
+                return new UnwindJsonPart(link, (JsonExpr)baseExpr, target);
             }
             else if (baseExpr is FunctionExpr)
             {
                 foreach (var expr in ((FunctionExpr)baseExpr).Value)
-                    return GetJsonPart(expr, database);
+                    return GetJsonPart(expr, database,target);
             }
 
             return default;
         }
 
-        private UnwindJsonPart[] GetUnwindPart(string database)
+        private UnwindJsonPart[] GetUnwindPart(string database, int target)
         {
             var parts = new List<UnwindJsonPart>();
 
@@ -617,7 +618,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 foreach (var expr in DeclareExpr.Value)
                 {
-                    var json = GetJsonPart(expr, database);
+                    var json = GetJsonPart(expr, database, (int)Database.MONGODB);
 
                     //"register.course.subjects"
                     if (json != null)

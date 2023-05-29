@@ -12,12 +12,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
         internal string UnwindAliasIdentifier { get; set; }
 
-        public UnwindJsonPart(Link link, JsonExpr expr)
+        public UnwindJsonPart(Link link, JsonExpr expr, int target)
         {
-            var child = Assistor.NSchema.SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
+            var child = Assistor.NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
 
             if (child != null)
-                Name = Assistor.UnwindPropertyName(child);
+                Name = Assistor.UnwindPropertyName(child, target);
 
             if (!string.IsNullOrEmpty(expr.AliasIdentifier))
                 AliasIdentifier = expr.AliasIdentifier;

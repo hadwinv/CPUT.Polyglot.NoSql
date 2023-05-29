@@ -141,7 +141,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return link;
         }
 
-        protected PropertyPart LeftRightPart(OperatorExpr operatorExpr, DirectionType direction, string database)
+        protected PropertyPart LeftRightPart(OperatorExpr operatorExpr, DirectionType direction, string database, int target)
         {
             Link? link = null;
             Properties? property = null;
@@ -150,13 +150,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 link = GetMappedProperty(operatorExpr.Left, database);
 
-                property = Assistor.NSchema
+                property = Assistor.NSchema[target]
                    .SelectMany(x => x.Model)
                    .Where(x => x.Name == link.Reference)
                    .SelectMany(x => x.Properties)
                    .First(x => x.Property == link.Property);
 
-                return new PropertyPart(link, operatorExpr.Left);
+                return new PropertyPart(link, operatorExpr.Left, target);
             }
             else
             {
@@ -164,13 +164,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 {
                     link = GetMappedProperty(operatorExpr.Right, database);
 
-                    property = Assistor.NSchema
+                    property = Assistor.NSchema[target]
                         .SelectMany(x => x.Model)
                         .Where(x => x.Name == link.Reference)
                         .SelectMany(x => x.Properties)
                         .First(x => x.Property == link.Property);
 
-                    return new PropertyPart(link, operatorExpr.Right);
+                    return new PropertyPart(link, operatorExpr.Right, target);
                 }
                 else
                     return new PropertyPart(operatorExpr.Right);

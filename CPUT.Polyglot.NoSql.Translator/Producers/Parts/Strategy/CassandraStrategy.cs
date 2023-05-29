@@ -179,12 +179,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         if (mappedProperty != null)
                         {
-                            var properties = Assistor.NSchema
+                            var properties = Assistor.NSchema[(int)Database.CASSANDRA]
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .Where(x => x.Property == mappedProperty.Property)
                                 .First();
 
-                            parts.Add(new PropertyPart(mappedProperty, propertyExpr));
+                            parts.Add(new PropertyPart(mappedProperty, propertyExpr, (int)Database.CASSANDRA));
                             parts.Add(new SeparatorPart(","));
                         };
                     }
@@ -205,14 +205,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             if (mappedProperty != null)
                             {
-                                var properties = Assistor.NSchema
+                                var properties = Assistor.NSchema[(int)Database.CASSANDRA]
                                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                             .Where(x => x.Property == mappedProperty.Property)
                                             .First();
 
                                 parts.Add(
                                     new NativeFunctionPart(
-                                        new PropertyPart(mappedProperty, @base), expr.Type)
+                                        new PropertyPart(mappedProperty, @base, (int)Database.CASSANDRA), expr.Type)
                                     );
 
                                 parts.Add(new SeparatorPart(","));
@@ -274,8 +274,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var operatorPart = new OperatorPart(operatorExpr.Operator, Database.CASSANDRA);
                         var comparePart = new ComparePart(operatorExpr.Compare, Database.CASSANDRA);
 
-                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
-                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target,(int)Database.CASSANDRA);
+                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.CASSANDRA);
 
                         parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
@@ -304,8 +304,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var operatorPart = new OperatorPart(operatorExpr.Operator, Database.CASSANDRA);
 
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
-                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.CASSANDRA);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.CASSANDRA);
 
                             exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
                             exprs.Add(new SeparatorPart(","));
@@ -346,8 +346,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var groupExpr = (GroupExpr)part;
                             var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
-                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.CASSANDRA);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.CASSANDRA);
 
                             if (leftPart != null && rightPart != null)
                             {

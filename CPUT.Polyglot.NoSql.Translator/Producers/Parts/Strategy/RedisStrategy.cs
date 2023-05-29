@@ -7,6 +7,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
@@ -107,14 +108,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         if (operatorExpr.Operator == OperatorType.Eql)
                         {
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.REDIS);
 
                             //check if property is used as key
-                            if(Assistor.NSchema
+                            if(Assistor.NSchema[(int)Database.REDIS]
                                 .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                 .FirstOrDefault(x => x.Property == leftPart.Name && x.Key) != null)
                             {
-                                var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                                var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.REDIS);
 
                                 parts.Add(new GetPart(rightPart));
                                 break;
@@ -167,14 +168,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             if (operatorExpr.Operator == OperatorType.Eql)
                             {
-                                var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                                var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.REDIS);
 
                                 //check if property is used as key
-                                if (Assistor.NSchema
+                                if (Assistor.NSchema[(int)Database.REDIS]
                                     .SelectMany(x => x.Model.SelectMany(x => x.Properties))
                                     .FirstOrDefault(x => x.Property == leftPart.Name && x.Key) != null)
                                 {
-                                    var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
+                                    var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.REDIS);
 
                                     parts.Add(new SetKeyValuePart(rightPart.Name, "{0}"));
                                     break;
