@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Views.Native;
+﻿using CPUT.Polyglot.NoSql.Models.Views;
+using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 
@@ -12,21 +13,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
 
         internal string ParentReferenceAlias { get; set; }
 
-        internal string ParentReference { get; set; }
-
-
-        public UnwindGraphPart(PropertyExpr expr, Model parent, Model child)
+        public UnwindGraphPart(LinkedProperty mappedProperty)
         {
-            UnwindProperty = child.Name;
-
-            if (!string.IsNullOrEmpty(expr.AliasIdentifier))
-                ParentReferenceAlias = expr.AliasIdentifier;
-            else
-                ParentReferenceAlias = parent.Name.Substring(0, 3).ToLower();
-
-            UnwindedAlias = child.Name.Substring(0, 3).ToLower();
-
-            ParentReference = parent.Name;
+            if(mappedProperty.Link != null)
+            {
+                UnwindProperty = mappedProperty.Link.Property;
+                ParentReferenceAlias = mappedProperty.Link.Reference.Substring(0, 3).ToLower();
+                UnwindedAlias = UnwindProperty.Substring(0, 3).ToLower();
+            }    
         }
 
         public void Accept(INeo4jVisitor visitor)

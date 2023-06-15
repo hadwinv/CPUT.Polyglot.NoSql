@@ -11,7 +11,6 @@
         public string Gender { get; set; }
         public string Email { get; set; }
         public string MobileNo { get; set; }
-        public string HomeNo { get; set; }
         public string Language { get; set; }
         public UProfile Profile { get; set; }
         public UAddress Address { get; set; }

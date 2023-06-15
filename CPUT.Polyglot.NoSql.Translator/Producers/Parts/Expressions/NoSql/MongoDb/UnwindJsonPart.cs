@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Views.Shared;
+﻿using CPUT.Polyglot.NoSql.Models.Views;
+using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
 
@@ -8,23 +9,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
     {
         internal string Name { get; set; }
 
-        internal string AliasIdentifier { get; set; }
-
-        internal string UnwindAliasIdentifier { get; set; }
-
-        public UnwindJsonPart(Link link, JsonExpr expr, int target)
+        public UnwindJsonPart(LinkedProperty mappedProperty)
         {
-            var child = Assistor.NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
-
-            if (child != null)
-                Name = Assistor.UnwindPropertyName(child, target);
-
-            if (!string.IsNullOrEmpty(expr.AliasIdentifier))
-                AliasIdentifier = expr.AliasIdentifier;
+            if (mappedProperty.Link.Property.IndexOf(".") > -1)
+                Name = mappedProperty.Link.Property.Substring(0, mappedProperty.Link.Property.LastIndexOf("."));
             else
-                AliasIdentifier = link.Reference.Substring(0, 3).ToLower();
-
-            UnwindAliasIdentifier = link.Reference.Substring(0, 2).ToLower();
+                Name = mappedProperty.Link.Property;
         }
 
         public void Accept(INeo4jVisitor visitor)

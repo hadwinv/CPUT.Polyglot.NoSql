@@ -42,9 +42,9 @@ namespace CPUT.Polyglot.NoSql.Delegator
                 var dataset = MockFullDataset();
 
                 //data test data
-                _redisjRepo.Load(dataset);
+                //_redisjRepo.Load(dataset);
 
-                //_cassandraRepo.Load(dataset);
+                _cassandraRepo.Load(dataset);
 
                 //_mongoRepo.Load(dataset);
 
@@ -183,9 +183,9 @@ namespace CPUT.Polyglot.NoSql.Delegator
                     Street = person.Street,
                     StreetAddress = person.StreetAddress,
                     PostalAddress = person.PostalAddress,
+                    PostalCode = GenerateIdRange(1000, 4000).ToString(),
                     City = person.City,
                     Location = uLocation
-
                 };
 
                 if (uProfile.Course != null)

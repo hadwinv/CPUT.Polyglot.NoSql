@@ -1,0 +1,155 @@
+[
+	{
+		"name": "cassandra",
+		"storage": "columnar",
+		"model": [
+			{
+				"name": "student",
+				"properties": [
+					{
+						"property": "idno",
+						"type": "string",
+						"key": true
+					},
+					{
+						"property": "studentno",
+						"type": "string"
+					},
+					{
+						"property": "title",
+						"type": "string"
+					},
+					{
+						"property": "aka",
+						"type": "string"
+					},
+					{
+						"property": "initials",
+						"type": "string"
+					},
+					{
+						"property": "firstname",
+						"type": "string"
+					},
+					{
+						"property": "lastname",
+						"type": "string"
+					},
+					{
+						"property": "dob",
+						"type": "string"
+					},
+					{
+						"property": "email",
+						"type": "string"
+					},
+					{
+						"property": "cellno",
+						"type": "string"
+					},
+					{
+						"property": "address",
+						"type": "address"
+					},
+					{
+						"property": "registered",
+						"type": "registered"
+					},
+					{
+						"property": "grades",
+						"type": "grades"
+					}
+				],
+				"type": "table"
+			},
+			{
+				"name": "address",
+				"properties": [
+					{
+						"property": "streetno",
+						"type": "string"
+					},
+					{
+						"property": "streetname",
+						"type": "string"
+					},
+					{
+						"property": "suburb",
+						"type": "string"
+					},
+					{
+						"property": "city",
+						"type": "string"
+					},
+					{
+						"property": "postalcode",
+						"type": "string"
+					},
+					{
+						"property": "country",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "registered",
+				"properties": [
+					{
+						"property": "faculty",
+						"type": "string"
+					},
+					{
+						"property": "course",
+						"type": "string"
+					},
+					{
+						"property": "subject",
+						"type": "subject"
+					},
+					{
+						"property": "registerdate",
+						"type": "datetime"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "subject",
+				"properties": [
+					{
+						"property": "descr",
+						"type": "string"
+					},
+					{
+						"property": "price",
+						"type": "decimal"
+					},
+					{
+						"property": "period",
+						"type": "int"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "grades",
+				"properties": [
+					{
+						"property": "subject",
+						"type": "subject"
+					},
+					{
+						"property": "marks",
+						"type": "decimal"
+					},
+					{
+						"property": "symbol",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			}
+		]
+	}
+]

@@ -12,9 +12,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
     public class MongoDbGenerator : IMongoDbVisitor
     {
         private StringBuilder _query;
-        private MongoDBFormat _format;
+        private MongoDBFetchType _format;
 
-        public MongoDbGenerator(StringBuilder query, MongoDBFormat format)
+        public MongoDbGenerator(StringBuilder query, MongoDBFetchType format)
         {
             this._query = query; 
             this._format = format;
@@ -473,7 +473,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(OrderByPart part)
         {
-            if (_format == MongoDBFormat.Aggregate_Order)
+            if (_format == MongoDBFetchType.Aggregate)
             {
                 _query.Append(", { $sort : { ");
 
@@ -503,10 +503,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(RestrictPart part)
         {
-            if (_format == MongoDBFormat.Aggregate_Order)
+            if (_format == MongoDBFetchType.Aggregate)
                 _query.Append(", { $limit : " + part.Limit + " }");
             else
-                _query.Append(" .limit(" + part.Limit.ToString() + ")");
+                _query.Append(".limit(" + part.Limit.ToString() + ")");
         }
 
         public void Visit(SeparatorPart part)

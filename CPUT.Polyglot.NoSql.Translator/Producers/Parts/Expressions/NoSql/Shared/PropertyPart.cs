@@ -1,9 +1,12 @@
-﻿using CPUT.Polyglot.NoSql.Models.Views.Shared;
+﻿using CPUT.Polyglot.NoSql.Models.Views;
+using CPUT.Polyglot.NoSql.Models.Views.Native;
+using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts.Simple;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 {
@@ -17,30 +20,32 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 
         internal string Type { get; set; }
 
-        public PropertyPart(Link link, BaseExpr baseExpr, int target)
+        public PropertyPart(LinkedProperty mappedProperty)
         {
-            Name = link.Property;
-
-            dynamic? expr = baseExpr is PropertyExpr ? ((PropertyExpr)baseExpr) :
-                            baseExpr is TermExpr ? ((TermExpr)baseExpr) :
-                            baseExpr is JsonExpr ? ((JsonExpr)baseExpr) : default;
-
-            if(expr != null)
+            if(mappedProperty != null)
             {
-                AliasIdentifier = expr.AliasIdentifier;
-                AliasName = expr.AliasName;
-
-                if (expr is JsonExpr)
+                if (mappedProperty.Link.Target == Enum.GetName(typeof(Database), Database.NEO4J).ToLower())
                 {
-                    var child = Assistor.NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == link.Reference)).FirstOrDefault();
-
-                    if (child != null)
-                        Name = Assistor.UnwindPropertyName(child, target) + "." + link.Property;
+                    if (mappedProperty.Link.Property.IndexOf(".") > -1)
+                    {
+                        Name = mappedProperty.Link.Property.Split(".")[mappedProperty.Link.Property.Split(".").Count() - 1];
+                        AliasIdentifier = mappedProperty.Link.Property.Split(".")[0].Substring(0, 3).ToLower();
+                    }
+                    else
+                        Name = mappedProperty.Link.Property;
                 }
-            }
+                else
+                {
+                    Name = mappedProperty.Link.Property;
+                    AliasIdentifier = mappedProperty.AliasIdentifier;
 
-            if (string.IsNullOrEmpty(AliasIdentifier))
-                AliasIdentifier = link.Reference.Substring(0, 3).ToLower();
+                    AliasName = mappedProperty.Link.Property.IndexOf(".") > -1
+                        ? mappedProperty.Link.Property.Split(".")[mappedProperty.Link.Property.Split(".").Count() - 1] : mappedProperty.AliasName;
+                }
+
+                if (string.IsNullOrEmpty(AliasIdentifier))
+                    AliasIdentifier = mappedProperty.Link.Reference.Substring(0, 3).ToLower();
+            }
         }
 
         public PropertyPart(BaseExpr baseExpr)

@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+﻿using CPUT.Polyglot.NoSql.Models.Views.Shared;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
@@ -9,6 +10,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+using System.Linq;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
@@ -19,9 +21,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     {
         protected string Target = "mongodb";
 
-        #region private variables
-
-        private bool _doAggregation
+        protected bool DoAggregateModel
         {
             get
             {
@@ -30,13 +30,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     dynamic? expr = DeclareExpr.Value.FirstOrDefault(x => x.GetType().Equals(typeof(FunctionExpr))) as FunctionExpr;
 
                     if (expr != null)
-                    {
-                        if (expr.Type == AggregateType.NSum || expr.Type == AggregateType.NAvg ||
-                            expr.Type == AggregateType.NMin || expr.Type == AggregateType.NMax || expr.Type == AggregateType.NCount)
-                        {
-                            return true;
-                        }
-                    }
+                        return DoesQueryContainFunction;
                     else
                     {
                         expr = DeclareExpr.Value.FirstOrDefault(x => x.GetType().Equals(typeof(JsonExpr))) as JsonExpr;
@@ -50,34 +44,21 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             }
         }
 
-        #endregion
-
-
         public override string Fetch()
         {
             Console.WriteLine("Starting MongoDbPart - Fetch");
 
             CollectionPart[] targetQuery;
-            MongoDBFormat format;
-
+            
             //set expression parts
-            if (_doAggregation)
-            {
-                targetQuery = CreateAggregateModel();
-                format = MongoDBFormat.Aggregate_Order;
-            }
-            else
-            {
-                targetQuery = CreateFindModel();
-                format = MongoDBFormat.Find_Order;
-            }
+            targetQuery = FindOrAggregateModel();
 
             //pass query expresion
             var match = new QueryPart(targetQuery);
 
             //initialise mongodb query generator
             var query = new StringBuilder();
-            var generator = new MongoDbGenerator(query, format);
+            var generator = new MongoDbGenerator(query, DoAggregateModel ? MongoDBFetchType.Aggregate : MongoDBFetchType.Find);
 
             //kick off visitors
             match.Accept(generator);
@@ -100,7 +81,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             var match = new QueryPart(targetQuery.ToArray());
 
             //initialise mongodb query generator
-            var generator = new MongoDbGenerator(query, MongoDBFormat.None);
+            var generator = new MongoDbGenerator(query, MongoDBFetchType.None);
 
             //kick off visitors
             match.Accept(generator);
@@ -123,7 +104,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             var match = new QueryPart(targetQuery.ToArray());
 
             //initialise mongodb query generator
-            var generator = new MongoDbGenerator(query, MongoDBFormat.None);
+            var generator = new MongoDbGenerator(query, MongoDBFetchType.None);
 
             //kick off visitors
             match.Accept(generator);
@@ -136,6 +117,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         #region Expression Parts
 
         #region Find
+
+        private CollectionPart[] FindOrAggregateModel()
+        {
+            if (DoAggregateModel)
+                return CreateAggregateModel();
+            else
+                return CreateFindModel();
+        }
 
         private CollectionPart[] CreateFindModel()
         {
@@ -189,14 +178,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     if (DeclareExpr != null)
                     {
                         //unwind complex field i.e. json
-                        col.Aggregate.Unwind = new UnwindGroupPart(GetUnwindPart(Target, (int)Database.MONGODB).ToArray());
+                        col.Aggregate.Unwind = new UnwindGroupPart(GetUnwindPart(Target).ToArray());
 
                         //get staging property fields
                         col.Aggregate.Project = new ProjectPart(GetProjectPart().ToArray());
-                    }
 
-                    if (GroupByExpr != null)
-                        col.Aggregate.GroupBy = new GroupByPart(GetGroupByPart().ToArray());
+                        if(DoesQueryContainFunction)
+                            col.Aggregate.GroupBy = new GroupByPart(GetGroupByPart().ToArray());
+                    }
 
                     if (OrderByExpr != null)
                         col.Aggregate.OrderBy = GetOrderPart(Target);
@@ -272,37 +261,24 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         var model = Assistor.USchema.Single(x => x.View.Name == data.Value);
 
-                        var linkage = model.View.Linkages.SingleOrDefault(x => x.Storage == Target);
+                        //get link references based on the data model
+                        var references = model.View.Resources
+                                        .SelectMany(x => x.Link.Where(x => x.Target == Enum.GetName(typeof(Database), Database.MONGODB).ToLower()))
+                                        .Select(x => x.Reference)
+                                        //.Distinct()
+                                        .ToList();
 
-                        if (linkage != null)
+                        if(references != null)
                         {
                             //get all linked properties, model, etc
                             var native = Assistor.NSchema[(int)Database.MONGODB]
-                                  .SelectMany(s => s.Model)
-                                  .Where(x => x.Name == linkage.Source && x.Type == "collection")
+                            .SelectMany(s => s.Model)
+                                  .Where(x => references.Contains(x.Name) && x.Type == "collection")
                                   .FirstOrDefault();
 
                             if (native != null)
                             {
                                 collections.Add(new CollectionPart(native.Name, data.Value, data.AliasIdentifier));
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            var native = Assistor.NSchema[(int)Database.MONGODB]
-                                  .SelectMany(s => s.Model)
-                                  .Where(x => x.Type == "collection")
-                                  .FirstOrDefault();
-
-                            if (native != null)
-                            {
-                                var unified = Assistor.USchema
-                                    .Select(x => x.View)
-                                    .Where(x => x.Linkages.Exists(x => x.Source == native.Name && x.Storage == Target))
-                                    .First();
-
-                                collections.Add(new CollectionPart(native.Name, unified.Name, unified.Name.Substring(0, 1)));
                                 break;
                             }
                         }
@@ -344,7 +320,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         {
             var parts = new List<IExpression>();
 
-            if (DeclareExpr != null && GroupByExpr != null)
+            if (DeclareExpr != null)
             {
                 //set _id column first
                 foreach (var declare in DeclareExpr.Value)
@@ -354,26 +330,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     if (baseExpr is not FunctionExpr)
                     {
-                        foreach (var groupExpr in GroupByExpr.Value)
+                        var property = GetMappedProperty(baseExpr, Target);
+
+                        if (property != null && property.Link != null)
                         {
-                            dynamic? expr = groupExpr is PropertyExpr ? ((PropertyExpr)groupExpr) :
-                                               groupExpr is JsonExpr ? ((JsonExpr)groupExpr) : default;
-
-                            if (expr != null)
-                            {
-                                if (expr.Value == baseExpr.Value)
-                                {
-                                    var property = GetMappedProperty(baseExpr, Target);
-
-                                    if (property != null)
-                                    {
-                                        parts.Add(new ProjectFieldPart(baseExpr, property, (int)Database.MONGODB));
-                                        parts.Add(new SeparatorPart(","));
-
-                                        break;
-                                    }
-                                }
-                            }
+                            parts.Add(new ProjectFieldPart(property));
+                            parts.Add(new SeparatorPart(","));
                         }
                     }
                     else
@@ -386,29 +348,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var property = GetMappedProperty(nestedExpr, Target);
 
-                            if (property != null)
+                            if (property != null && property.Link != null)
                             {
-                                parts.Add(new ProjectFieldPart(nestedExpr, property, (int)Database.MONGODB));
+                                parts.Add(new ProjectFieldPart(property, true));
                                 parts.Add(new SeparatorPart(","));
-
                             }
                         }
-                    }
-                }
-            }
-            else if(DeclareExpr != null)
-            {
-                //set _id column first
-                foreach (var declare in DeclareExpr.Value)
-                {
-                    dynamic baseExpr = declare is PropertyExpr ? ((PropertyExpr)declare) : ((JsonExpr)declare);
-
-                    var property = GetMappedProperty(baseExpr, Target);
-
-                    if (property != null)
-                    {
-                        parts.Add(new ProjectFieldPart(baseExpr, property, (int)Database.MONGODB, true));
-                        parts.Add(new SeparatorPart(","));
                     }
                 }
             }
@@ -433,14 +378,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         var mappedProperty = GetMappedProperty(propertyExpr, Target);
 
-                        if (mappedProperty != null)
+                        if (mappedProperty != null && mappedProperty.Link != null)
                         {
-                            var properties = Assistor.NSchema[(int)Database.MONGODB]
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .Where(x => x.Property == mappedProperty.Property)
-                                .First();
-
-                            parts.Add(new PropertyPart(mappedProperty, propertyExpr, (int)Database.MONGODB));
+                            parts.Add(new PropertyPart(mappedProperty));
                             parts.Add(new SeparatorPart(","));
                         };
                     }
@@ -459,14 +399,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var mappedProperty = GetMappedProperty(@base, Target);
 
-                            if (mappedProperty != null)
+                            if (mappedProperty != null && mappedProperty.Link != null)
                             {
-                                var properties = Assistor.NSchema[(int)Database.MONGODB]
-                                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                            .Where(x => x.Property == mappedProperty.Property)
-                                            .First();
-
-                                parts.Add(new PropertyPart(mappedProperty, @base, (int)Database.MONGODB));
+                                parts.Add(new PropertyPart(mappedProperty));
                                 parts.Add(new SeparatorPart(","));
                             }
                         }
@@ -485,7 +420,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         {
             var parts = new List<IExpression>();
 
-            if (DeclareExpr != null && GroupByExpr != null)
+            if (DeclareExpr != null)
             {
                 //set _id column first
                 foreach (var declare in DeclareExpr.Value)
@@ -495,26 +430,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                     if (baseExpr is not FunctionExpr)
                     {
-                        foreach (var groupExpr in GroupByExpr.Value)
+                        var property = GetMappedProperty(baseExpr, Target);
+
+                        if (property != null && property.Link != null)
                         {
-                            dynamic? expr = groupExpr is PropertyExpr ? ((PropertyExpr)groupExpr) :
-                                               groupExpr is JsonExpr ? ((JsonExpr)groupExpr) : default;
-
-                            if (expr != null)
-                            {
-                                if (expr.Value == baseExpr.Value)
-                                {
-                                    var property = GetMappedProperty(baseExpr, Target);
-
-                                    if (property != null)
-                                    {
-                                        parts.Add(new GroupByFieldPart(baseExpr, property, (int)Database.MONGODB));
-                                        parts.Add(new SeparatorPart(","));
-
-                                        break;
-                                    }
-                                }
-                            }
+                            parts.Add(new GroupByFieldPart(property));
+                            parts.Add(new SeparatorPart(","));
                         }
                     }
                     else
@@ -527,15 +448,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var property = GetMappedProperty(nestedExpr, Target);
 
-                            if (property != null)
+                            if (property != null && property.Link != null)
                             {
                                 parts.Add(
                                     new NativeFunctionPart(
-                                        new FunctionFieldPart(nestedExpr, property, (int)Database.MONGODB), expr.Type)
+                                        new FunctionFieldPart(property), expr.Type)
                                     );
 
                                 parts.Add(new SeparatorPart(","));
-
                             }
                         }
                     }
@@ -593,24 +513,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return parts.ToArray();
         }
 
-        private UnwindJsonPart? GetJsonPart(BaseExpr baseExpr, string database, int target)
-        {
-            if (baseExpr is JsonExpr)
-            {
-                var link = GetMappedProperty(baseExpr, database);
-
-                return new UnwindJsonPart(link, (JsonExpr)baseExpr, target);
-            }
-            else if (baseExpr is FunctionExpr)
-            {
-                foreach (var expr in ((FunctionExpr)baseExpr).Value)
-                    return GetJsonPart(expr, database,target);
-            }
-
-            return default;
-        }
-
-        private UnwindJsonPart[] GetUnwindPart(string database, int target)
+        private UnwindJsonPart[] GetUnwindPart(string database)
         {
             var parts = new List<UnwindJsonPart>();
 
@@ -618,18 +521,42 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 foreach (var expr in DeclareExpr.Value)
                 {
-                    var json = GetJsonPart(expr, database, (int)Database.MONGODB);
+                    var json = GetJsonPart(expr, database);
 
-                    //"register.course.subjects"
                     if (json != null)
                     {
-                        if(!parts.Exists(x => x.Name == json.Name))
+                        if (!parts.Exists(x => x.Name == json.Name))
                             parts.Add(json);
                     }
                 }
             }
 
             return parts.ToArray();
+        }
+
+        private UnwindJsonPart? GetJsonPart(BaseExpr baseExpr, string database)
+        {
+            if (baseExpr is JsonExpr)
+            {
+                var mappedProperty = GetMappedProperty(baseExpr, database);
+
+                
+
+                if (mappedProperty != null && mappedProperty.Link != null)
+                {
+                    if(mappedProperty.Link.Property.IndexOf(".") > -1)
+                        return new UnwindJsonPart(mappedProperty);
+
+                }
+
+            }
+            else if (baseExpr is FunctionExpr)
+            {
+                foreach (var expr in ((FunctionExpr)baseExpr).Value)
+                    return GetJsonPart(expr, database);
+            }
+
+            return default;
         }
 
         #endregion

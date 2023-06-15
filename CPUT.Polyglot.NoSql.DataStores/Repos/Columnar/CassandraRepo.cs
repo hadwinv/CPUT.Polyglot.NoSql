@@ -4,6 +4,7 @@ using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Translator;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CPUT.Polyglot.NoSql.DataStores.Repos.Columnar
 {
@@ -49,70 +50,93 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Columnar
                 //data insert
                 foreach (var student in dataset[0].Students)
                 {
-                    //
-                    query = @"INSERT INTO cput.student (idno, firstname, lastname, dob, email, cellnumber, homenumber, address, registered)  
-                                    VALUES( '" + student.IdNumber + "', " +
+                    var studentid = 1000;
+
+                    foreach (var mark in student.Marks)
+                    {
+                        var faculty = dataset[0].Faculties.Where(x => x.Courses.Exists(x => x.Description == student.Profile.Course.Description)).SingleOrDefault();
+                        //, 
+                        query = @"INSERT INTO cput.student (uniqueid, idno, studentno, title, aka, initials, firstname, lastname, dob, genderid, email, cellno, address, registered, grades )  
+                                    VALUES( " +
+                                        "'" + studentid + "', " +
+                                        "'" + student.IdNumber + "', " +
+                                        "'" + student.Profile.StudentNo + "'," +
+                                        "'" + student.Title + "'," +
+                                        "'" + student.Name + "'," +
+                                        "'" + student.Name.Substring(0, 1) + "'," +
                                         "'" + student.Name + "'," +
                                         "'" + student.Surname + "'," +
                                         "'" + student.DOB + "'," +
+                                        "'" + student.Gender + "'," +
                                         "'" + student.Email + "'," +
                                         "'" + student.MobileNo + "'," +
-                                        "'" + student.HomeNo + "'," +
                                         @"{
-                                                streetno: '" + student.Address.StreetNo + "'," +
-                                               "streetname: '" + student.Address.Street + "'," +
-                                               "postalcode: ''," +
-                                               "suburb: ''," +
-                                               "city: '" + student.Address.City + "'" +
-                                           "}," +
+                                            streetno: " + student.Address.StreetNo + "," +
+                                                "streetname: '" + student.Address.Street + "'," +
+                                                "city: '" + student.Address.City + "'," +
+                                                "postalcode: '" + student.Address.PostalCode + "'," +
+                                                "country: '" + student.Address.Location.Country + "'" +
+                                        "}," +
                                         @"{
-                                                studentno : '" + student.Profile.StudentNo + "'," +
-                                                "coursename : '" + student.Profile.Course.Description + "'," +
+                                            faculty : '" + faculty.Description + "'," +
+                                                "course : '" + student.Profile.Course.Description + "'," +
+                                                "registerdate : '" + DateTime.Now.ToString("yyyy-MM-dd") + "'," +
                                                 "subject : {";
 
-                    count = 0;
+                        count = 0;
 
-                    foreach (var subject in student.Profile.Course.Subjects)
-                    {
-                        query = query + "{" +
-                                           "code: '" + subject.Code + "', " +
-                                           "name: '" + subject.Description + "'";
+                        foreach (var item in student.Profile.Course.Subjects)
+                        {
+                            query = query + "{" +
+                                               "descr: '" + item.Description + "', " +
+                                               "price: " + item.Price + "," +
+                                               "period: " + item.Duration + "";
 
-                        if (count == student.Profile.Course.Subjects.Count - 1)
-                            query = query + "}";
-                        else
-                            query = query + "},";
+                            if (count == student.Profile.Course.Subjects.Count - 1)
+                                query = query + "}";
+                            else
+                                query = query + "},";
 
-                        count++;
-                    }
-                    query = query + "}}";
-                    
-                    query = query + @");";
+                            count++;
+                        }
+                        query = query + "}}";
 
-                    _session.Connect().Execute(query);
+                        //grades
+                        query = query + ",{";
 
-                    //grades
-                    foreach (var mark in student.Marks)
-                    {
-                        query = @"INSERT INTO cput.grades (id, idno, subject, marks, symbol) 
-                             VALUES(" + mark.Id + "," +
-                                        "'" + student.IdNumber + "', " +
-                                        "{" +
-                                        " code : '" + mark.SubjectCode + "'," +
-                                        " name : '" + mark.Subject + "'" +
-                                        "}," +
-                                         mark.Score + "," +
-                                        "'" + mark.Grade + "')";
+                        var subject = student.Profile.Course.Subjects
+                            .Where(x => x.Code == mark.SubjectCode)
+                            .SingleOrDefault();
+
+                        query = query +
+                            "subject: {" +
+                                "descr: '" + subject.Description + "', " +
+                                 "price: " + subject.Price + "," +
+                                  "period: " + subject.Duration + "" +
+                            "}," +
+                            "marks: " + mark.Score + "," +
+                            "symbol: '" + mark.Grade + "'";
+
+                        query = query + "}";
+
+                        query = query + @");";
 
                         _session.Connect().Execute(query);
+
+                        studentid++;
                     }
+                  
                 }
+
+                _session.Connect().Execute("CREATE INDEX idno_idx ON cput.student(idno);");
+                _session.Connect().Execute("CREATE INDEX studentno_idx ON cput.student(studentno);");
+
+                _session.Connect().Execute("CREATE INDEX genderid_idx ON cput.student(genderid);");
 
                 _session.Connect().Execute("CREATE INDEX firstname_idx ON cput.student(firstname);");
                 _session.Connect().Execute("CREATE INDEX lastname_idx ON cput.student(lastname);");
-                _session.Connect().Execute("CREATE INDEX idno_idx ON cput.grades(idno);");
-                _session.Connect().Execute("CREATE INDEX marks_idx ON cput.grades(marks);");
 
+                _session.Connect().Execute("CREATE INDEX grades_idx ON cput.student(grades);");
             }
             catch (Exception ex)
             {
@@ -131,60 +155,67 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Columnar
             _session.Connect().Execute("CREATE KEYSPACE IF NOT EXISTS cput WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 1 };");
 
             _session.Connect().Execute("DROP TABLE IF EXISTS cput.student;");
-            _session.Connect().Execute("DROP TABLE IF EXISTS cput.grades;");
 
             
             _session.Connect().Execute("DROP TYPE IF EXISTS cput.address;");
             _session.Connect().Execute("DROP TYPE IF EXISTS cput.registered;");
+            _session.Connect().Execute("DROP TYPE IF EXISTS cput.grades;");
             _session.Connect().Execute("DROP TYPE IF EXISTS cput.subject;");
 
             string subject = @"CREATE TYPE IF NOT EXISTS cput.subject( 
-                    code varchar,
-                    name varchar);";
+                    descr varchar,
+                    price decimal,
+                    period int);";
 
             _session.Connect().Execute(subject);
 
             string address = @"CREATE TYPE IF NOT EXISTS cput.address( 
-                    streetno varchar,
+                    streetno int,
                     streetname varchar,
+                    city varchar,
                     postalcode varchar,
-                    suburb varchar,
-                    city varchar);";
+                    country varchar);";
 
             _session.Connect().Execute(address);
 
             string registered = @"CREATE TYPE IF NOT EXISTS cput.registered( 
-                    studentno varchar,
-                    coursename varchar,
-                    subject frozen<set<frozen<subject>>>);";
+                    faculty varchar,
+                    course varchar,
+                    subject frozen<set<subject>>,
+                    registerdate timestamp);";
 
             _session.Connect().Execute(registered);
-            
+
+            string grades = @"CREATE TYPE IF NOT EXISTS cput.grades(
+                    subject frozen<subject>,
+                    marks decimal,
+                    symbol varchar
+                    ); ";
+
+            _session.Connect().Execute(grades);
+
             string student = @"CREATE TABLE IF NOT EXISTS cput.student(
-                    idno text, 
+                    uniqueid varchar, 
+                    idno varchar, 
+                    studentno varchar, 
+                    title varchar, 
+                    aka varchar, 
+                    initials varchar, 
                     firstname varchar,
                     lastname varchar,
                     dob varchar,
+                    genderid varchar, 
                     email varchar,
-                    cellnumber varchar,
-                    homenumber varchar,
+                    cellno varchar,
                     address frozen<address>,
                     registered frozen<registered>,
-                    PRIMARY KEY (idno)
+                    grades frozen<grades>,
+                    PRIMARY KEY (uniqueid)
                     ); ";
 
             _session.Connect().Execute(student);
 
-            string grades = @"CREATE TABLE IF NOT EXISTS cput.grades(
-                    id int, 
-                    idno text, 
-                    subject frozen<subject>,
-                    marks decimal,
-                    symbol varchar,
-                    PRIMARY KEY (id)
-                    ); ";
-
-            _session.Connect().Execute(grades);
+           
         }
 
         #endregion

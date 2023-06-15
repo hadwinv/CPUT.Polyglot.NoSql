@@ -8,26 +8,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {
     public class MongoDbPart : Transcriber
     {
-        public List<USchema> _uSchema { get; set; } 
-        public List<NSchema> _nSchema { get; set; }
-
-        public MongoDbPart(List<USchema> uSchema, List<NSchema> nSchema) 
-        {
-            _uSchema = uSchema;
-            _nSchema = nSchema;
-        }
+        public MongoDbPart() { }
 
         public override Constructs Execute(CreatePart request)
         {
-            StrategyPart strategy = new MongoDbStrategy();
-
-            //set schemas
-            Assistor.USchema = _uSchema;
-            
-            Assistor.Add((int)Database.MONGODB, _nSchema);
-
             //get query parts
-            var query = strategy.Query(request);
+            var query = new MongoDbStrategy().Query(request);
 
             return new Constructs
             {

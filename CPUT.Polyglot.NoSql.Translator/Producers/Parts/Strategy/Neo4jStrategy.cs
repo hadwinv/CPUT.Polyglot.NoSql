@@ -13,6 +13,13 @@ using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
+using CPUT.Polyglot.NoSql.Models.Views.Shared;
+using MongoDB.Driver.Linq;
+using System.Linq;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+using CPUT.Polyglot.NoSql.Models.Views;
+using Pipelines.Sockets.Unofficial.Arenas;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
@@ -143,9 +150,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     parts.Add(new RestrictPart(this.RestrictExpr.Value));
             }
 
-            ////apply correct aliases
-            //FindAndApplyUnwindedAlias(ref parts);
-
             return parts;
         }
 
@@ -207,28 +211,42 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             if (DataModelExpr != null)
             {
-                foreach (var part in DataModelExpr.Value)
+                string[]? references = null;
+                
+                //get references
+                if (DeclareExpr != null)
+                    references = GetReferencesBasedOnDeclare(Target);
+                else if (PropertiesExpr != null)
+                    references = GetReferencesBasedOnProperties(Target);
+
+                if (references != null)
                 {
-                    if (part is DataExpr)
+                    foreach (var reference in references)
                     {
-                        var data = (DataExpr)part;
-
-                        var link = Assistor.USchema
-                           .Select(x => x.View)
-                           .Where(x => x.Name == data.Value)
-                           .SelectMany(x => x.Resources
-                                             .SelectMany(x => x.Link))
-                           .Where(t => t.Target == Target)
-                           .FirstOrDefault();
-
-                        if (link != null)
+                        foreach (var part in DataModelExpr.Value)
                         {
-                            var relations = Assistor.NSchema[(int)Database.NEOJ4]
-                                .SelectMany(x => x.Model
-                                        .Where(x => x.Name == link.Reference && x.Relations != null)
-                                .SelectMany(x => x.Relations)).ToList();
+                            if (part is DataExpr)
+                            {
+                                var data = (DataExpr)part;
 
-                            parts.Add(new NodePart(link.Reference, data.AliasIdentifier, relations.ToArray()));
+                                //get model
+                                var model = Assistor.USchema.Single(x => x.View.Name == data.Value);
+                                //get link references based on the data model
+                                var link = model.View.Resources
+                                                .SelectMany(x => x.Link.Where(x => x.Target == Enum.GetName(typeof(Database), Database.NEO4J).ToLower()))
+                                                .FirstOrDefault(x => x.Reference == reference);
+
+                                if(link != null)
+                                {
+                                    var native = Assistor.NSchema[(int)Database.NEO4J]
+                                                .SelectMany(s => s.Model)
+                                                .Where(x => x.Name == reference && x.Type == "node")
+                                        .First();
+
+                                    parts.Add(new NodePart(native.Name, data.AliasIdentifier, native.Relations?.ToArray()));
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -248,6 +266,20 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     if (part is PropertyPart)
                     {
                         var property = (PropertyPart)part;
+
+                        var aliases = parts.Where(x => x.GetType().Equals(typeof(WithAliasPart))).Select(x => (WithAliasPart)x).ToList();
+
+                        if (!aliases.Exists(x => ((WithAliasPart)x).Value == property.AliasIdentifier))
+                        {
+                            parts.Add(new WithAliasPart(property.AliasIdentifier));
+                            parts.Add(new SeparatorPart(","));
+                        }
+                    }
+                    else if (part is NativeFunctionPart)
+                    {
+                        var function = (NativeFunctionPart)part;
+
+                        var property = (PropertyPart)function.Property;
 
                         var aliases = parts.Where(x => x.GetType().Equals(typeof(WithAliasPart))).Select(x => (WithAliasPart)x).ToList();
 
@@ -279,11 +311,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var groupExpr = (GroupExpr)part;
                         var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                        var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEOJ4);
-                        var comparePart = new ComparePart(operatorExpr.Compare, Common.Helpers.Utils.Database.NEOJ4);
+                        var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEO4J);
+                        var comparePart = new ComparePart(operatorExpr.Compare, Common.Helpers.Utils.Database.NEO4J);
 
-                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target,(int)Database.NEOJ4);
-                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.NEOJ4);
+                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target,(int)Database.NEO4J);
+                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.NEO4J);
 
                         parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
@@ -301,20 +333,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 foreach (var part in DeclareExpr.Value)
                 {
-                    if (part is PropertyExpr)
+                    if (part is not FunctionExpr)
                     {
-                        var propertyExpr = (PropertyExpr)part;
+                        dynamic expr = part is PropertyExpr ? (PropertyExpr)part : (JsonExpr)part;
 
-                        var mappedProperty = GetMappedProperty(propertyExpr, Target);
+                        var mappedProperty = GetMappedProperty(expr, Target);
 
-                        if (mappedProperty != null)
+                        if (mappedProperty != null && mappedProperty.Link != null)
                         {
-                            var properties = Assistor.NSchema[(int)Database.NEOJ4]
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .Where(x => x.Property == mappedProperty.Property)
-                                .First();
-
-                            parts.Add(new PropertyPart(mappedProperty, propertyExpr, (int)Database.NEOJ4));
+                            parts.Add(new PropertyPart(mappedProperty));
                             parts.Add(new SeparatorPart(","));
                         }
                     }
@@ -328,15 +355,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var mappedProperty = GetMappedProperty(nestedExpr, Target);
 
-                            if (mappedProperty != null)
+                            if (mappedProperty != null && mappedProperty.Link != null)
                             {
-                                var properties = Assistor.NSchema[(int)Database.NEOJ4]
-                                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                            .Where(x => x.Property == mappedProperty.Property)
-                                            .First();
-
                                 parts.Add(new NativeFunctionPart(
-                                        new PropertyPart(mappedProperty, nestedExpr, (int)Database.NEOJ4), expr.Type)
+                                        new PropertyPart(mappedProperty), expr.Type)
                                     );
                                 parts.Add(new SeparatorPart(","));
                             }
@@ -347,94 +369,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             if (parts.Count > 0)
                 parts.RemoveAt(parts.Count - 1);
-
-            return parts.ToArray();
-        }
-
-        private IExpression[] GetUnwindPart()
-        {
-            var parts = new List<IExpression>();
-
-            if (DeclareExpr != null)
-            {
-                var innerParts = new List<IExpression>();
-                var models = new List<Model>();
-
-                foreach (var part in DeclareExpr.Value)
-                {
-                    if (part is PropertyExpr)
-                    {
-                        var propertyExpr = (PropertyExpr)part;
-
-                        var mappedProperty = GetMappedProperty(propertyExpr, Target);
-
-                        if (mappedProperty != null)
-                        {
-                            var model = Assistor.NSchema[(int)Database.NEOJ4]
-                                .SelectMany(x => x.Model)
-                                .Where(x => x.Name == mappedProperty.Reference)
-                                .First();
-
-                            if (model.Type == "json")
-                            {
-                                var parentModel = Assistor.NSchema[(int)Database.NEOJ4]
-                                    .SelectMany(x => x.Model)
-                                    .Where(x => x.Properties.Exists(x => x.Property == model.Name))
-                                    .First();
-
-                                if (!models.Exists(x => x.Name == parentModel.Name))
-                                {
-                                    innerParts.Add(new UnwindGraphPart(propertyExpr, parentModel, model));
-                                    innerParts.Add(new SeparatorPart(","));
-
-                                    models.Add(parentModel);
-                                }
-                            }
-                        }
-                    }
-                    else if (part is FunctionExpr)
-                    {
-                        var functionExpr = (FunctionExpr)part;
-
-                        foreach (var func in functionExpr.Value)
-                        {
-                            dynamic nestedExpr = func is PropertyExpr ? ((PropertyExpr)func) : ((JsonExpr)func);
-
-                            var mappedProperty = GetMappedProperty(nestedExpr, Target);
-
-                            if (mappedProperty != null)
-                            {
-                                var model = Assistor.NSchema[(int)Database.NEOJ4]
-                                 .SelectMany(x => x.Model)
-                                 .Where(x => x.Name == mappedProperty.Reference)
-                                 .First();
-
-                                if (model.Type == "json")
-                                {
-                                    var parentModel = Assistor.NSchema[(int)Database.NEOJ4]
-                                        .SelectMany(x => x.Model)
-                                        .Where(x => x.Properties.Exists(x => x.Property == model.Name))
-                                        .First();
-
-                                    if (!models.Exists(x => x.Name == parentModel.Name))
-                                    {
-                                        innerParts.Add(new UnwindGraphPart(nestedExpr, parentModel, model));
-                                        innerParts.Add(new SeparatorPart(","));
-
-                                        models.Add(parentModel);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (innerParts.Count > 0)
-                {
-                    innerParts.RemoveAt(innerParts.Count - 1);
-                    parts.Add(new UnwindGroupPart(innerParts.ToArray()));
-                }
-            }
 
             return parts.ToArray();
         }
@@ -456,10 +390,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var groupExpr = (GroupExpr)part;
                             var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                            var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEOJ4);
+                            var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEO4J);
 
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.NEOJ4);
-                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.NEOJ4);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.NEO4J);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.NEO4J);
 
                             if (add)
                                 exprs.Add(new InsertNodePart(leftPart, operatorPart, rightPart));
@@ -487,7 +421,74 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
             return parts.ToArray();
         }
-        
+
         #endregion
+
+        private IExpression[] GetUnwindPart()
+        {
+            var parts = new List<IExpression>();
+
+            if (DeclareExpr != null)
+            {
+                var graphs = new List<IExpression>();
+
+                foreach (var expr in DeclareExpr.Value)
+                {
+                    var json = GetJsonPart(expr, Target);
+
+                    if (json != null)
+                    {
+                        if (graphs
+                            .Where(x => x.GetType().Equals(typeof(UnwindGraphPart)))
+                            .Count(x => ((UnwindGraphPart)x).UnwindProperty == json.UnwindProperty) < 1)
+                        {
+                            graphs.Add(json);
+                            graphs.Add(new SeparatorPart(","));
+                        }
+                    }
+                }
+
+                if (graphs.Count > 0)
+                {
+                    graphs.RemoveAt(graphs.Count - 1);
+                    parts.Add(new UnwindGroupPart(graphs.ToArray()));
+                }
+            }
+
+            return parts.ToArray();
+        }
+
+        private UnwindGraphPart? GetJsonPart(BaseExpr baseExpr, string database)
+        {
+            if (baseExpr is JsonExpr)
+            {
+                var mappedProperty = GetMappedProperty(baseExpr, database);
+
+                if(mappedProperty.Link != null)
+                {
+                    var reference = mappedProperty.Link.Property.Split(".")[0];
+
+                    var model = Assistor.NSchema[(int)Database.NEO4J]
+                                    .SelectMany(s => s.Model)
+                                    .Where(x => x.Name == reference && x.Type == "json")
+                                    .FirstOrDefault();
+
+                    if(model != null)
+                    {
+                        mappedProperty.Link.Property = model.Name;
+
+                        return new UnwindGraphPart(mappedProperty);
+                    }
+                    
+                }
+            }
+            else if (baseExpr is FunctionExpr)
+            {
+                foreach (var expr in ((FunctionExpr)baseExpr).Value)
+                    return GetJsonPart(expr, database);
+            }
+
+            return default;
+        }
     }
 }

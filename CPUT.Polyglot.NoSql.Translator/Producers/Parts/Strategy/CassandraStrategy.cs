@@ -171,20 +171,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 foreach (var part in DeclareExpr.Value)
                 {
-                    if (part is PropertyExpr)
+                    if (part is not FunctionExpr)
                     {
-                        var propertyExpr = (PropertyExpr)part;
+                        dynamic baseExpr = part is PropertyExpr ? ((PropertyExpr)part) : ((JsonExpr)part);
 
-                        var mappedProperty = GetMappedProperty(propertyExpr, Target);
+                        var mappedProperty = GetMappedProperty(baseExpr, Target);
 
-                        if (mappedProperty != null)
+                        if (mappedProperty != null && mappedProperty.Link != null)
                         {
-                            var properties = Assistor.NSchema[(int)Database.CASSANDRA]
-                                .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                .Where(x => x.Property == mappedProperty.Property)
-                                .First();
-
-                            parts.Add(new PropertyPart(mappedProperty, propertyExpr, (int)Database.CASSANDRA));
+                            parts.Add(new PropertyPart(mappedProperty));
                             parts.Add(new SeparatorPart(","));
                         };
                     }
@@ -203,16 +198,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var mappedProperty = GetMappedProperty(@base, Target);
 
-                            if (mappedProperty != null)
+                            if (mappedProperty != null && mappedProperty.Link != null)
                             {
-                                var properties = Assistor.NSchema[(int)Database.CASSANDRA]
-                                            .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                                            .Where(x => x.Property == mappedProperty.Property)
-                                            .First();
-
                                 parts.Add(
                                     new NativeFunctionPart(
-                                        new PropertyPart(mappedProperty, @base, (int)Database.CASSANDRA), expr.Type)
+                                        new PropertyPart(mappedProperty), expr.Type)
                                     );
 
                                 parts.Add(new SeparatorPart(","));

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared
 {
@@ -21,7 +22,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
         public OrderByPropertyPart(Link mappedProperty, OrderByPropertyExpr expr)
         {
             Name = mappedProperty.Property;
-            AliasIdentifier = expr.AliasIdentifier;
+
+            if (mappedProperty.Target != Enum.GetName(typeof(Database), Database.NEO4J).ToLower())
+                AliasIdentifier = expr.AliasIdentifier;
 
             if (string.IsNullOrEmpty(AliasIdentifier))
                 AliasIdentifier = mappedProperty.Reference.Substring(0, 3).ToLower();

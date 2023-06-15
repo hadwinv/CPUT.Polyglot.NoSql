@@ -736,7 +736,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @" FETCH { property, sum(property), avg(property), count(property), min(property),  max(property) }
                                 DATA_MODEL { data }
                                 FILTER_ON { (propertyo = propertyo) }
-                                GROUP_BY { property }
                                 TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -780,9 +779,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                 Lexicons.EQL,
                 Lexicons.TERM,
                 Lexicons.RIGHT_PAREN,
-                //Group by model
-                Lexicons.GROUP_BY,
-                Lexicons.PROPERTY,
                 //target model
                 Lexicons.TARGET,
                 Lexicons.NAMED_VENDOR);
@@ -976,7 +972,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                         PROPERTIES { colum = 1, colum = 2, colum = 3, colum = '4'}
                         DATA_MODEL { data, data}
-                        LINK_ON { property = property }
                         FILTER_ON { filter = 5 }
                         TARGET { storage_type }";
 
@@ -1008,11 +1003,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1030,10 +1020,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = SUM(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON {filter = '2' }
-                          TARGET { storage_type }"
-                        ;
+                          TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
 
@@ -1054,11 +1042,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1075,9 +1058,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                             PROPERTIES { colum = SUM(property)}
                             DATA_MODEL { data, data}
-                            LINK_ON { property = property }
                             FILTER_ON { filter = '3' }
-                            GROUP_BY { property }
                             TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1099,19 +1080,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1123,7 +1096,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = AVG(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1146,11 +1118,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1167,9 +1134,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = AVG(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1191,19 +1156,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1215,7 +1172,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = COUNT(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1238,11 +1194,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1259,9 +1210,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = COUNT(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1283,19 +1232,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1307,7 +1248,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = MIN(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1330,11 +1270,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1351,9 +1286,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = MIN(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1375,19 +1308,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1399,7 +1324,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = MAX(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1422,11 +1346,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1443,9 +1362,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"ADD { Entity }
                           PROPERTIES { colum = MAX(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1467,19 +1384,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1531,7 +1440,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                         PROPERTIES { colum = 1, colum = 2, colum = 3, colum = '4'}
                         DATA_MODEL { data, data}
-                        LINK_ON { property = property }
                         FILTER_ON { filter = 5 }
                         TARGET { storage_type }";
 
@@ -1563,11 +1471,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1585,7 +1488,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = SUM(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON {filter = '2' }
                           TARGET { storage_type }";
 
@@ -1608,11 +1510,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1629,9 +1526,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                             PROPERTIES { colum = SUM(property)}
                             DATA_MODEL { data, data}
-                            LINK_ON { property = property }
                             FILTER_ON { filter = '3' }
-                            GROUP_BY { property }
                             TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1653,19 +1548,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1677,7 +1564,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = AVG(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1700,11 +1586,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1721,9 +1602,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = AVG(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1745,19 +1624,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1769,7 +1640,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = COUNT(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1792,11 +1662,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1813,9 +1678,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = COUNT(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1837,19 +1700,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1861,7 +1716,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = MIN(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1884,11 +1738,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1905,9 +1754,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = MIN(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -1929,19 +1776,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);
@@ -1953,7 +1792,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = MAX(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '5' }
                           TARGET { storage_type }";
 
@@ -1976,11 +1814,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
@@ -1997,9 +1830,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
             var input = @"MODIFY { Entity }
                           PROPERTIES { colum = MAX(property)}
                           DATA_MODEL { data, data}
-                          LINK_ON { property = property }
                           FILTER_ON { filter = '1' }
-                          GROUP_BY { property }
                           TARGET { storage_type }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -2021,19 +1852,11 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                Lexicons.DATA,
                Lexicons.COMMA,
                Lexicons.DATA,
-               //link
-               Lexicons.LINK_ON,
-               Lexicons.TERM,
-               Lexicons.EQL,
-               Lexicons.TERM,
                //filter
                Lexicons.FILTER_ON,
                Lexicons.TERM,
                Lexicons.EQL,
                Lexicons.STRING,
-               //group by
-               Lexicons.GROUP_BY,
-               Lexicons.PROPERTY,
                //target model
                Lexicons.TARGET,
                Lexicons.NAMED_VENDOR);

@@ -68,7 +68,7 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                                         do
                                         {
                                             next = next.Remainder.ConsumeChar();
-                                        } while (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_') );
+                                        } while (next.Value == '.' || (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_')));
 
                                         yield return Result.Value(Lexicons.JSON_PROPERTY, wordStart, next.Location);
                                     }
@@ -115,7 +115,6 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                             previousText = text;
                         }
                         else if (keywordTracking[keywordTracking.Count - 1] == "PROPERTIES" 
-                            || keywordTracking[keywordTracking.Count - 1] == "LINK_ON"
                             || keywordTracking[keywordTracking.Count - 1] == "FILTER_ON")
                         {
                             if (!lhs)
@@ -136,7 +135,7 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                                         do
                                         {
                                             next = next.Remainder.ConsumeChar();
-                                        } while (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_'));
+                                        } while (next.Value == '.' || (next.HasValue && (char.IsLetter(next.Value) || next.Value == '_')));
 
                                         yield return Result.Value(Lexicons.JSON_PROPERTY, wordStart, next.Location);
                                     }
@@ -167,23 +166,6 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                                 }
                             }
                            
-                            previousText = text;
-                        }
-                        else if (keywordTracking[keywordTracking.Count - 1] == "GROUP_BY")
-                        {
-                            if (next.Value == '.')
-                                yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
-                            else if (text == "AS")
-                                yield return Result.Value(Lexicons.AS, wordStart, next.Location);
-                            else if (previousText == "AS")
-                            {
-                                yield return Result.Value(Lexicons.REFERENCE_ALIAS_NAME, wordStart, next.Location);
-
-                                previousText = string.Empty;
-                            }
-                            else
-                                yield return Result.Value(Lexicons.PROPERTY, wordStart, next.Location);
-
                             previousText = text;
                         }
                         else if (keywordTracking[keywordTracking.Count - 1] == "ORDER_BY")

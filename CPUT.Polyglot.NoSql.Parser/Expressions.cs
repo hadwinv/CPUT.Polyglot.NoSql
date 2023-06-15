@@ -10,6 +10,7 @@ using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using Superpower.Model;
 using CPUT.Polyglot.NoSql.Parser.Parsers.Operators;
 using CPUT.Polyglot.NoSql.Common.Parsers;
+using System.Text.RegularExpressions;
 
 namespace CPUT.Polyglot.NoSql.Parser
 {
@@ -338,13 +339,11 @@ namespace CPUT.Polyglot.NoSql.Parser
         public static TokenListParser<Lexicons, BaseExpr> Select =
               from declare in Fetch
               from model in DataModel
-              from link in Parse.Ref(() => Link).Try().OptionalOrDefault()
               from filter in Parse.Ref(() => Filter).OptionalOrDefault()
-              from groupby in Parse.Ref(() => GroupBy).OptionalOrDefault()
               from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()
               from order in Parse.Ref(() => OrderBy).OptionalOrDefault()
               from target in Target
-              select new Query().BuildExpression(declare, model, link, filter, groupby, restrict, order, target);
+              select new Query().BuildExpression(declare, model, filter, restrict, order, target);
 
         //add
         public static TokenListParser<Lexicons, BaseExpr> Insert =

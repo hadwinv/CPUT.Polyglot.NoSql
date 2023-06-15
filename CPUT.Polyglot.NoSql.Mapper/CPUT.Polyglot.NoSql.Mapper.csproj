@@ -7,9 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="_schemas\_native\**" />
+    <EmbeddedResource Remove="_schemas\_native\**" />
+    <None Remove="_schemas\_native\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="GaV.cs" />
     <Compile Remove="LaV.cs" />
     <Compile Remove="Mappers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="_schemas\_unifiedview.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,23 +32,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="_schemas\_unifiedview.json">
+    <None Update="_schemas\_unifiedschema.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="_schemas\_native\_columnar.json">
+    <None Update="_schemas\_columnar.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="_schemas\_native\_document.json">
+    <None Update="_schemas\_document.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="_schemas\_native\_graph.json">
+    <None Update="_schemas\_graph.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="_schemas\_native\_keyvalue.json">
+    <None Update="_schemas\_keyvalue.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties _3schemas_4updated_4wip_4_3graph_1json__JsonSchema="https://cdn.jsdelivr.net/gh/tarampampam/error-pages@latest/schemas/config/1.0.schema.json" /></VisualStudio></ProjectExtensions>
 
 </Project>

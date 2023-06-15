@@ -54,6 +54,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                     ((RestrictPart)expr).Accept(this);
                 }
             }
+
+            _query.Append(";");
         }
 
         public void Visit(SelectPart part)
@@ -212,7 +214,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append(") as ");
 
             if (part.Property is PropertyPart)
-                _query.Append(((PropertyPart)part.Property).Name);
+                _query.Append(((PropertyPart)part.Property).AliasName);
         }
 
         public void Visit(PropertyPart part)

@@ -118,7 +118,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                                 var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.REDIS);
 
                                 parts.Add(new GetPart(rightPart));
-                                break;
+                                //break;
                             }
                         }
                     }

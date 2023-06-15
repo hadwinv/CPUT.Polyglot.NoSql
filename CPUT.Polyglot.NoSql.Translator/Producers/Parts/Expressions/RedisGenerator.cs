@@ -16,11 +16,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             foreach (var expr in query.Expressions)
             {
-                if (expr is SetKeyValuePart)
-                {
+                //if (expr is SetKeyValuePart)
+                //{
                     if (_query.Length > 0)
                         _query.Append(";");
-                }
+                //}
 
                 expr.Accept(this);
             }

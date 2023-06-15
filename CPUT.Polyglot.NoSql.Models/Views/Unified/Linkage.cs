@@ -1,12 +1,12 @@
 ﻿namespace CPUT.Polyglot.NoSql.Models.Views.Unified
 {
-    public class Linkage
-    {
+    //public class Linkage
+    //{
 
-        public string Storage { get; set; }
+    //    public string Storage { get; set; }
 
-        public string Source { get; set; }
+    //    public string Source { get; set; }
 
-        public string Type { get; set; }
-    }
+    //    public string Type { get; set; }
+    //}
 }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using CPUT.Polyglot.NoSql.Models._data.prep;
+using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j;
@@ -6,8 +7,13 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using MongoDB.Driver;
+using Neo4jClient;
 using Pipelines.Sockets.Unofficial.Arenas;
+using System;
+using System.Diagnostics;
+using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
+using static CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4jGenerator;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 {
@@ -56,115 +62,124 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         public void Visit(MatchPart part)
         {
             var nodes = part.Properties.Where(x => x.GetType().Equals(typeof(NodePart))).Cast<NodePart>().ToList();
-            var parent = new Dictionary<string, Dictionary<string, string>>();
-
-            if(nodes.Count > 1)
-            {
-                foreach (var node in nodes)
-                {
-                    var parentNode = nodes.Where(x => x.Relations.Exists(x => x.Reference == node.Name)).FirstOrDefault();
-
-                    if (parentNode != null)
-                    {
-                        var relation = parentNode.Relations.First(x => x.Reference == node.Name);
-
-                        if (!parent.ContainsKey(parentNode.Name))
-                        {
-                            parent.Add(parentNode.Name, new Dictionary<string, string> {
-                                    {
-                                            relation.Name,
-                                            node.Name
-                                    }});
-                        }
-                        else
-                            parent[parentNode.Name].Add(relation.Name, node.Name);
-                    }
-                }
-            }
-            else
-                parent.Add(nodes[0].Name, new Dictionary<string, string>());
             
+            //create object tree
+            var tree = CreateTree(nodes);
 
-            DirectionType direction = DirectionType.None;
-            bool common = false;
-            int parentCount = 0;
+            _query.Append("MATCH ");
 
-            foreach (var node in parent)
+            var parent = new List<NodePart>();
+
+            var names = new List<string>();
+
+            foreach (var node in UnwindTree(tree))
             {
-                if(parentCount > 0)
+                if (names.Contains(node.Name))
+                    continue;//skip iteration
+
+                if (node.Parent.Id == "root")
                 {
-                    _query.Append("OPTIONAL MATCH ");
-
-                    foreach (var relation in node.Value)
-                    {
-                        var parentNode = nodes.First(x => x.Name == node.Key);
-                        var relatedNode = nodes.First(x => x.Name == relation.Value);
-                        var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
-
-                        _query.Append("(" + parentNode.AliasIdentifier + ")");
-
-                        if (direction == DirectionType.Forward)
-                            DoRelationshipPart(relationship, DirectionType.Backward);
-
-                        //add left then right node in loop
-                        DoNodePart(relatedNode);
-                    }
+                    if (node.Children.Count() > 1)
+                        parent.Add(nodes.First(x => x.Name == node.Name));
+                    else
+                        DoNodePart(nodes.First(x => x.Name == node.Name));
                 }
                 else
-                {
-                    _query.Append("MATCH ");
-
-                    if (node.Value.Count > 1)
+                {    
+                    if (parent.Count > 0)
                     {
-                        foreach (var relation in node.Value)
+                        foreach (var child in node.Children)
                         {
-                            var relatedNode = nodes.First(x => x.Name == relation.Value);
-                            var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
+                            DoNodePart(nodes.First(x => x.Name == child.Name));
 
-                            if (direction == DirectionType.None)
-                                direction = DirectionType.Backward;
-                            else
-                                direction = DirectionType.Forward;
+                            var childCardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == child.Id)).First();
 
-                            if (direction == DirectionType.Forward)
-                                DoRelationshipPart(relationship, DirectionType.Backward);
+                            DoRelationshipPart(childCardinality, DirectionType.Backward);
 
-                            //add left then right node in loop
-                            DoNodePart(relatedNode);
+                            names.Add(child.Name);
+                        }
 
-                            if (direction == DirectionType.Backward)
-                                DoRelationshipPart(relationship, DirectionType.Forward);
+                        DoNodePart(nodes.First(x => x.Name == node.Name));
 
-                            if (!common)
-                            {
-                                DoNodePart(nodes.First(x => x.Name == node.Key));
-                                common = true;
-                            }
+                        var cardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
+
+                        DoRelationshipPart(cardinality, DirectionType.Backward);
+
+                        if (parent.Count > 0)
+                        {
+                            DoNodePart(parent[0]);
+
+                            parent.RemoveAt(0);
                         }
                     }
                     else
                     {
-                        DoNodePart(nodes.First(x => x.Name == node.Key));
+                        var cardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
 
-                        foreach (var relation in node.Value)
-                        {
-                            var relatedNode = nodes.First(x => x.Name == relation.Value);
-                            var relationship = nodes.SelectMany(x => x.Relations.Where(x => x.Name == relation.Key)).First();
+                        DoRelationshipPart(cardinality, DirectionType.Forward);
 
-                            if (node.Value.Count == 1)
-                                DoRelationshipPart(relationship, DirectionType.Backward);
-                            else
-                                DoRelationshipPart(relationship, DirectionType.Forward);
-                            //add left then right node in loop
-
-                            DoNodePart(relatedNode);
-                        }
+                        DoNodePart(nodes.First(x => x.Name == node.Name));
                     }
-
                 }
 
-                parentCount++;
+                names.Add(node.Name);
             }
+        }
+
+        IEnumerable<Tree> UnwindTree(Tree nodes)
+        {
+            foreach (var node in nodes.Children)
+            {
+                yield return node;
+
+                foreach (var child in UnwindTree(node))
+                    yield return child;
+            }
+        }
+
+        private Tree CreateTree(List<NodePart> parts)
+        {
+            var nodes = new List<TreeNode>
+            {
+                new TreeNode
+                {
+                    Name = "root",
+                    Cardinality = string.Empty
+                }
+            };
+
+            //determine parent node(s)
+            foreach (var part in parts)
+            {
+                //determine if node is a child in the current list of nodes
+                if(parts.Exists(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)))
+                {
+                    var parent = parts.Where(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)).FirstOrDefault();
+                    //link child to parent
+                    if(parent != null)
+                    {
+                        nodes.Add(
+                            new TreeNode
+                            {
+                                Name = part.Name,
+                                Parent = parent.Name,
+                                Cardinality = parent.Relations.First(x => x.Reference == part.Name).Reference
+                            }) ;
+                    }
+                }
+                else
+                {
+                    //parent
+                    nodes.Add(
+                        new TreeNode
+                        {
+                            Name = part.Name,
+                            Parent = "root"
+                        });
+                }
+            }
+
+            return TreeBuilder.BuildTree(nodes);
         }
 
         #region DML
@@ -265,7 +280,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(NativeFunctionPart part)
         {
-            _query.Append(" " + part.Type + "(");
+            _query.Append(part.Type + "(");
 
             part.Property.Accept(this);
 
@@ -395,7 +410,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(OrderByPropertyPart part)
         {
-            _query.Append( part.AliasIdentifier + "." + part.Name + " ");
+            _query.Append(part.AliasIdentifier + "." + part.Name + " ");
 
             part.Direction.Accept(this);
         }
@@ -403,7 +418,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         public void Visit(DirectionPart part)
         {
             if (!string.IsNullOrEmpty(part.Type))
-                _query.Append(" " + part.Type + " ");
+                _query.Append(part.Type);
         }
 
         #region private helpers
@@ -412,19 +427,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             if (direction == DirectionType.Forward)
             {
-                _query.Append("<-");
-
-                part.Accept(this);
-
-                _query.Append("-");
-            }
-            else if (direction == DirectionType.Backward)
-            {
                 _query.Append("-");
 
                 part.Accept(this);
 
                 _query.Append("->");
+            }
+            else if (direction == DirectionType.Backward)
+            {
+                _query.Append("<-");
+
+                part.Accept(this);
+
+                _query.Append("-");
             }
         }
 
@@ -439,5 +454,147 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         #endregion
 
+    }
+
+    public class TreeNode
+    {
+        public string Name { get; set; }
+        public string Cardinality { get; set; }
+        public string Parent { get; set; }
+    }
+
+    public static class TreeBuilder
+    {
+        public static Tree BuildTree(IEnumerable<TreeNode> nodes)
+        {
+            if (nodes == null) return new Tree();
+            var nodeList = nodes.ToList();
+            var tree = FindTreeRoot(nodeList);
+            BuildTree(tree, nodeList);
+            return tree;
+        }
+
+        private static void BuildTree(Tree tree, IList<TreeNode> descendants)
+        {
+            var children = descendants.Where(node => node.Parent == tree.Id).ToArray();
+            foreach (var child in children)
+            {
+                var branch = Map(child);
+                tree.Add(branch);
+                descendants.Remove(child);
+            }
+            foreach (var branch in tree.Children)
+            {
+                BuildTree(branch, descendants);
+            }
+        }
+
+        private static Tree FindTreeRoot(IList<TreeNode> nodes)
+        {
+            var rootNodes = nodes.Where(node => node.Parent == null);
+            if (rootNodes.Count() != 1) return new Tree();
+            var rootNode = rootNodes.Single();
+            nodes.Remove(rootNode);
+            return Map(rootNode);
+        }
+
+        private static Tree Map(TreeNode node)
+        {
+            return new Tree
+            {
+                Id = node.Name,
+                Name = node.Name,
+                Cardinality = node.Cardinality
+            };
+        }
+    }
+
+    public static class TreeExtensions
+    {
+        public static IEnumerable<Tree> Descendants(this Tree value)
+        {
+            // a descendant is the node self and any descendant of the children
+            if (value == null) yield break;
+            yield return value;
+            // depth-first pre-order tree walker
+            foreach (var child in value.Children)
+                foreach (var descendantOfChild in child.Descendants())
+                {
+                    yield return descendantOfChild;
+                }
+        }
+
+        public static IEnumerable<Tree> Ancestors(this Tree value)
+        {
+            // an ancestor is the node self and any ancestor of the parent
+            var ancestor = value;
+            // post-order tree walker
+            while (ancestor != null)
+            {
+                yield return ancestor;
+                ancestor = ancestor.Parent;
+            }
+        }
+    }
+
+    public class Tree
+    {
+        public string? Id { get; set; }
+        public string Name { get; set; }
+
+        public string Cardinality { get; set; }
+
+        protected List<Tree> _children;
+        protected Tree _parent;
+
+        public Tree()
+        {
+            Name = string.Empty;
+        }
+
+        public Tree Parent { get { return _parent; } }
+        public Tree Root { get { return _parent == null ? this : _parent.Root; } }
+        public int Depth { get { return this.Ancestors().Count() - 1; } }
+
+        public IEnumerable<Tree> Children
+        {
+            get { return _children == null ? Enumerable.Empty<Tree>() : _children.ToArray(); }
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public void Add(Tree child)
+        {
+            if (child == null)
+                throw new ArgumentNullException();
+            if (child._parent != null)
+                throw new InvalidOperationException("A tree node must be removed from its parent before adding as child.");
+            if (this.Ancestors().Contains(child))
+                throw new InvalidOperationException("A tree cannot be a cyclic graph.");
+            if (_children == null)
+            {
+                _children = new List<Tree>();
+            }
+            Debug.Assert(!_children.Contains(child), "At this point, the node is definately not a child");
+            child._parent = this;
+            _children.Add(child);
+        }
+
+        public bool Remove(Tree child)
+        {
+            if (child == null)
+                throw new ArgumentNullException();
+            if (child._parent != this)
+                return false;
+            Debug.Assert(_children.Contains(child), "At this point, the node is definately a child");
+            child._parent = null;
+            _children.Remove(child);
+            if (!_children.Any())
+                _children = null;
+            return true;
+        }
     }
 }

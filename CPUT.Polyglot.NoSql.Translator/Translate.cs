@@ -19,12 +19,18 @@ namespace CPUT.Polyglot.NoSql.Translator
             _interpreter = interpreter;
             _schema = schema;
 
-            var uschema = _schema.UnifiedView();
+            //global schemas
+            Assistor.USchema = _schema.UnifiedView();
+            //native schemas
+            Assistor.Add((int)Database.REDIS, _schema.KeyValue());
+            Assistor.Add((int)Database.CASSANDRA, _schema.Columnar());
+            Assistor.Add((int)Database.NEO4J, _schema.Graph());
+            Assistor.Add((int)Database.MONGODB, _schema.Document());
 
-            _interpreter.Add(Database.REDIS, new RedisPart(uschema, _schema.KeyValue()));
-            _interpreter.Add(Database.CASSANDRA, new CassandraPart(uschema, _schema.Columnar()));
-            _interpreter.Add(Database.MONGODB, new MongoDbPart(uschema, _schema.Document()));
-            _interpreter.Add(Database.NEOJ4, new Neo4jPart(uschema, _schema.Graph()));
+            _interpreter.Add(Database.REDIS, new RedisPart());
+            _interpreter.Add(Database.CASSANDRA, new CassandraPart());
+            _interpreter.Add(Database.NEO4J, new Neo4jPart());
+            _interpreter.Add(Database.MONGODB, new MongoDbPart());
         }
 
         public async Task<List<Constructs>> Convert(ConstructPayload payload)
@@ -78,7 +84,7 @@ namespace CPUT.Polyglot.NoSql.Translator
                     db = Database.MONGODB;
                     break;
                 case "neo4j":
-                    db = Database.NEOJ4;
+                    db = Database.NEO4J;
                     break;
                 default:
                     db = Database.NONE;

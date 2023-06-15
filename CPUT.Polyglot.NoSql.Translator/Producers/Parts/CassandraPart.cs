@@ -8,25 +8,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {
     public class CassandraPart : Transcriber
     {
-        public List<USchema> _uSchema { get; set; }
-        public List<NSchema> _nSchema { get; set; }
-
-        public CassandraPart(List<USchema> uSchema, List<NSchema> nSchema)
-        {
-            _uSchema = uSchema;
-            _nSchema = nSchema;
-        }
+        public CassandraPart() { }
 
         public override Constructs Execute(CreatePart request)
         {
-            StrategyPart strategy = new CassandraStrategy();
-            
-            //set schemas
-            Assistor.USchema = _uSchema;
-            Assistor.Add((int)Database.CASSANDRA, _nSchema);
-
             //get query parts
-            var query = strategy.Query(request);
+            var query = new CassandraStrategy().Query(request);
 
             return new Constructs
             {

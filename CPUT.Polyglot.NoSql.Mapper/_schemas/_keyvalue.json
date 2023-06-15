@@ -1,0 +1,75 @@
+[
+	{
+		"name": "redis",
+		"storage": "keyvalue",
+		"model": [
+			{
+				"name": "user",
+				"properties": [
+					{
+						"property": "identity_number",
+						"type": "string",
+						"key": true
+					},
+					{
+						"property": "student_number",
+						"type": "string"
+					},
+					{
+						"property": "title",
+						"type": "string"
+					},
+					{
+						"property": "other_name",
+						"type": "string"
+					},
+					{
+						"property": "first_name",
+						"type": "string"
+					},
+					{
+						"property": "last_name",
+						"type": "string"
+					},
+					{
+						"property": "birth_date",
+						"type": "datetime"
+					},
+					{
+						"property": "gender",
+						"type": "string"
+					},
+					{
+						"property": "user_name",
+						"type": "string"
+					},
+					{
+						"property": "psw",
+						"type": "string"
+					},
+					{
+						"property": "ip_address",
+						"type": "string"
+					},
+					{
+						"property": "device",
+						"type": "string"
+					},
+					{
+						"property": "session_id",
+						"type": "string"
+					},
+					{
+						"property": "login_date",
+						"type": "datetime"
+					},
+					{
+						"property": "logout_date",
+						"type": "datetime"
+					}
+				],
+				"type": "table"
+			}
+		]
+	}
+]

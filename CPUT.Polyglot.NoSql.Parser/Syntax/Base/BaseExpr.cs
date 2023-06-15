@@ -1,6 +1,6 @@
 ﻿namespace CPUT.Polyglot.NoSql.Parser.Syntax.Base
 {
-    public class BaseExpr : ICloneable
+    public class BaseExpr : ICloneable 
     {
         public List<object> ParseTree = new List<object>();
 

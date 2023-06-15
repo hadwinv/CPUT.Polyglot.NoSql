@@ -51,11 +51,11 @@
             Right
         }
         
-        public enum MongoDBFormat
+        public enum MongoDBFetchType
         {
             None,
-            Aggregate_Order,
-            Find_Order
+            Aggregate,
+            Find
         }
     }
 }

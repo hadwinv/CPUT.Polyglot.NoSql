@@ -1,0 +1,216 @@
+[
+	{
+		"name": "neo4j",
+		"storage": "graph",
+		"model": [
+			{
+				"name": "pupil",
+				"properties": [
+					{
+						"property": "studentnum",
+						"type": "string"
+					},
+					{
+						"property": "idnum",
+						"type": "string"
+					},
+					{
+						"property": "title",
+						"type": "string"
+					},
+					{
+						"property": "alias",
+						"type": "string"
+					},
+					{
+						"property": "initial",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "surname",
+						"type": "string"
+					},
+					{
+						"property": "dob",
+						"type": "string"
+					},
+					{
+						"property": "gender",
+						"type": "string"
+					},
+					{
+						"property": "email",
+						"type": "string"
+					},
+					{
+						"property": "mobile",
+						"type": "string"
+					}
+				],
+				"type": "node",
+				"relations": [
+					{
+						"type": "node",
+						"cardinality": "ENROLLED_IN",
+						"reference": "course"
+					},
+					{
+						"type": "node",
+						"cardinality": "TRANSCRIPT",
+						"reference": "progress"
+					},
+					{
+						"type": "node",
+						"cardinality": "CITIZEN_OF",
+						"reference": "country"
+					},
+					{
+						"type": "node",
+						"cardinality": "LIVES_IN",
+						"reference": "city"
+					}
+				]
+			},
+			{
+				"name": "faculty",
+				"properties": [
+					{
+						"property": "key",
+						"type": "int"
+					},
+					{
+						"property": "description",
+						"type": "string"
+					}
+				],
+				"type": "node"
+			},
+			{
+				"name": "course",
+				"properties": [
+					{
+						"property": "key",
+						"type": "int"
+					},
+					{
+						"property": "description",
+						"type": "string"
+					}
+				],
+				"type": "node",
+				"relations": [
+					{
+						"type": "node",
+						"cardinality": "OFFERED_IN",
+						"reference": "faculty"
+					},
+					{
+						"type": "node",
+						"cardinality": "CONTAINS",
+						"reference": "subject"
+					}
+				]
+			},
+			{
+				"name": "subject",
+				"properties": [
+					{
+						"property": "key",
+						"type": "int"
+					},
+					{
+						"property": "description",
+						"type": "string"
+					},
+					{
+						"property": "cost",
+						"type": "decimal"
+					},
+					{
+						"property": "term",
+						"type": "decimal"
+					}
+				],
+				"type": "node",
+				"relations": [
+					{
+						"type": "node",
+						"cardinality": "REGISTERED",
+						"reference": "progress"
+					}
+				]
+			},
+			{
+				"name": "country",
+				"properties": [
+					{
+						"property": "key",
+						"type": "string"
+					},
+					{
+						"property": "description",
+						"type": "string"
+					}
+				],
+				"type": "node"
+			},
+			{
+				"name": "city",
+				"properties": [
+					{
+						"property": "key",
+						"type": "string"
+					},
+					{
+						"property": "description",
+						"type": "string"
+					}
+				],
+				"type": "node",
+				"relations": [
+					{
+						"type": "node",
+						"cardinality": "IS_LOCATED_IN",
+						"reference": "country"
+					}
+				]
+			},
+			{
+				"name": "progress",
+				"properties": [
+					{
+						"property": "studentnum",
+						"type": "int"
+					},
+					{
+						"property": "subject",
+						"type": "subject"
+					},
+					{
+						"property": "results",
+						"type": "json"
+					}
+				],
+				"type": "node"
+			},
+			{
+				"name": "results",
+				"properties": [
+					{
+						"property": "score",
+						"type": "decimal"
+					},
+					{
+						"property": "grade",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			}
+		]
+	}
+]

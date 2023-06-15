@@ -1,0 +1,170 @@
+[
+	{
+		"name": "mongodb",
+		"storage": "document",
+		"model": [
+			{
+				"name": "students",
+				"properties": [
+					{
+						"property": "student_no",
+						"type": "string"
+					},
+					{
+						"property": "id_number",
+						"type": "string"
+					},
+					{
+						"property": "title",
+						"type": "string"
+					},
+					{
+						"property": "init",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "surname",
+						"type": "string"
+					},
+					{
+						"property": "date_of_birth",
+						"type": "string"
+					},
+					{
+						"property": "gender",
+						"type": "string"
+					},
+					{
+						"property": "contact",
+						"type": "contact"
+					},
+					{
+						"property": "address",
+						"type": "address"
+					},
+					{
+						"property": "enroll",
+						"type": "enroll"
+					}
+				],
+				"type": "collection"
+			},
+			{
+				"name": "faculty",
+				"properties": [
+					{
+						"property": "short_code",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "course",
+				"properties": [
+					{
+						"property": "short_code",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "subject",
+				"properties": [
+					{
+						"property": "short_code",
+						"type": "string"
+					},
+					{
+						"property": "name",
+						"type": "string"
+					},
+					{
+						"property": "price",
+						"type": "decimal"
+					},
+					{
+						"property": "duration",
+						"type": "int"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "contact",
+				"properties": [
+					{
+						"property": "email_address",
+						"type": "string"
+					},
+					{
+						"property": "phone",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "address",
+				"properties": [
+					{
+						"property": "street",
+						"type": "string"
+					},
+					{
+						"property": "city",
+						"type": "string"
+					},
+					{
+						"property": "code",
+						"type": "string"
+					},
+					{
+						"property": "country",
+						"type": "string"
+					}
+				],
+				"type": "json"
+			},
+			{
+				"name": "enroll",
+				"properties": [
+					{
+						"property": "faculty",
+						"type": "string"
+					},
+					{
+						"property": "course",
+						"type": "string"
+					},
+					{
+						"property": "subjects",
+						"type": "subject"
+					},
+					{
+						"property": "enrollment_type",
+						"type": "string"
+					},
+					{
+						"property": "enrollment_date",
+						"type": "datetime"
+					}
+				],
+				"type": "json"
+			}
+		]
+	}
+]

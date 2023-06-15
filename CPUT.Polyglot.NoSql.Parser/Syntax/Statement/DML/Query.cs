@@ -14,20 +14,14 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Statement.DML
             _syntax = new BaseExpr();
         }
 
-        public BaseExpr? BuildExpression(DeclareExpr declare, DataModelExpr dataModel, LinkExpr? link, FilterExpr? filter, GroupByExpr? group, RestrictExpr? restrict, OrderByExpr? order, TargetExpr? target)
+        public BaseExpr? BuildExpression(DeclareExpr declare, DataModelExpr dataModel, FilterExpr? filter, RestrictExpr? restrict, OrderByExpr? order, TargetExpr? target)
         {
             //add
             _syntax.Add(declare);
             _syntax.Add(dataModel);
 
-            if (link != null)
-                _syntax.Add(link);
-
             if (filter != null)
                 _syntax.Add(filter);
-
-            if (group != null)
-                _syntax.Add(group);
 
             if (restrict != null)
                 _syntax.Add(restrict);
@@ -37,10 +31,53 @@ namespace CPUT.Polyglot.NoSql.Parser.Syntax.Statement.DML
 
             if (target != null)
                 _syntax.Add(target);
-            
+
             return Syntax;
         }
-        //? 
+
+        //public BaseExpr? BuildExpression(DeclareExpr declare, DataModelExpr dataModel, LinkExpr? link, FilterExpr? filter, GroupByExpr? group, RestrictExpr? restrict, OrderByExpr? order, TargetExpr? target)
+        //{
+        //    //add
+        //    _syntax.Add(declare);
+        //    _syntax.Add(dataModel);
+
+        //    if (link != null)
+        //        _syntax.Add(link);
+
+        //    if (filter != null)
+        //        _syntax.Add(filter);
+
+        //    if (group != null)
+        //        _syntax.Add(group);
+
+        //    if (restrict != null)
+        //        _syntax.Add(restrict);
+
+        //    if (order != null)
+        //        _syntax.Add(order);
+
+        //    if (target != null)
+        //        _syntax.Add(target);
+
+        //    return Syntax;
+        //}
+        ////? 
+        ///
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="declare"></param>
+        /// <param name="properties"></param>
+        /// <param name="dataModel"></param>
+        /// <param name="link"></param>
+        /// <param name="filter"></param>
+        /// <param name="group"></param>
+        /// <param name="restrict"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public BaseExpr? BuildExpression(DeclareExpr declare, PropertiesExpr? properties,DataModelExpr dataModel, LinkExpr? link, FilterExpr? filter, GroupByExpr? group, RestrictExpr? restrict, TargetExpr? target)
         {
             //add

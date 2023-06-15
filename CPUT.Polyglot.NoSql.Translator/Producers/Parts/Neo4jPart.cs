@@ -8,30 +8,17 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {
     public class Neo4jPart : Transcriber
     {
-        public List<USchema> _uSchema { get; set; }
-        public List<NSchema> _nSchema { get; set; }
-
-        public Neo4jPart(List<USchema> uSchema, List<NSchema> nSchema)
-        {
-            _uSchema = uSchema;
-            _nSchema = nSchema;
-        }
+        public Neo4jPart() {}
 
         public override Constructs Execute(CreatePart request)
         {
-            StrategyPart strategy = new Neo4jStrategy();
-
-            //set schemas
-            Assistor.USchema = _uSchema;
-            Assistor.Add((int)Database.NEOJ4, _nSchema);
-
             //get query parts
-            var native = strategy.Query(request);
+            var query = new Neo4jStrategy().Query(request);
 
             return new Constructs
             {
-                Target = Database.NEOJ4,
-                Query = native,
+                Target = Database.NEO4J,
+                Query = query,
                 Expression = request.BaseExpr,
             };
         }

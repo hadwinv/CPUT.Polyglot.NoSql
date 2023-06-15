@@ -17,7 +17,7 @@
             NONE,
             REDIS,
             CASSANDRA,
-            NEOJ4,
+            NEO4J,
             MONGODB
         }
 

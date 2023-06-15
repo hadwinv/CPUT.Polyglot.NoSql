@@ -116,7 +116,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
         {
             var input = @"FETCH { property, property }
                             DATA_MODEL { data, data}
-                            LINK_ON { property = property }
                             FILTER_ON {filter = 2 }
                             TARGET { storage_type }"
                         ;
@@ -130,8 +129,6 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                 typeof(DeclareExpr),
                 //data model
                 typeof(DataModelExpr),
-                //link on
-                typeof(LinkExpr),
                 //filter
                 typeof(FilterExpr),
                 //target model
@@ -144,9 +141,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
         {
             var input = @"FETCH { property, property, SUM(property) }
                             DATA_MODEL { data, data}
-                            LINK_ON { property = property AND  property = property  }
                             FILTER_ON {filter = 2 AND filter = 'unit' }
-                            GROUP_BY { property, property}
                             RESTRICT_TO { 10 }
                             ORDER_BY {property DESC}
                             TARGET { storage_type, storage_type }"
@@ -161,12 +156,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                 typeof(DeclareExpr),
                 //data model
                 typeof(DataModelExpr),
-                //link on
-                typeof(LinkExpr),
                 //filter
                 typeof(FilterExpr),
-                //group
-                typeof(GroupByExpr),
                 //restrict
                 typeof(RestrictExpr),
                 //order
@@ -181,9 +172,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
         {
             var input = @"FETCH { a.property AS p, a.property AS p, SUM(b.property) }
                           DATA_MODEL { data AS a, data AS b}
-                          LINK_ON { a.property = b.property AND a.property = b.property  }
                           FILTER_ON {a.filter = 2 AND b.filter = 'unit' }
-                          GROUP_BY { a.property, a.property }
                           RESTRICT_TO { 10 }
                           ORDER_BY { a.property DESC }
                           TARGET { storage_type, storage_type }";
@@ -197,12 +186,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
                 typeof(DeclareExpr),
                 //data model
                 typeof(DataModelExpr),
-                //link on
-                typeof(LinkExpr),
                 //filter
                 typeof(FilterExpr),
-                //group
-                typeof(GroupByExpr),
                 //restrict
                 typeof(RestrictExpr),
                 //order

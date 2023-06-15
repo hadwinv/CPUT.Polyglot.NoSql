@@ -8,25 +8,12 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {
     public class RedisPart : Transcriber
     {
-        public List<USchema> _uSchema { get; set; }
-        public List<NSchema> _nSchema { get; set; }
-
-        public RedisPart(List<USchema> uSchema, List<NSchema> nSchema)
-        {
-            _uSchema = uSchema;
-            _nSchema = nSchema;
-        }
+        public RedisPart() {}
 
         public override Constructs Execute(CreatePart request)
         {
-            StrategyPart strategy = new RedisStrategy();
-
-            //set schemas
-            Assistor.USchema = _uSchema;
-            Assistor.Add((int)Database.REDIS, _nSchema);
-
             //get query parts
-            var query = strategy.Query(request);
+            var query = new RedisStrategy().Query(request);
 
             return new Constructs
             {

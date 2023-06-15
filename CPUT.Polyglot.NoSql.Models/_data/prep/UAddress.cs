@@ -7,6 +7,7 @@
         public string Street { get; set; }
         public string StreetAddress { get; set; }
         public string PostalAddress { get; set; }
+        public string PostalCode { get; set; }
         public string City { get; set; }
         public ULocation Location { get; set; }
 
