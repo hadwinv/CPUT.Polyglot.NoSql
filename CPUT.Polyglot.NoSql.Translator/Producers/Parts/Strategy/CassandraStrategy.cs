@@ -8,11 +8,12 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Cassandra
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+using Pipelines.Sockets.Unofficial.Arenas;
+using System.Collections.Generic;
 using System.Text;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using BaseExpr = CPUT.Polyglot.NoSql.Parser.Syntax.Base;
-using Pipelines.Sockets.Unofficial.Arenas;
-using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
@@ -108,11 +109,17 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 if (FilterExpr != null)
                     parts.Add(new ConditionPart(GetLogicalPart()));
 
-                if (this.OrderByExpr != null)
+                if (OrderByExpr != null)
                     parts.Add(this.GetOrderPart(Target));
 
                 if (RestrictExpr != null)
                     parts.Add(new RestrictPart(RestrictExpr.Value));
+
+                if(FilterExpr != null)
+                {
+                    if(!IsConditionIndexed(parts))
+                        parts.Add(new AllowFilterPart());
+                }
             }
 
             return parts;
@@ -365,6 +372,34 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 parts.RemoveAt(parts.Count - 1);
 
             return parts.ToArray();
+        }
+
+        private bool IsConditionIndexed(List<IExpression> parts)
+        {
+            var properties = parts
+                        .Where(x => x.GetType().Equals(typeof(ConditionPart)))
+                        .Select(x => (ConditionPart)x)
+                        .SelectMany(x => x.Logic
+                                            .Where(y => y.GetType().Equals(typeof(LogicalPart)))
+                                            .Select(y => (LogicalPart)y))
+                        .Where(x => x.Left.GetType().Equals(typeof(PropertyPart)))
+                        .Select(x => x.Left).ToList();
+
+            if(properties != null && properties.Count() > 0)
+            {
+                var indexedProperties = Assistor.NSchema[(int)Database.CASSANDRA]
+                     .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                     .Where(x => (x.Indexed))
+                     .Union(
+                             Assistor.NSchema[(int)Database.CASSANDRA]
+                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                             .Where(x => (x.Key))).ToList();
+
+                if (indexedProperties != null)
+                    return properties.Exists(x => indexedProperties.Exists(y => y.Property == x.Name));
+            }
+
+            return default;
         }
     }
 }

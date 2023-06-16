@@ -3,6 +3,7 @@ using CPUT.Polyglot.NoSql.Interface.Repos;
 using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Native.Redis;
 using CPUT.Polyglot.NoSql.Models.Translator;
+using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
@@ -22,7 +23,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
 
         public Models.Result Execute(Constructs construct)
         {
-            RedisResult result;
+            Models.Result result = null;
 
             try
             {
@@ -30,21 +31,32 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
 
                 if(construct.Query != null)
                 {
-                    //var redisCmd = (RedisExecutor)construct.Query;
+                    var redisCmd = (RedisExecutor)construct.Query;
 
-                    //result = redis.Execute(redisCmd.Key, redisCmd.Value);
+                    var response = redis.Execute(redisCmd.Key, redisCmd.Value);
+
+                    result = new Models.Result
+                    {
+                        Data = response,
+                        Message = "OK",
+                        Success = true
+                    };
                 }
-                
-                int i = 0;
             }
             catch(Exception ex)
             {
                 Console.WriteLine($"Exception - {ex.Message}");
+
+                result = new Models.Result
+                {
+                    Data = null,
+                    Message = ex.Message,
+                    Success = false
+                };
             }
-            return null;
+
+            return result;
         }
-        ////Create \update
-        //var tests = redis.GetDatabase(1).Execute("SET", new []{ "createwithvalue", "update" } );
 
         #region Data Load
 

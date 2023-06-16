@@ -38,7 +38,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithoutFilter_ReturnExecutableQuery()
+        public void Convert01_SimpleFetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -67,7 +67,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithRestriction_ReturnExecutableQuery()
+        public void Convert02_SimpleFetchWithRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -97,7 +97,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderBy_ReturnExecutableQuery()
+        public void Convert03_SimpleFetchOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -128,7 +128,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderByMoreThanOne_ReturnExecutableQuery()
+        public void Convert04_SimpleFetchOrderByMoreThanOne_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -158,7 +158,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderByDesc_ReturnExecutableQuery()
+        public void Convert05_SimpleFetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -188,7 +188,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilter_ReturnExecutableQuery()
+        public void Convert06_SimpleFetchWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -218,7 +218,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void Convert07_SimpleFetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -249,7 +249,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
+        public void Convert08_SimpleFetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -279,7 +279,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
+        public void Convert09_SimpleFetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -309,7 +309,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithORANDFilter_ReturnExecutableQuery()
+        public void Convert10_SimpleFetchWithORANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -338,9 +338,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-
         [Test]
-        public void Translate_FetchOneToOneObject_ReturnExecutableQuery()
+        public void Convert11_ComplexFetchOneToOneObject_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -369,7 +368,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOneToOneObjectWithPropertName_ReturnExecutableQuery()
+        public void Convert12_ComplexFetchOneToOneObjectWithPropertName_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -397,7 +396,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-        public void Translate_FetchOneToManyObject_ReturnExecutableQuery()
+        public void Convert13_ComplexFetchOneToManyObject_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -428,7 +427,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         #region Aggregation
 
         [Test]
-        public void Translate_FetchNSUM_ReturnExecutableQuery()
+        public void Convert14_ComplexFetchNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -457,7 +456,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNAVG_ReturnExecutableQuery()
+        public void Convert15_ComplexFetchNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -486,7 +485,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNCount_ReturnExecutableQuery()
+        public void Convert16_ComplexFetchNCount_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -515,7 +514,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNMIN_ReturnExecutableQuery()
+        public void Convert17_ComplexFetchNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -544,7 +543,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNMAX_ReturnExecutableQuery()
+        public void Convert18_ComplexFetchNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -573,7 +572,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNSUM_ReturnExecutableQuery()
+        public void Convert19_ComplexFetchWithFilterNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -602,7 +601,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNAVG_ReturnExecutableQuery()
+        public void Convert20_ComplexFetchWithFilterNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -632,7 +631,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNCount_ReturnExecutableQuery()
+        public void Convert21_ComplexFetchWithFilterNCount_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -662,7 +661,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNMIN_ReturnExecutableQuery()
+        public void Convert22_ComplexFetchWithFilterNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -692,7 +691,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNMAX_ReturnExecutableQuery()
+        public void Convert23_ComplexFetchWithFilterNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -724,7 +723,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         #endregion
 
         [Test]
-        public void Translate_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
+        public void Convert24_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -754,7 +753,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifyMultiplePropertiesWithSingleFilter_ReturnExecutableQuery()
+        public void Convert25_ModifyMultiplePropertiesWithSingleFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -783,7 +782,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifySinglePropertyWithoutFilter_ReturnExecutableQuery()
+        public void Convert26_ModifySinglePropertyWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -811,7 +810,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifyMultiplePropertiesWithoutFilter_ReturnExecutableQuery()
+        public void Convert27_ModifyMultiplePropertiesWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -839,7 +838,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_AddSingleProperty_ReturnExecutableQuery()
+        public void Convert28_AddSingleProperty_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -868,7 +867,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
+        public void Convert29_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -893,6 +892,125 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
                  ("INSERT INTO student (firstname, lastname) VALUES (\"Chuck T\", \"Tylers\");").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert30_FetchJsonWithoutAlias_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { transcript.subject, transcript.result }
+                    DATA_MODEL { student }
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT grades.subject,  grades.marks FROM student;").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert31_SimpleFetchWithNonIndexedFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
+                    DATA_MODEL { student}
+                    FILTER_ON {initial = 'test'}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT firstname, lastname, idno, dob FROM student WHERE initials = \"test\" ALLOW FILTERING;").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert32_SimpleFetchAll_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { identifier, idnumber, title, preferredname, initial, name, surname, dateofbirth, gender,
+				                  address, contact, register, transcript }
+                    DATA_MODEL { student}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT studentno, idno, title, aka, initials, firstname, lastname, dob, genderid, address, registered, grades FROM student;").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert33_ComplexFetchAll_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { identifier, idnumber, title, preferredname, initial, name, surname, dateofbirth, gender,
+				                  address, contact, register, transcript }
+                    DATA_MODEL { student}
+                    TARGET {  cassandra }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("SELECT studentno, idno, title, aka, initials, firstname, lastname, dob, genderid, address, registered, grades FROM student;").Replace(" ", "")
             );
         }
     }

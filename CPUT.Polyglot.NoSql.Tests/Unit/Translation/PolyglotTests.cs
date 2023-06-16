@@ -24,7 +24,7 @@ using System.Xml.Linq;
 namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 {
     [TestFixture]
-    public class MultipleQueryTests
+    public class PolyglotTests
     {
         private Mock<ICache> _mockCache;
 
@@ -43,9 +43,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             _translate = new Translate(_interpreter, _schema);
         }
 
-
         [Test]
-        public void MoreThanOneTarget_SimpleFetch_ReturnExecutableQuery()
+        public void Convert01_MoreThanOneTarget_SimpleFetch_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -89,7 +88,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_SimpleFetchWithFilter_ReturnExecutableQuery()
+        public void Convert02_MoreThanOneTarget_SimpleFetchWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -133,7 +132,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_SimpleFetchWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void Convert03_MoreThanOneTarget_SimpleFetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -178,7 +177,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_SimpleFetchWithFilterANDOrderBy_ReturnExecutableQuery()
+        public void Convert04_MoreThanOneTarget_SimpleFetchWithFilterANDOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -224,7 +223,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_SimpleFetchWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
+        public void Convert05_MoreThanOneTarget_SimpleFetchWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -271,7 +270,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_FetchAVGWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
+        public void Convert06_MoreThanOneTarget_FetchAVGWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -318,7 +317,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_FetchSUMWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
+        public void Convert07_MoreThanOneTarget_FetchSUMWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -365,7 +364,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_FetchMINWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
+        public void Convert08_MoreThanOneTarget_FetchMINWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -412,7 +411,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_FetchMAXWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
+        public void Convert09_MoreThanOneTarget_FetchMAXWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -459,7 +458,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void MoreThanOneTarget_FetchCOUNTWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
+        public void Convert10_MoreThanOneTarget_FetchCOUNTWithFilterANDOrderByANDRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 

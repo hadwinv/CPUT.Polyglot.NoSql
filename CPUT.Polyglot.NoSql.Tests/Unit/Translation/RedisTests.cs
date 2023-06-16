@@ -37,15 +37,13 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             _translate = new Translate(_interpreter, _schema);
         }
 
-        #region Redis
-
         [Test]
-        public void Translate_FetchWithoutFilter_ReturnExecutableQuery()
+        public void Convert01_FetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
             var input = @"FETCH { id, name, surname, idnumber, dateofbirth }
-                    DATA_MODEL { }
+                    DATA_MODEL { student }
                     TARGET {  redis }";
 
             var tokens = new Lexer().Tokenize(input);
@@ -69,7 +67,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithKeyFilter_ReturnExecutableQuery()
+        public void Convert02_FetchWithKeyFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -99,7 +97,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithoutKeyFilter_ReturnExecutableQuery()
+        public void Convert03_FetchWithoutKeyFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -130,7 +128,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMultipleFiltersIncludingKey_ReturnExecutableQuery()
+        public void Convert04_FetchWithMultipleFiltersIncludingKey_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -160,7 +158,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMultipleFiltersExcludingKey_ReturnExecutableQuery()
+        public void Convert05_FetchWithMultipleFiltersExcludingKey_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -190,7 +188,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifyPropertyWithKeyFilter_ReturnExecutableQuery()
+        public void Convert06_ModifyPropertyWithKeyFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -220,7 +218,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifyPropertyWithoutKeyFilter_ReturnExecutableQuery()
+        public void Convert07_ModifyPropertyWithoutKeyFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -250,7 +248,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_AddPropertyWithKey_ReturnExecutableQuery()
+        public void Convert08_AddPropertyWithKey_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -279,7 +277,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_AddPropertyWithoutKey_ReturnExecutableQuery()
+        public void Convert09_AddPropertyWithoutKey_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -306,7 +304,5 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
                 ("Cannot generate Redis command")
             );
         }
-
-        #endregion
     }
 }

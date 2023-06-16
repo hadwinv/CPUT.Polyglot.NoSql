@@ -59,6 +59,11 @@ namespace CPUT.Polyglot.NoSql.Logic
 
                     foreach(var target in output.Constructs)
                         result = _proxy.Forward(target);
+
+                    if (result.Success)
+                    {
+                        //bind data
+                    }
                 }
                 else
                 {

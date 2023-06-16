@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models._data.prep;
+﻿using CPUT.Polyglot.NoSql.Common.Helpers.NodeExpressions;
+using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
@@ -124,62 +125,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
                 names.Add(node.Name);
             }
-        }
-
-        IEnumerable<Tree> UnwindTree(Tree nodes)
-        {
-            foreach (var node in nodes.Children)
-            {
-                yield return node;
-
-                foreach (var child in UnwindTree(node))
-                    yield return child;
-            }
-        }
-
-        private Tree CreateTree(List<NodePart> parts)
-        {
-            var nodes = new List<TreeNode>
-            {
-                new TreeNode
-                {
-                    Name = "root",
-                    Cardinality = string.Empty
-                }
-            };
-
-            //determine parent node(s)
-            foreach (var part in parts)
-            {
-                //determine if node is a child in the current list of nodes
-                if(parts.Exists(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)))
-                {
-                    var parent = parts.Where(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)).FirstOrDefault();
-                    //link child to parent
-                    if(parent != null)
-                    {
-                        nodes.Add(
-                            new TreeNode
-                            {
-                                Name = part.Name,
-                                Parent = parent.Name,
-                                Cardinality = parent.Relations.First(x => x.Reference == part.Name).Reference
-                            }) ;
-                    }
-                }
-                else
-                {
-                    //parent
-                    nodes.Add(
-                        new TreeNode
-                        {
-                            Name = part.Name,
-                            Parent = "root"
-                        });
-                }
-            }
-
-            return TreeBuilder.BuildTree(nodes);
         }
 
         #region DML
@@ -452,149 +397,67 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append(")");
         }
 
-        #endregion
-
-    }
-
-    public class TreeNode
-    {
-        public string Name { get; set; }
-        public string Cardinality { get; set; }
-        public string Parent { get; set; }
-    }
-
-    public static class TreeBuilder
-    {
-        public static Tree BuildTree(IEnumerable<TreeNode> nodes)
+        private IEnumerable<Tree> UnwindTree(Tree nodes)
         {
-            if (nodes == null) return new Tree();
-            var nodeList = nodes.ToList();
-            var tree = FindTreeRoot(nodeList);
-            BuildTree(tree, nodeList);
-            return tree;
-        }
+            foreach (var node in nodes.Children)
+            {
+                yield return node;
 
-        private static void BuildTree(Tree tree, IList<TreeNode> descendants)
-        {
-            var children = descendants.Where(node => node.Parent == tree.Id).ToArray();
-            foreach (var child in children)
-            {
-                var branch = Map(child);
-                tree.Add(branch);
-                descendants.Remove(child);
-            }
-            foreach (var branch in tree.Children)
-            {
-                BuildTree(branch, descendants);
+                foreach (var child in UnwindTree(node))
+                    yield return child;
             }
         }
 
-        private static Tree FindTreeRoot(IList<TreeNode> nodes)
+        private Tree CreateTree(List<NodePart> parts)
         {
-            var rootNodes = nodes.Where(node => node.Parent == null);
-            if (rootNodes.Count() != 1) return new Tree();
-            var rootNode = rootNodes.Single();
-            nodes.Remove(rootNode);
-            return Map(rootNode);
-        }
-
-        private static Tree Map(TreeNode node)
-        {
-            return new Tree
+            var nodes = new List<TreeNode>
             {
-                Id = node.Name,
-                Name = node.Name,
-                Cardinality = node.Cardinality
-            };
-        }
-    }
-
-    public static class TreeExtensions
-    {
-        public static IEnumerable<Tree> Descendants(this Tree value)
-        {
-            // a descendant is the node self and any descendant of the children
-            if (value == null) yield break;
-            yield return value;
-            // depth-first pre-order tree walker
-            foreach (var child in value.Children)
-                foreach (var descendantOfChild in child.Descendants())
+                new TreeNode
                 {
-                    yield return descendantOfChild;
+                    Name = "root",
+                    Cardinality = string.Empty
                 }
+            };
+
+            //determine parent node(s)
+            foreach (var part in parts)
+            {
+                //determine if node is a child in the current list of nodes
+                if (parts.Exists(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)))
+                {
+                    var parent = parts.Where(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)).FirstOrDefault();
+                    //link child to parent
+                    if (parent != null)
+                    {
+                        nodes.Add(
+                            new TreeNode
+                            {
+                                Name = part.Name,
+                                Parent = parent.Name,
+                                Cardinality = parent.Relations.First(x => x.Reference == part.Name).Reference
+                            });
+                    }
+                }
+                else
+                {
+                    //parent
+                    nodes.Add(
+                        new TreeNode
+                        {
+                            Name = part.Name,
+                            Parent = "root"
+                        });
+                }
+            }
+
+            return TreeBuilder.BuildTree(nodes);
         }
 
-        public static IEnumerable<Tree> Ancestors(this Tree value)
-        {
-            // an ancestor is the node self and any ancestor of the parent
-            var ancestor = value;
-            // post-order tree walker
-            while (ancestor != null)
-            {
-                yield return ancestor;
-                ancestor = ancestor.Parent;
-            }
-        }
+        #endregion
     }
 
-    public class Tree
-    {
-        public string? Id { get; set; }
-        public string Name { get; set; }
-
-        public string Cardinality { get; set; }
-
-        protected List<Tree> _children;
-        protected Tree _parent;
-
-        public Tree()
-        {
-            Name = string.Empty;
-        }
-
-        public Tree Parent { get { return _parent; } }
-        public Tree Root { get { return _parent == null ? this : _parent.Root; } }
-        public int Depth { get { return this.Ancestors().Count() - 1; } }
-
-        public IEnumerable<Tree> Children
-        {
-            get { return _children == null ? Enumerable.Empty<Tree>() : _children.ToArray(); }
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        public void Add(Tree child)
-        {
-            if (child == null)
-                throw new ArgumentNullException();
-            if (child._parent != null)
-                throw new InvalidOperationException("A tree node must be removed from its parent before adding as child.");
-            if (this.Ancestors().Contains(child))
-                throw new InvalidOperationException("A tree cannot be a cyclic graph.");
-            if (_children == null)
-            {
-                _children = new List<Tree>();
-            }
-            Debug.Assert(!_children.Contains(child), "At this point, the node is definately not a child");
-            child._parent = this;
-            _children.Add(child);
-        }
-
-        public bool Remove(Tree child)
-        {
-            if (child == null)
-                throw new ArgumentNullException();
-            if (child._parent != this)
-                return false;
-            Debug.Assert(_children.Contains(child), "At this point, the node is definately a child");
-            child._parent = null;
-            _children.Remove(child);
-            if (!_children.Any())
-                _children = null;
-            return true;
-        }
-    }
+    
+    
+    
+    
 }

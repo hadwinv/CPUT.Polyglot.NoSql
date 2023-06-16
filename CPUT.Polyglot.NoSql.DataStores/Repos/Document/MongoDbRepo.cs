@@ -18,25 +18,41 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Document
         {
             _connector = connector;
         }
+
         public Models.Result Execute(Constructs construct)
         {
+            Models.Result result = null;
+
             try
             {
                 if (construct.Query != null)
                 {
                     foreach (var query in construct.Query)
                     {
-                        _connector.Connect().RunCommand(query);
+                        var response = _connector.Connect().RunCommand(query);
+
+                        result = new Models.Result
+                        {
+                            Data = response,
+                            Message = "OK",
+                            Success = true
+                        };
                     }
                 }
-
-                int i = 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception - {ex.Message}");
+
+                result = new Models.Result
+                {
+                    Data = null,
+                    Message = ex.Message,
+                    Success = false
+                };
             }
-            return null;
+
+            return result;
         }
 
         #region Data Load

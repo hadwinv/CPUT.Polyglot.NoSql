@@ -13,7 +13,8 @@
 					},
 					{
 						"property": "studentno",
-						"type": "string"
+						"type": "string",
+						"indexed": true
 					},
 					{
 						"property": "title",
@@ -29,15 +30,22 @@
 					},
 					{
 						"property": "firstname",
-						"type": "string"
+						"type": "string",
+						"indexed": true
 					},
 					{
 						"property": "lastname",
-						"type": "string"
+						"type": "string",
+						"indexed": true
 					},
 					{
 						"property": "dob",
 						"type": "string"
+					},
+					{
+						"property": "genderid",
+						"type": "string",
+						"indexed": true
 					},
 					{
 						"property": "email",
@@ -49,15 +57,18 @@
 					},
 					{
 						"property": "address",
-						"type": "address"
+						"type": "address",
+						"indexed": true
 					},
 					{
 						"property": "registered",
-						"type": "registered"
+						"type": "registered",
+						"indexed": true
 					},
 					{
 						"property": "grades",
-						"type": "grades"
+						"type": "grades",
+						"indexed": true
 					}
 				],
 				"type": "table"

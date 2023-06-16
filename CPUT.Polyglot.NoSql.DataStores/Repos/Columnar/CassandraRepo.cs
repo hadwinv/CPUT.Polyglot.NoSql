@@ -19,21 +19,35 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Columnar
 
         public Models.Result Execute(Constructs construct)
         {
+            Models.Result result = null;
+
             try
             {
                 if (construct.Query != null)
                 {
-                    _session.Connect().Execute(construct.Query);
+                    var response = _session.Connect().Execute(construct.Query);
 
+                    result = new Models.Result
+                    {
+                        Data = response,
+                        Message = "OK",
+                        Success = true
+                    };
                 }
-
-                int i = 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception - {ex.Message}");
+
+                result = new Models.Result
+                {
+                    Data = null,
+                    Message = ex.Message,
+                    Success = false
+                };
             }
-            return null;
+
+            return result;
         }
 
         #region Data Load
@@ -135,8 +149,12 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Columnar
 
                 _session.Connect().Execute("CREATE INDEX firstname_idx ON cput.student(firstname);");
                 _session.Connect().Execute("CREATE INDEX lastname_idx ON cput.student(lastname);");
-
+                    
+                _session.Connect().Execute("CREATE INDEX address_idx ON cput.student(address);");
+                _session.Connect().Execute("CREATE INDEX registered_idx ON cput.student(registered);");
+                
                 _session.Connect().Execute("CREATE INDEX grades_idx ON cput.student(grades);");
+
             }
             catch (Exception ex)
             {

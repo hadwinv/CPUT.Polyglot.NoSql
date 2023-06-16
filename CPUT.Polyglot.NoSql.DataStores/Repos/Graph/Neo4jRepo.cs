@@ -20,31 +20,42 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
 
         public Models.Result Execute(Constructs construct)
         {
-            IDriver connection = null;
-            IAsyncSession session = null;
-
+            Models.Result result = null;
 
             try
             {
-                connection = _connector.Connect();
+                var connection = _connector.Connect();
 
-                session = connection.AsyncSession(configBuilder => configBuilder.WithDatabase("enrollmentdb"));
+                var session = connection.AsyncSession(configBuilder => configBuilder.WithDatabase("enrollmentdb"));
 
                 if (construct.Query != null)
                 {
                     session.WriteTransactionAsync(async tx =>
                     {
-                        var result = tx.RunAsync(construct.Query);
+                        var response = tx.RunAsync(construct.Query);
+
+                        result = new Models.Result
+                        {
+                            Data = response,
+                            Message = "OK",
+                            Success = true
+                        };
                     }).Wait();
                 }
-
-                int i = 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception - {ex.Message}");
+
+                result = new Models.Result
+                {
+                    Data = null,
+                    Message = ex.Message,
+                    Success = false
+                };
             }
-            return null;
+
+            return result;
         }
 
         #region Data Load

@@ -16,44 +16,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         public void Visit(QueryPart query)
         {
             foreach (var expr in query.Expressions)
-            {
-                if (expr is SelectPart)
-                {
-                    ((SelectPart)expr).Accept(this);
-                }
-                else if (expr is UpdatePart)
-                {
-                    ((UpdatePart)expr).Accept(this);
-                }
-                else if (expr is InsertPart)
-                {
-                    ((InsertPart)expr).Accept(this);
-                }
-                else if (expr is ValuesPart)
-                {
-                    ((ValuesPart)expr).Accept(this);
-                }
-                else if (expr is FromPart)
-                {
-                    ((FromPart)expr).Accept(this);
-                }
-                else if (expr is SetPart)
-                {
-                    ((SetPart)expr).Accept(this);
-                }
-                else if (expr is ConditionPart)
-                {
-                    ((ConditionPart)expr).Accept(this);
-                }
-                else if (expr is OrderByPart)
-                {
-                    ((OrderByPart)expr).Accept(this);
-                }
-                else if (expr is RestrictPart)
-                {
-                    ((RestrictPart)expr).Accept(this);
-                }
-            }
+                expr.Accept(this);
 
             _query.Append(";");
         }
@@ -292,6 +255,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 _query.Append(" " + part.Type + " ");
         }
 
-        
+        public void Visit(AllowFilterPart part)
+        {
+            _query.Append(" " + part.Keyword);
+        }
     }
 }

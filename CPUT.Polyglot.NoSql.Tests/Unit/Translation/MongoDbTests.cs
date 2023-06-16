@@ -38,7 +38,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithoutFilter_ReturnExecutableQuery()
+        public void Convert01_SimpleFetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -68,7 +68,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithRestriction_ReturnExecutableQuery()
+        public void Convert02_SimpleFetchWithRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -98,7 +98,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderBy_ReturnExecutableQuery()
+        public void Convert03_SimpleFetchOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -128,7 +128,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchMoreThanOneOrderBy_ReturnExecutableQuery()
+        public void Convert04_SimpleFetchMoreThanOneOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -158,7 +158,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderByDesc_ReturnExecutableQuery()
+        public void Convert05_SimpleFetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -188,7 +188,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithSingleFilter_ReturnExecutableQuery()
+        public void Convert06_SimpleFetchWithSingleFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -219,7 +219,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void Convert07_SimpleFetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -248,7 +248,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
+        public void Convert08_SimpleFetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -278,7 +278,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
+        public void Convert09_SimpleFetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -308,7 +308,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithORANDFilter_ReturnExecutableQuery()
+        public void Convert10_SimpleFetchWithORANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -338,7 +338,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedProperties_ReturnExecutableQuery()
+        public void Convert11_ComplexFetchUnwindedProperties_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -367,7 +367,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedPropertiesWithFilter_ReturnExecutableQuery()
+        public void Convert12_ComplexFetchUnwindedPropertiesWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -397,209 +397,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T'}
-                            FILTER_ON { idnumber = '62408306136' }
-                            TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({\"id_number\" : \"62408306136\"},{$set: {\"name\" : \"Chuck T\"}})").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_ModifyMultiplePropertiesWithSingleFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                            FILTER_ON { idnumber = '62408306136' }
-                            TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({\"id_number\" : \"62408306136\"},{$set: {\"name\" : \"Chuck T\", \"surname\" : \"Tylers\"}})").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_ModifySinglePropertyWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T'}
-                            TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({},{$set: {\"name\" : \"Chuck T\"}})").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_ModifyMultiplePropertiesWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                            PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                            TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({},{$set: {\"name\" : \"Chuck T\", \"surname\" : \"Tylers\"}})").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_AddSinglePropertyWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"ADD { student }
-                          PROPERTIES { name = 'Chuck T'}
-                          TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.ADD
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\"}])").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"ADD { student }
-                          PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                          TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.ADD
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}])").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_AddMultipleEntries_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"ADD { student }
-                          PROPERTIES {[{ name = 'Chuck T', surname = 'Tylers'}, { name = 'Taylor', surname = 'Test'}]}
-                          TARGET { mongodb }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.ADD
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}, {\"name\" : \"Taylor\",  \"surname\" : \"Test\"}])").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_FetchWithFilterNSUM_ReturnExecutableQuery()
+        public void Convert13_ComplexFetchWithFilterNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -656,7 +454,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
         [Test]
 
-        public void Translate_FetchWithFilterNCOUNT_ReturnExecutableQuery()
+        public void Convert14_ComplexFetchWithFilterNCOUNT_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -712,7 +510,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNAVG_ReturnExecutableQuery()
+        public void Convert15_ComplexFetchWithFilterNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -768,7 +566,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNMIN_ReturnExecutableQuery()
+        public void Convert16_ComplexFetchWithFilterNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -824,7 +622,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilterNMAX_ReturnExecutableQuery()
+        public void Convert17_ComplexFetchWithFilterNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -880,7 +678,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNSUM_ReturnExecutableQuery()
+        public void Convert18_ComplexFetchNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -927,8 +725,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-
-        public void Translate_FetchWithNCOUNT_ReturnExecutableQuery()
+        public void Convert19_ComplexFetchWithNCOUNT_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -975,7 +772,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNAVG_ReturnExecutableQuery()
+        public void Convert20_ComplexFetchNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1025,7 +822,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNMIN_ReturnExecutableQuery()
+        public void Convert21_ComplexFetchNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1072,7 +869,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNMAX_ReturnExecutableQuery()
+        public void Convert22_ComplexFetchNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1117,5 +914,238 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
                 "   { $limit : 2 }])").Replace(" ", "")
                 );
         }
+
+        [Test]
+        public void Convert23_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                            PROPERTIES { name = 'Chuck T'}
+                            FILTER_ON { idnumber = '62408306136' }
+                            TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").updateMany({\"id_number\" : \"62408306136\"},{$set: {\"name\" : \"Chuck T\"}})").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert24_ModifyMultiplePropertiesWithSingleFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                            PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                            FILTER_ON { idnumber = '62408306136' }
+                            TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").updateMany({\"id_number\" : \"62408306136\"},{$set: {\"name\" : \"Chuck T\", \"surname\" : \"Tylers\"}})").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert25_ModifySinglePropertyWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                            PROPERTIES { name = 'Chuck T'}
+                            TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").updateMany({},{$set: {\"name\" : \"Chuck T\"}})").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert26_ModifyMultiplePropertiesWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                            PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                            TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").updateMany({},{$set: {\"name\" : \"Chuck T\", \"surname\" : \"Tylers\"}})").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert27_AddSinglePropertyWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"ADD { student }
+                          PROPERTIES { name = 'Chuck T'}
+                          TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Insert.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.ADD
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\"}])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert28_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"ADD { student }
+                          PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                          TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Insert.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.ADD
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert29_AddMultipleEntries_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"ADD { student }
+                          PROPERTIES {[{ name = 'Chuck T', surname = 'Tylers'}, { name = 'Taylor', surname = 'Test'}]}
+                          TARGET { mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Insert.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.ADD
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}, {\"name\" : \"Taylor\",  \"surname\" : \"Test\"}])").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert30_FetchUnwindedPropertiesWithoutAlias_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH {  register.subject.name, register.subject.duration }
+                    DATA_MODEL { student}
+                    FILTER_ON { register.subject.duration > 0 }
+                    TARGET {  mongodb }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("db.getCollection(\"students\").aggregate([{ $match : {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$enroll.subjects.name\", duration : \"$enroll.subjects.duration\" }}])").Replace(" ", "")
+            );
+        }
+
     }
 }

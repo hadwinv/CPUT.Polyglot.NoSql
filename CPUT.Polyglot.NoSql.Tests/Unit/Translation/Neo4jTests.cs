@@ -43,7 +43,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithoutFilter_ReturnExecutableQuery()
+        public void Convert01_SimpleFetchWithoutFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -72,7 +72,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithRestriction_ReturnExecutableQuery()
+        public void Convert02_SimpleFetchWithRestriction_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -102,7 +102,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderBy_ReturnExecutableQuery()
+        public void Convert03_SimpleFetchOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -131,9 +131,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
-
         [Test]
-        public void Translate_FetchMoreThanOneOrderBy_ReturnExecutableQuery()
+        public void Convert04_SimpleFetchMoreThanOneOrderBy_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -163,7 +162,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchOrderByDesc_ReturnExecutableQuery()
+        public void Convert05_SimpleFetchOrderByDesc_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -193,7 +192,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithFilter_ReturnExecutableQuery()
+        public void Convert06_SimpleFetchWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -223,7 +222,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneFilter_ReturnExecutableQuery()
+        public void Convert07_SimpleFetchWithMoreThanOneFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -254,7 +253,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
+        public void Convert08_SimpleFetchWithMoreThanOneANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -284,7 +283,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
+        public void Convert09_SimpleFetchWithMoreThanOneOrFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -314,7 +313,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchWithORANDFilter_ReturnExecutableQuery()
+        public void Convert10_SimpleFetchWithORANDFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -344,7 +343,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwinded_ReturnExecutableQuery()
+        public void Convert11_ComplexFetchUnwinded_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -374,7 +373,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedWithFilters_ReturnExecutableQuery()
+        public void Convert12_ComplexFetchUnwindedWithFilters_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -406,180 +405,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                        PROPERTIES { name = 'Chuck T'}
-                        FILTER_ON { idnumber = '62408306136' }
-                        TARGET { neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pup:pupil ) WHERE pup.idnum = \"62408306136\" SET pup.name = \"Chuck T\"").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_ModifyMultiplePropertiesWithSingleFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                        PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                        FILTER_ON { idnumber = '62408306136' }
-                        TARGET { neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pup:pupil ) WHERE pup.idnum = \"62408306136\" SET pup.name = \"Chuck T\", pup.surname = \"Tylers\"").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_ModifySinglePropertyWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                        PROPERTIES { name = 'Chuck T'}
-                        TARGET { neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pup:pupil ) SET pup.name = \"Chuck T\"").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_ModifyMultiplePropertiesWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"MODIFY { student }
-                        PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                        TARGET { neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.MODIFY
-                           });
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("MATCH ( pup:pupil ) SET pup.name = \"Chuck T\", pup.surname = \"Tylers\"").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_AddSingleProperty_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"ADD { student }
-                      PROPERTIES { name = 'Chuck T'}
-                      TARGET { neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.ADD
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("CREATE ( pup:pupil { name : \"Chuck T\"} )").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
-        {
-            List<Constructs> results = null;
-
-            var input = @"ADD { student }
-                      PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
-                      TARGET { neo4j }";
-
-            var tokens = new Lexer().Tokenize(input);
-
-            //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
-
-            var transformed = _translate.Convert(
-                           new ConstructPayload
-                           {
-                               BaseExpr = syntaxExpr,
-                               Command = Utils.Command.ADD
-                           });
-
-
-            results = transformed.Result;
-
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                 ("CREATE ( pup:pupil { name : \"Chuck T\", surname : \"Tylers\"} )").Replace(" ", "")
-            );
-        }
-
-        [Test]
-        public void Translate_FetchSingleRelation_ReturnExecutableQuery()
+        public void Convert13_ComplexFetchSingleRelation_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -609,7 +435,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchMoreThanOneRelation_ReturnExecutableQuery()
+        public void Convert14_ComplexFetchMoreThanOneRelation_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -639,7 +465,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchMoreThanThreeRelation_ReturnExecutableQuery()
+        public void Convert15_ComplexFetchMoreThanThreeRelation_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -669,7 +495,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNSUM_ReturnExecutableQuery()
+        public void Convert16_ComplexFetchUnwindedNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -698,7 +524,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNAVG_ReturnExecutableQuery()
+        public void Convert17_ComplexFetchUnwindedNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -727,7 +553,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNCount_ReturnExecutableQuery()
+        public void Convert18_ComplexFetchUnwindedNCount_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -756,7 +582,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNMIN_ReturnExecutableQuery()
+        public void Convert19_ComplexFetchUnwindedNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -785,7 +611,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNMAX_ReturnExecutableQuery()
+        public void Convert20_ComplexFetchUnwindedNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -814,7 +640,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNSUMWithFilter_ReturnExecutableQuery()
+        public void Convert21_ComplexFetchUnwindedNSUMWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -844,7 +670,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNAVGWithFilter_ReturnExecutableQuery()
+        public void Convert22_ComplexFetchUnwindedNAVGWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -874,7 +700,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNCountWithFilter_ReturnExecutableQuery()
+        public void Convert23_ComplexFetchUnwindedNCountWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -904,7 +730,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNMINWithFilter_ReturnExecutableQuery()
+        public void Convert24_ComplexFetchUnwindedNMINWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -934,7 +760,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchUnwindedNMAXWithFilter_ReturnExecutableQuery()
+        public void Convert25_ComplexFetchUnwindedNMAXWithFilter_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -964,7 +790,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNSUM_ReturnExecutableQuery()
+        public void Convert26_ComplexFetchNSUM_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -994,7 +820,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNAVG_ReturnExecutableQuery()
+        public void Convert27_ComplexFetchNAVG_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1024,7 +850,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNCount_ReturnExecutableQuery()
+        public void Convert28_ComplexFetchNCount_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1051,7 +877,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNMIN_ReturnExecutableQuery()
+        public void Convert29_ComplexFetchNMIN_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1081,7 +907,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         }
 
         [Test]
-        public void Translate_FetchNMAX_ReturnExecutableQuery()
+        public void Convert30_ComplexFetchNMAX_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
 
@@ -1110,5 +936,207 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             );
         }
 
+        [Test]
+        public void Convert31_ModifySinglePropertyWithSingleFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                        PROPERTIES { name = 'Chuck T'}
+                        FILTER_ON { idnumber = '62408306136' }
+                        TARGET { neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pup:pupil ) WHERE pup.idnum = \"62408306136\" SET pup.name = \"Chuck T\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert32_ModifyMultiplePropertiesWithSingleFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                        PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                        FILTER_ON { idnumber = '62408306136' }
+                        TARGET { neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pup:pupil ) WHERE pup.idnum = \"62408306136\" SET pup.name = \"Chuck T\", pup.surname = \"Tylers\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert33_ModifySinglePropertyWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                        PROPERTIES { name = 'Chuck T'}
+                        TARGET { neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pup:pupil ) SET pup.name = \"Chuck T\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert34_ModifyMultiplePropertiesWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"MODIFY { student }
+                        PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                        TARGET { neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Update.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.MODIFY
+                           });
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH ( pup:pupil ) SET pup.name = \"Chuck T\", pup.surname = \"Tylers\"").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert35_AddSingleProperty_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"ADD { student }
+                      PROPERTIES { name = 'Chuck T'}
+                      TARGET { neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Insert.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.ADD
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("CREATE ( pup:pupil { name : \"Chuck T\"} )").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert36_AddMultiplePropertieWithoutFilter_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"ADD { student }
+                      PROPERTIES { name = 'Chuck T', surname = 'Tylers'}
+                      TARGET { neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Insert.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.ADD
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                 ("CREATE ( pup:pupil { name : \"Chuck T\", surname : \"Tylers\"} )").Replace(" ", "")
+            );
+        }
+
+        [Test]
+        public void Convert37_FetchUnwindedWithoutAlias_ReturnExecutableQuery()
+        {
+            List<Constructs> results = null;
+
+            var input = @"FETCH { transcript.symbol, transcript.result }
+                        DATA_MODEL { student}
+                        RESTRICT_TO { 10 }
+                        TARGET {  neo4j }";
+
+            var tokens = new Lexer().Tokenize(input);
+
+            //generate abstract syntax tree
+            var syntaxExpr = Expressions.Select.Parse(tokens);
+
+            var transformed = _translate.Convert(
+                           new ConstructPayload
+                           {
+                               BaseExpr = syntaxExpr,
+                               Command = Utils.Command.FETCH
+                           });
+
+
+            results = transformed.Result;
+
+            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+                ("MATCH (pro:progress ) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, res.score LIMIT 10").Replace(" ", "")
+            );
+        }
     }
 }

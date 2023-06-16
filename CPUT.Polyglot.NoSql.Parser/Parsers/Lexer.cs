@@ -4,11 +4,25 @@ using Superpower;
 using Superpower.Model;
 using Superpower.Parsers;
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 
 namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
 {
     public class Lexer : Tokenizer<Lexicons>
     {
+
+        string WordInBetween(string sentence, string wordOne, string wordTwo)
+        {
+
+            int start = sentence.IndexOf(wordOne) + wordOne.Length + 1;
+
+            int end = sentence.IndexOf(wordTwo) - start - 1;
+
+            return sentence.Substring(start, end);
+
+
+        }
+
         protected override IEnumerable<Result<Lexicons>> Tokenize(TextSpan input)
         {
             var next = SkipWhiteSpace(input);
@@ -26,10 +40,20 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
             var previousText = string.Empty;
 
             var referenceAdded = false;
-
+            var modelReference = false;
             do
             {
                 var text = string.Empty;
+
+
+                var regex = new Regex(@".*DATA_MODEL(.*)}.*", RegexOptions.IgnorePatternWhitespace);
+                if (regex.IsMatch(input.Source.ToString()))
+                {
+                    var data = regex.Match(input.Source.ToString()).Groups[1].Value;
+
+                    if (data.ToLower().Contains("as"))
+                        modelReference = true;
+                }
 
                 if (char.IsLetter(next.Value))
                 {
@@ -55,7 +79,7 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
                         {
                             if (next.Value == '.')
                             {
-                                if(!referenceAdded)
+                                if(modelReference && !referenceAdded)
                                 {
                                     yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
                                     
@@ -122,7 +146,7 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
 
                             if (next.Value == '.')
                             {
-                                if (!referenceAdded)
+                                if (modelReference && !referenceAdded)
                                 {
                                     yield return Result.Value(Lexicons.REFERENCE_ALIAS, wordStart, next.Location);
 

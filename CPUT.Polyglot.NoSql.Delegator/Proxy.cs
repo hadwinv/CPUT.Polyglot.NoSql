@@ -30,6 +30,18 @@ namespace CPUT.Polyglot.NoSql.Delegator
             {
                 result = _redisjRepo.Execute(construct);
             }
+            else if (construct.Target == Common.Helpers.Utils.Database.CASSANDRA)
+            {
+                result = _cassandraRepo.Execute(construct);
+            }
+            else if (construct.Target == Common.Helpers.Utils.Database.MONGODB)
+            {
+                result = _mongoRepo.Execute(construct);
+            }
+            else if (construct.Target == Common.Helpers.Utils.Database.NEO4J)
+            {
+                result = _neo4jRepo.Execute(construct);
+            }
 
             return result;
         }

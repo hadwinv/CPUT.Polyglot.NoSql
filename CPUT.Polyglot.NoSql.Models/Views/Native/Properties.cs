@@ -4,10 +4,12 @@ namespace CPUT.Polyglot.NoSql.Models.Views.Native
 {
     public class Properties
     {
-        public bool Key { get; set; }
-
         public string Property { get; set; }
 
         public string Type { get; set; }
+
+        public bool Key { get; set; }
+
+        public bool Indexed { get; set; }
     }
 }
