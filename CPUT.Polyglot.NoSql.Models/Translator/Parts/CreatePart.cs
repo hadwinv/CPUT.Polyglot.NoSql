@@ -10,8 +10,5 @@ namespace CPUT.Polyglot.NoSql.Models.Translator.Parts
         
         public Command Command { get; set;  }
         
-        public List<USchema> USchema { get; set; }
-
-        public List<NSchema> NSchema { get; set; }
     }
 }

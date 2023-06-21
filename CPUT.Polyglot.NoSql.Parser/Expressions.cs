@@ -336,17 +336,17 @@ namespace CPUT.Polyglot.NoSql.Parser
         #endregion
 
         //fetch
-        public static TokenListParser<Lexicons, BaseExpr> Select =
-              from declare in Fetch
+        public static TokenListParser<Lexicons, BaseExpr> FETCH =
+              from fetch in Fetch
               from model in DataModel
               from filter in Parse.Ref(() => Filter).OptionalOrDefault()
               from restrict in Parse.Ref(() => Restrict).OptionalOrDefault()
               from order in Parse.Ref(() => OrderBy).OptionalOrDefault()
               from target in Target
-              select new Query().BuildExpression(declare, model, filter, restrict, order, target);
+              select new Query().BuildExpression(fetch, model, filter, restrict, order, target);
 
         //add
-        public static TokenListParser<Lexicons, BaseExpr> Insert =
+        public static TokenListParser<Lexicons, BaseExpr> ADD =
              from add in Add
              from properties in Properties
              from filter in Parse.Ref(() => Filter).OptionalOrDefault()
@@ -355,7 +355,7 @@ namespace CPUT.Polyglot.NoSql.Parser
              select new Query().BuildExpression(add, properties, filter, restrict, target);
 
         //modify
-        public static TokenListParser<Lexicons, BaseExpr> Update =
+        public static TokenListParser<Lexicons, BaseExpr> MODIFY =
             from modify in Modify
             from properties in Properties
             from filter in Parse.Ref(() => Filter).OptionalOrDefault()

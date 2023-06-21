@@ -21,7 +21,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -45,7 +45,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -69,7 +69,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -95,7 +95,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -122,7 +122,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -149,7 +149,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -179,7 +179,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Select.Parse(tokens);
+            var syntax = Expressions.FETCH.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -206,7 +206,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Insert.Parse(tokens);
+            var syntax = Expressions.ADD.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -227,7 +227,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Insert.Parse(tokens);
+            var syntax = Expressions.ADD.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch
@@ -248,7 +248,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Parser
 
             var tokens = new Lexer().Tokenize(input);
 
-            var syntax = Expressions.Update.Parse(tokens);
+            var syntax = Expressions.MODIFY.Parse(tokens);
 
             syntax.ParseTree.Select(x => x.GetType()).Should().Equal(
                 //fetch

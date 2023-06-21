@@ -1,28 +1,63 @@
-﻿using CPUT.Polyglot.NoSql.Common.Parsers;
+﻿using CPUT.Polyglot.NoSql.Common.Helpers;
+using CPUT.Polyglot.NoSql.Common.Parsers;
 using CPUT.Polyglot.NoSql.Interface.Logic;
 using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Logic.Core.Handler;
 using CPUT.Polyglot.NoSql.Models.Translator;
+using CPUT.Polyglot.NoSql.Parser;
 using Superpower.Model;
+using System.Collections.Generic;
+using System;
+using Superpower;
 
 namespace CPUT.Polyglot.NoSql.Logic.Core.DML
 {
     public class ModifyHandler : CommandHandler
     {
+        private IValidator _validator;
         private ITranslate _translate;
 
         public ModifyHandler(IValidator validator, ITranslate translate) : base(validator, translate)
         {
+            _validator = validator;
             _translate = translate;
         }
 
         public override Output Execute(TokenList<Lexicons> request)
         {
-            Output result = null;
+            List<Constructs> constructs = null;
 
-            //ast = Expressions.Update.Parse(tokens);
+            try
+            {
+                //generate abstract syntax tree
+                var syntaxExpr = Expressions.MODIFY.Parse(request);
 
-            return result;
+                //validator syntax tree against global
+                var validatorResult = _validator.GlobalSchema(syntaxExpr);
+
+                //verify if query passed globa schema
+                if (validatorResult.Success)
+                {
+                    //convert to native queries
+                    var transformed = _translate.Convert(
+                             new ConstructPayload
+                             {
+                                 BaseExpr = syntaxExpr,
+                                 Command = Utils.Command.MODIFY
+                             });
+
+                    constructs = transformed.Result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+            return new Output
+            {
+                Constructs = constructs
+            };
         }
     }
 }

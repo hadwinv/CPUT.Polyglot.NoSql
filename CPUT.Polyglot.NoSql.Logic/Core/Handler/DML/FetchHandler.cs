@@ -30,7 +30,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
             try
             {
                 //generate abstract syntax tree
-                var syntaxExpr = Expressions.Select.Parse(request);
+                var syntaxExpr = Expressions.FETCH.Parse(request);
 
                 //validator syntax tree against global
                 var validatorResult = _validator.GlobalSchema(syntaxExpr);
@@ -51,13 +51,13 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
 
             return new Output
             {
                 Constructs = constructs
-            }; ;
+            };
         }
     }
 }

@@ -443,21 +443,21 @@ namespace CPUT.Polyglot.NoSql.Parser.Tokenizers
 
         private static Dictionary<string, Lexicons> Keywords = new(StringComparer.OrdinalIgnoreCase)
         {
-            ["describe"] = Lexicons.DESCRIBE,
+            //["describe"] = Lexicons.DESCRIBE,
             ["fetch"] = Lexicons.FETCH,
             ["modify"] = Lexicons.MODIFY,
             ["add"] = Lexicons.ADD,
             ["properties"] = Lexicons.PROPERTIES,
             ["data_model"] = Lexicons.DATA_MODEL,
-            ["link_on"] = Lexicons.LINK_ON,
+            //["link_on"] = Lexicons.LINK_ON,
             ["filter_on"] = Lexicons.FILTER_ON,
-            ["group_by"] = Lexicons.GROUP_BY,
+            //["group_by"] = Lexicons.GROUP_BY,
             ["order_by"] = Lexicons.ORDER_BY,
             ["asc"] = Lexicons.ASC,
             ["desc"] = Lexicons.DESC,
             ["restrict_to"] = Lexicons.RESTRICT_TO,
             ["target"] = Lexicons.TARGET,
-            ["precedence"] = Lexicons.PRECEDENCE,
+            //["precedence"] = Lexicons.PRECEDENCE,
             ["and"] = Lexicons.LAND,
             ["or"] = Lexicons.LOR
         };

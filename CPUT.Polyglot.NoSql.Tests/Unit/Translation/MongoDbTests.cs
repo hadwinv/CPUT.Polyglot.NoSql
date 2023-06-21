@@ -49,7 +49,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -80,7 +80,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -110,7 +110,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -140,7 +140,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -170,7 +170,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -200,7 +200,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -231,7 +231,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -260,7 +260,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -290,7 +290,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -320,7 +320,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -349,7 +349,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -379,7 +379,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -411,7 +411,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -468,7 +468,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -524,7 +524,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -580,7 +580,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -636,7 +636,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -691,7 +691,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -738,7 +738,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -788,7 +788,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -835,7 +835,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -882,7 +882,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                             new ConstructPayload
@@ -928,7 +928,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
+            var syntaxExpr = Expressions.MODIFY.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -958,7 +958,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
+            var syntaxExpr = Expressions.MODIFY.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -986,7 +986,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
+            var syntaxExpr = Expressions.MODIFY.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -1014,7 +1014,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Update.Parse(tokens);
+            var syntaxExpr = Expressions.MODIFY.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -1042,7 +1042,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
+            var syntaxExpr = Expressions.ADD.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -1071,7 +1071,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
+            var syntaxExpr = Expressions.ADD.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -1100,7 +1100,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Insert.Parse(tokens);
+            var syntaxExpr = Expressions.ADD.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
@@ -1130,7 +1130,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             var tokens = new Lexer().Tokenize(input);
 
             //generate abstract syntax tree
-            var syntaxExpr = Expressions.Select.Parse(tokens);
+            var syntaxExpr = Expressions.FETCH.Parse(tokens);
 
             var transformed = _translate.Convert(
                            new ConstructPayload
