@@ -28,15 +28,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="App.Metrics" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.AspNetCore.Core" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.Concurrency" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.Extensions.Hosting" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.Extensions.Middleware" Version="1.2.1" />
+    <PackageReference Include="App.Metrics.Extensions.Reporting.Console" Version="1.2.0" />
+    <PackageReference Include="App.Metrics.Extensions.Reporting.InfluxDB" Version="1.2.0" />
+    <PackageReference Include="App.Metrics.Extensions.Reporting.TextFile" Version="1.2.0" />
+    <PackageReference Include="App.Metrics.Formatters.Json" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.InfluxDB" Version="4.3.0" />
     <PackageReference Include="CassandraCSharpDriver" Version="3.16.1" />
     <PackageReference Include="mongocsharpdriver" Version="2.17.1" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.17.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.20.0" />
     <PackageReference Include="Neo4jClient" Version="4.0.3" />
-    <PackageReference Include="StackExchange.Redis" Version="2.2.4" />
+    <PackageReference Include="StackExchange.Redis" Version="2.6.122" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Mapper\CPUT.Polyglot.NoSql.Mapper.csproj" />
   </ItemGroup>
 
 </Project>

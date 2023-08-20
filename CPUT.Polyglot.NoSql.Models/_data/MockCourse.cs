@@ -4,7 +4,8 @@
 	{
 		public string code { get; set; }
 		public string name { get; set; }
-		public string faculty { get; set; }
+        public string facultycode { get; set; }
+        public string faculty { get; set; }
 		public List<MockSubject> subject { get; set; }
 	}
 }

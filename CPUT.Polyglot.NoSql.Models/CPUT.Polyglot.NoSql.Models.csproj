@@ -7,10 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Entities\Native\MongoDB\PhoneModel.cs" />
+    <Compile Remove="_data\prep\UCourse.cs" />
+    <Compile Remove="_data\prep\UMarks.cs" />
+    <Compile Remove="_data\prep\UStudent.cs" />
+    <Compile Remove="_data\prep\USubject.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="2.20.0" />
     <PackageReference Include="Superpower" Version="3.0.0" />
   </ItemGroup>
 

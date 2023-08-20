@@ -5,10 +5,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Redis
 {
     public class GetPart : IExpression
     {
+        internal string Source { get; set; }
+
         internal PropertyPart Property { get; set; }
 
-        public GetPart(PropertyPart property)
+        public GetPart(string source, PropertyPart property)
         {
+            Source = source;
             Property = property;
         }
 

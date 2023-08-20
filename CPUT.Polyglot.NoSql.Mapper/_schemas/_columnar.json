@@ -7,6 +7,11 @@
 				"name": "student",
 				"properties": [
 					{
+						"property": "id",
+						"type": "string",
+						"key": true
+					},
+					{
 						"property": "idno",
 						"type": "string",
 						"key": true
@@ -14,7 +19,7 @@
 					{
 						"property": "studentno",
 						"type": "string",
-						"indexed": true
+						"key": true
 					},
 					{
 						"property": "title",
@@ -30,8 +35,7 @@
 					},
 					{
 						"property": "firstname",
-						"type": "string",
-						"indexed": true
+						"type": "string"
 					},
 					{
 						"property": "lastname",
@@ -58,17 +62,17 @@
 					{
 						"property": "address",
 						"type": "address",
-						"indexed": true
+						"metadata": "class"
 					},
 					{
 						"property": "registered",
 						"type": "registered",
-						"indexed": true
+						"metadata": "class"
 					},
 					{
 						"property": "grades",
 						"type": "grades",
-						"indexed": true
+						"metadata": "class"
 					}
 				],
 				"type": "table"
@@ -85,15 +89,19 @@
 						"type": "string"
 					},
 					{
-						"property": "suburb",
-						"type": "string"
-					},
-					{
 						"property": "city",
 						"type": "string"
 					},
 					{
+						"property": "postaladdress",
+						"type": "string"
+					},
+					{
 						"property": "postalcode",
+						"type": "string"
+					},
+					{
+						"property": "province",
 						"type": "string"
 					},
 					{
@@ -148,7 +156,7 @@
 				"properties": [
 					{
 						"property": "subject",
-						"type": "subject"
+						"type": "string"
 					},
 					{
 						"property": "marks",

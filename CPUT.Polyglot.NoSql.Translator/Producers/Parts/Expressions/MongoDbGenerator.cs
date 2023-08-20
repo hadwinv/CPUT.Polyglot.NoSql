@@ -1,8 +1,12 @@
-﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
+﻿using CPUT.Polyglot.NoSql.Common.Helpers;
+using CPUT.Polyglot.NoSql.Models._data.prep.MongoDb;
+using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.MongoDb;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using UpdatePart = CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.UpdatePart;
@@ -35,8 +39,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(CollectionPart part)
         {
-            _query.Append("db.getCollection(\"" + part.Target + "\")");
-
             if(part.Find != null)
                 part.Find.Accept(this);
             else if (part.Aggregate != null)
@@ -49,47 +51,58 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(FindPart part)
         {
-            _query.Append(".find(");
-
-            bool hasFilter = false;
+            _query.Append("{ find: '" + part.CollectionName + "',");
 
             if(part.Condition != null)
             {
-                _query.Append("{");
+                _query.Append("filter: ");
 
                 part.Condition.Accept(this);
 
-                _query.Append("}");
-
-                hasFilter = true;
+                _query.Append(", ");
             }
 
             if (part.Field != null)
             {
-                if (!hasFilter)
-                    _query.Append("{}");
-
-                _query.Append(",{");
-
                 part.Field.Accept(this);
 
-                _query.Append("}");
+                _query.Append(", ");
             }
-
-            _query.Append(")");
+                
 
             if (part.OrderBy != null)
+            {
                 part.OrderBy.Accept(this);
 
+                _query.Append(", ");
+            }
+                
+
             if (part.Restrict != null)
+            {
                 part.Restrict.Accept(this);
+
+                _query.Append(", ");
+            }
+
+            for (int i = (_query.Length - 1); i >= 0; i--)
+            {
+                if (_query[i] == ',')
+                {
+                   _query.Remove(i, 1);
+                    break;
+                }
+            }
+
+            _query.Append("}");
         }
 
         #region DML
 
         public void Visit(UpdatePart part)
         {
-            _query.Append(".updateMany(");
+            _query.Append("{ update: '" + part.CollectionName + "',");
+            _query.Append("updates: [{");
 
             bool hasFilter = false;
 
@@ -97,20 +110,18 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             {
                 if (expr is ConditionPart)
                 {
-                    _query.Append("{");
+                    _query.Append("q:");
 
                     ((ConditionPart)expr).Accept(this);
 
                     hasFilter = true;
-
-                    _query.Append("}");
                 }
                 else if (expr is SetPart)
                 {
                     if (!hasFilter)
-                        _query.Append("{}");
+                        _query.Append("q:{}");
 
-                    _query.Append(",{");
+                    _query.Append(", u: {");
 
                     ((SetPart)expr).Accept(this);
 
@@ -118,7 +129,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 }
             }
 
-            _query.Append(")");
+            _query.Append("}]}");
         }
 
         public void Visit(SetPart part)
@@ -143,7 +154,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             string[] types = { "$gt", "$gte", "$lt", "$lte" };
             
-            _query.Append("\"" + part.Left.Name + "\"");
+            _query.Append( part.Left.Name);
 
             if (types.Contains(part.Operator.Type))
             {
@@ -151,7 +162,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 _query.Append(part.Operator.Type + " : ");
 
                 if (part.Right.Type == "string")
-                    _query.Append("\"" + part.Right.Name + "\"");
+                    _query.Append("'" + part.Right.Name + "'");
                 else if (part.Right.Type == "int")
                     _query.Append("NumberLong(" + part.Right.Name + ")");
                 else
@@ -164,7 +175,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 _query.Append(" " + part.Operator.Type + " ");
 
                 if (part.Right.Type == "string")
-                    _query.Append("\"" + part.Right.Name + "\"");
+                    _query.Append("'" + part.Right.Name + "'");
                 else
                     _query.Append(part.Right.Name);
             }
@@ -172,9 +183,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(InsertPart part)
         {
-            _query.Append(".insertMany([");
+            _query.Append("{ insert: '" + part.CollectionName + "',");
+            _query.Append("documents: [");
 
-            foreach(var expr in part.Properties)
+            foreach (var expr in part.Properties)
             {
                 if (expr is AddPart)
                 {
@@ -188,7 +200,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                     ((SeparatorPart)expr).Accept(this);
             }
 
-            _query.Append("])");
+            _query.Append("]}");
         }
 
         public void Visit(AddPart part)
@@ -212,66 +224,84 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(AggregatePart part)
         {
-            var blockAdded = false;
-
-            _query.Append(".aggregate([");
-
+            _query.Append("{ aggregate: '" + part.CollectionName + "',");
+            _query.Append(" pipeline: [ ");
+    
             if (part.Match != null)
             {
                 part.Match.Accept(this);
 
-                blockAdded = true;
+                _query.Append(",");
             }
+
 
             if (part.Unwind != null)
             {
-                if (blockAdded)
-                    _query.Append(",");
-
                 part.Unwind.Accept(this);
 
-                if (!blockAdded)
-                    blockAdded = true;
+                _query.Append(",");
             }
 
             if (part.Project != null)
             {
-                if (blockAdded)
-                    _query.Append(",");
-
                 part.Project.Accept(this);
 
-                if (!blockAdded)
-                    blockAdded = true;
+               _query.Append(",");
             }
+           
 
             if (part.GroupBy != null)
             {
-                if (blockAdded)
-                    _query.Append(",");
-
                 part.GroupBy.Accept(this);
+
+                _query.Append(",");
             }
 
             if (part.OrderBy != null)
+            {
+                _query.Append("{");
+
                 part.OrderBy.Accept(this);
 
+                _query.Append("}");
+                _query.Append(",");
+            }
+
             if (part.Restrict != null)
+            {
+                _query.Append("{");
+
                 part.Restrict.Accept(this);
 
-            _query.Append("])");
+                _query.Append("}");
+            }
+            else
+            {
+                for (int i = (_query.Length - 1); i >= 0; i--)
+                {
+                    if (_query[i] == ',')
+                    {
+                        _query.Remove(i, 1);
+                        break;
+                    }
+                }
+            }
+
+            _query.Append("],");
+            _query.Append("cursor: { }");
+            _query.Append("}");
         }
 
         public void Visit(MatchPart part)
         {
-            _query.Append("{ $match : {");
+            _query.Append("{ $match : ");
 
             var condition = (ConditionPart)part.Properties.SingleOrDefault(x => x.GetType().Equals(typeof(ConditionPart)));
 
             if (condition != null)
                 condition.Accept(this);
 
-            _query.Append("}}");
+            _query.Append("}");
         }
 
         public void Visit(UnwindGroupPart part)
@@ -291,7 +321,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             if (part.Fields.Count() > 0)
             {
-                _query.Append("{ $project : { _id: \"$_id\", ");
+                _query.Append("{ $project : { _id: '$_id', ");
 
                 foreach (var field in part.Fields)
                     field.Accept(this);
@@ -302,14 +332,15 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(ProjectFieldPart part)
         {
-            _query.Append(part.Alias + " : \"$" + part.Property + "\"");
+            if(!part.Ignore)
+                _query.Append(part.Alias + " : '$" + part.Name + "'");
         }
 
         public void Visit(GroupByPart part)
         {
             if (part.Fields.Count() > 0)
             {
-                _query.Append("{ $group : { _id: \"$_id\", ");
+                _query.Append("{ $group : { _id: '$_id', ");
 
                 foreach (var field in part.Fields)
                     field.Accept(this);
@@ -320,7 +351,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         
         public void Visit(GroupByFieldPart part)
         {
-            _query.Append(part.Alias + " : { \"$first\" : \"$" + part.Property + "\"}");
+            if (!part.Ignore)
+                _query.Append(part.Alias + " : { '$first' : '$" + part.Name + "'}");
         }
 
         public void Visit(NativeFunctionPart part)
@@ -339,99 +371,96 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(FunctionFieldPart part)
         {
-            _query.Append( " \"$" + part.Property + "\"");
+            _query.Append(" '$" + part.Name + "'");
         }
 
         #endregion
 
         public void Visit(ConditionPart part)
         {
-            var logicParts = part.Logic.Where(x => x.GetType().Equals(typeof(LogicalPart))).Cast<LogicalPart>().ToList();//.OrderByDescending(x => x.Compare?.Type);
+            var logicParts = part.Logic.Where(x => x.GetType().Equals(typeof(LogicalPart))).Cast<LogicalPart>().ToList();
 
-            int logicCount = 0;
-            bool openCollection = false;
-            
-            string? prevType = string.Empty;
-
-            if (logicParts.Count > 1)
-                logicParts[0].Compare.Type = logicParts[1].Compare.Type;
+            var conditions = Builders<object>.Filter.Empty;
 
             foreach (var logic in logicParts)
             {
-                if (string.IsNullOrEmpty(logic.Compare?.Type))
-                    logic.Compare.Type = prevType;
-
-                if (prevType != logic.Compare?.Type)
+                if (string.IsNullOrEmpty( logic.Compare.Type))
                 {
-                    if(openCollection)
-                    {
-                        _query.Append("],");
-                        openCollection = false;
-                        logicCount = 0;
-                    }
-
-                    logic.Compare?.Accept(this);
-
-                    if (logicCount == 0 && logicParts.Count() > 1)
-                    {
-                        _query.Append("[");
-                        openCollection = true;
-                    }
-                }
-
-                if (logicParts.Count() > 1)
-                {
-                    if(logicCount > 0)
-                        _query.Append(",");
-
-                    _query.Append("{");  
-
-                    logic.Accept(this);
-
-                    _query.Append("}");
+                    if (logic.Operator.Type == ":")
+                        conditions = Builders<object>.Filter.Eq(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name +  "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                    if (logic.Operator.Type == "$gt")
+                        conditions = Builders<object>.Filter.Gt(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                    if (logic.Operator.Type == "$gte")
+                        conditions = Builders<object>.Filter.Gte(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                    if (logic.Operator.Type == "$lt")
+                        conditions = Builders<object>.Filter.Lt(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                    if (logic.Operator.Type == "$lte")
+                        conditions = Builders<object>.Filter.Lte(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
                 }
                 else
-                    logic.Accept(this);
-
-                prevType = logic.Compare?.Type;
-                logicCount++;
+                {
+                    if (logic.Compare.Type == "$and")
+                    {
+                        if (logic.Operator.Type == ":")
+                            conditions &= Builders<object>.Filter.Eq(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$gt")
+                            conditions &= Builders<object>.Filter.Gt(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$gte")
+                            conditions &= Builders<object>.Filter.Gte(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$lt")
+                            conditions &= Builders<object>.Filter.Lt(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$lte")
+                            conditions &= Builders<object>.Filter.Lte(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                    }
+                    else if (logic.Compare.Type == "$or")
+                    {
+                        if (logic.Operator.Type == ":")
+                            conditions |= Builders<object>.Filter.Eq(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$gt")
+                            conditions |= Builders<object>.Filter.Gt(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$gte")
+                            conditions |= Builders<object>.Filter.Gte(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$lt")
+                            conditions |= Builders<object>.Filter.Lt(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                        if (logic.Operator.Type == "$lte")
+                            conditions |= Builders<object>.Filter.Lte(logic.Left.Name.IndexOf(".") > -1 ? "'" + logic.Left.Name + "'" : logic.Left.Name, logic.Right.Type == "string" ? "'" + logic.Right.Name + "'" : logic.Right.Name);
+                    }
+                }
             }
 
-            if (openCollection)
-            {
-                _query.Append("]");
-                openCollection = false;
-            }
+            var result = MongoExtensions.RenderToBsonDocument(conditions).ToJson().Replace("\"", "");
+
+            _query.Append(result);
         }
 
         public void Visit(LogicalPart part)
         {
-            string[] types = { "$gt", "$gte", "$lt", "$lte" };
-            _query.Append("\"" + part.Left.Name + "\"");
+            //string[] types = { "$gt", "$gte", "$lt", "$lte" };
+            //_query.Append("\"" + part.Left.Name + "\"");
 
-            if (types.Contains(part.Operator.Type))
-            {
-                _query.Append(": { ");
-                _query.Append( part.Operator.Type + " : ");
+            //if (types.Contains(part.Operator.Type))
+            //{
+            //    _query.Append(": { ");
+            //    _query.Append( part.Operator.Type + " : ");
 
-                if (part.Right.Type == "string")
-                    _query.Append("\"" + part.Right.Name + "\"" );
-                else if (part.Right.Type == "int")
-                    _query.Append("NumberLong(" + part.Right.Name + ")") ;
-                else
-                    _query.Append(part.Right.Name);
+            //    if (part.Right.Type == "string")
+            //        _query.Append("\"" + part.Right.Name + "\"" );
+            //    else if (part.Right.Type == "int")
+            //        _query.Append("NumberLong(" + part.Right.Name + ")") ;
+            //    else
+            //        _query.Append(part.Right.Name);
 
-                _query.Append(" } ");
-            }
-            else
-            {
-                _query.Append(" " + part.Operator.Type + " ");
+            //    _query.Append(" } ");
+            //}
+            //else
+            //{
+            //    _query.Append(" " + part.Operator.Type + " ");
 
-                if (part.Right.Type == "string")
-                    _query.Append("\"" + part.Right.Name + "\"");
-                else
-                    _query.Append(part.Right.Name);
-            }
+            //    if (part.Right.Type == "string")
+            //        _query.Append("\"" + part.Right.Name + "\"");
+            //    else
+            //        _query.Append(part.Right.Name);
+            //}
         }
 
         public void Visit(OperatorPart part)
@@ -441,24 +470,28 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(ComparePart part)
         {
-            _query.Append("\"" + part.Type + "\" : ");
+            _query.Append("'" + part.Type + "' : ");
         }
 
         public void Visit(FieldPart part)
         {
+            _query.Append("projection: {");
+
             foreach (var expr in part.Fields)
             {
                 if (expr is PropertyPart)
                 {
                     ((PropertyPart)expr).Accept(this);
-                         
-                    _query.Append(" : 1"); 
+
+                    _query.Append(" : 1");
                 }
                 else if (expr is SeparatorPart)
                 {
                     ((SeparatorPart)expr).Accept(this); ;
                 }
             }
+
+            _query.Append("}");
         }
 
         public void Visit(PropertyPart part)
@@ -466,32 +499,46 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append(part.Name);
         }
 
-        public void Visit(UnwindJsonPart part)
+        public void Visit(UnwindArrayPart part)
         {
-            _query.Append("path: \"$" + part.Name + "\"");
+            _query.Append("path: '$" + part.Name + "'");
         }
 
         public void Visit(OrderByPart part)
         {
             if (_format == MongoDBFetchType.Aggregate)
             {
-                _query.Append(", { $sort : { ");
-
-                foreach (var field in part.Fields)
-                    field.Accept(this);
-
-                _query.Append(" } }");
+                _query.Append("$sort: {");
             }
-                
             else
             {
-                _query.Append("._addSpecial(\"$orderby\", {" );
-
-                foreach (var field in part.Fields)
-                    field.Accept(this);
-
-                _query.Append("})");
+                _query.Append("sort: {");
             }
+                
+
+            foreach (var field in part.Fields)
+                field.Accept(this);
+
+            _query.Append("}");
+
+            //if (_format == MongoDBFetchType.Aggregate)
+            //{
+            //    _query.Append(", { $sort : { ");
+
+            
+
+            //    _query.Append(" } }");
+            //}
+
+            //else
+            //{
+            //    _query.Append("._addSpecial(\"$orderby\", {" );
+
+            //    foreach (var field in part.Fields)
+            //        field.Accept(this);
+
+            //    _query.Append("})");
+            //}
         }
 
         public void Visit(OrderByPropertyPart part)
@@ -504,9 +551,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         public void Visit(RestrictPart part)
         {
             if (_format == MongoDBFetchType.Aggregate)
-                _query.Append(", { $limit : " + part.Limit + " }");
+            {
+                _query.Append("$limit: " + part.Limit);
+            }
             else
-                _query.Append(".limit(" + part.Limit.ToString() + ")");
+            {
+                _query.Append("limit : " + part.Limit);
+            }
+
+            
+            //if (_format == MongoDBFetchType.Aggregate)
+            //    _query.Append(", { $limit : " + part.Limit + " }");
+            //else
+            //    _query.Append(".limit(" + part.Limit.ToString() + ")");
         }
 
         public void Visit(SeparatorPart part)
@@ -516,6 +573,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(DirectionPart part)
         {
+            //sort: { name: 1 }
             if (part.Type == "DESC")
                 _query.Append(" : -1 ");
             else

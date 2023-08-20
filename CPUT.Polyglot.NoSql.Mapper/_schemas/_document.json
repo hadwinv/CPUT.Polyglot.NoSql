@@ -35,7 +35,7 @@
 						"type": "string"
 					},
 					{
-						"property": "gender",
+						"property": "gender_identity",
 						"type": "string"
 					},
 					{
@@ -121,6 +121,10 @@
 				"name": "address",
 				"properties": [
 					{
+						"property": "number",
+						"type": "int"
+					},
+					{
 						"property": "street",
 						"type": "string"
 					},
@@ -148,11 +152,12 @@
 					},
 					{
 						"property": "course",
-						"type": "string"
+						"type": "course"
 					},
 					{
-						"property": "subjects",
-						"type": "subject"
+						"property": "subject",
+						"model": "subject",
+						"type": "array"
 					},
 					{
 						"property": "enrollment_type",

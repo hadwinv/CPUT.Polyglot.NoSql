@@ -18,60 +18,29 @@ namespace CPUT.Polyglot.NoSql.Translator
             }
         }
 
-        public static string UnwindProperty(Model model, int target)
-        {
-            var name = string.Empty;
-
-            if (model?.Type == "json")
-            {
-                var parent = NSchema[target].SelectMany(x => x.Model.Where(x => x.Properties.Exists(x => x.Type == model.Name))).FirstOrDefault();
-
-                if (parent != null)
-                {
-                    var property = parent.Properties.SingleOrDefault(x => x.Type == model.Name);
-
-                    if (property != null)
-                    {
-                        name = property.Property;
-
-                        var next = NSchema[target].SelectMany(x => x.Model.Where(x => x.Properties.Exists(x => x.Type == model.Name))).FirstOrDefault();
-
-                        if (next?.Type == "collection" || next?.Type == "table")
-                            return name;
-                        else
-                        {
-                            var properties = UnwindProperty(parent, target);
-
-                            return !string.IsNullOrEmpty(properties) ? properties + "." + name : name;
-                        }
-                    }
-                }
-            }
-
-            return name;
-        }
-
-        //public static string UnwindPropertyTest(string path, int target)
+        //public static string UnwindProperty(Model model, int target)
         //{
         //    var name = string.Empty;
 
-        //    if (child?.Type == "json")
+        //    if (model?.Type == "json")
         //    {
+        //        var parent = NSchema[target].SelectMany(x => x.Model.Where(x => x.Properties.Exists(x => x.Model == model.Name))).FirstOrDefault();
+
         //        if (parent != null)
         //        {
-        //            var property = parent.Properties.SingleOrDefault(x => x.Type == child.Name);
+        //            var property = parent.Properties.SingleOrDefault(x => x.Model == model.Name);
 
         //            if (property != null)
         //            {
         //                name = property.Property;
 
-        //                var next = NSchema[target].SelectMany(x => x.Model.Where(x => x.Properties.Exists(x => x.Type == child.Name))).FirstOrDefault();
+        //                var next = NSchema[target].SelectMany(x => x.Model.Where(x => x.Properties.Exists(x => x.Model == model.Name))).FirstOrDefault();
 
         //                if (next?.Type == "collection" || next?.Type == "table")
         //                    return name;
         //                else
         //                {
-        //                    var properties = UnwindPropertyTest(parent, null, target);
+        //                    var properties = UnwindProperty(parent, target);
 
         //                    return !string.IsNullOrEmpty(properties) ? properties + "." + name : name;
         //                }
@@ -81,25 +50,6 @@ namespace CPUT.Polyglot.NoSql.Translator
 
         //    return name;
         //}
-
-
-        //public static string UnwindChild(Model model, string @base, int target)
-        //{
-        //    if (model?.Type == "json")
-        //    {
-        //        var parent = NSchema[target].SelectMany(x => x.Model.Where(x => x.Name == @base && x.Properties.Exists(x => x.Type == model.Name))).FirstOrDefault();
-
-        //        if (parent != null && parent?.Type == "json")
-        //        {
-        //            var property = UnwindChild(parent, @base, target);
-
-        //            return !string.IsNullOrEmpty(property) ? property + "." + parent.Name : parent.Name;
-        //        }
-        //    }
-
-        //    return string.Empty;
-        //}
-
 
         public static void Add(int target, List<NSchema> schemas)
         {

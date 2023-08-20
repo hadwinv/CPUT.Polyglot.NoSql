@@ -18,8 +18,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
             return new Constructs
             {
                 Target = Database.CASSANDRA,
-                Query = query,
-                Expression = request.BaseExpr
+                Result = query,
+                Message = string.IsNullOrEmpty(query.Query) ? "Unable to generate Cassandra query." : "Cassandra query generated.",
+                Success = !string.IsNullOrEmpty(query.Query)
             };
         }
     }

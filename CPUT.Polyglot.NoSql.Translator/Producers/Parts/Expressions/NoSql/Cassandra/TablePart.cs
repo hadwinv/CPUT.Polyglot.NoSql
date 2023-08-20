@@ -8,10 +8,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Cassa
 
         internal string Alias { get; set; }
 
-        public TablePart(string name, string alias)
+        internal string Source { get; set; }
+
+        public TablePart(string name, string alias, string source)
         {
             Name = name;
             Alias = alias;
+            Source = source;
         }
 
         public void Accept(IRedisVisitor visitor)

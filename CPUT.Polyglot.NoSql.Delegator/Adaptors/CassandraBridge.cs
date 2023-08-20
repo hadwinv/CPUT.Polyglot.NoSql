@@ -1,5 +1,5 @@
 ﻿using Cassandra;
-using CPUT.Polyglot.NoSql.Interface.Delegator;
+using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 
 namespace CPUT.Polyglot.NoSql.Delegator.Adaptors
 {
@@ -13,9 +13,7 @@ namespace CPUT.Polyglot.NoSql.Delegator.Adaptors
         {
             if(_connection == null)
             {
-                var cluster = Cluster.Builder()
-                .AddContactPoints("127.0.0.1")
-                                   .Build();
+                var cluster = Cluster.Builder().WithDefaultKeyspace("cput").AddContactPoints("127.0.0.1").Build();
 
                 _connection = cluster.Connect();
             }
@@ -25,8 +23,12 @@ namespace CPUT.Polyglot.NoSql.Delegator.Adaptors
 
         public void Disconnect()
         {
-            if (_connection != null)
-                _connection.Dispose();
+            //if (_connection != null)
+            //{
+            //    _connection.Dispose();
+            //    _connection = 
+            //}
+                
         }
     }
 }

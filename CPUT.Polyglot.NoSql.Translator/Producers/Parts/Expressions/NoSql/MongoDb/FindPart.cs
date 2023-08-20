@@ -6,6 +6,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 {
     public class FindPart : IExpression
     {
+        internal string CollectionName { get; set; }
+
         internal ConditionPart? Condition { get; set; }
 
         internal FieldPart? Field { get; set; }

@@ -18,8 +18,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
             return new Constructs
             {
                 Target = Database.REDIS,
-                Query = query,
-                Expression = request.BaseExpr
+                Result = query,
+                Message = string.IsNullOrEmpty(query.Query) ? "Unable to generate Redis query." : "Redis query generated.",
+                Success = !string.IsNullOrEmpty(query.Query)
             };
         }
     }

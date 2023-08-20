@@ -1,11 +1,19 @@
-﻿using CPUT.Polyglot.NoSql.Interface.Delegator;
+﻿using Cassandra;
+using CPUT.Polyglot.NoSql.Common.Helpers;
+using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 using CPUT.Polyglot.NoSql.Interface.Repos;
+using CPUT.Polyglot.NoSql.Mapper.ViewMap;
 using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Translator;
+using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using Neo4j.Driver;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
+using static System.Collections.Specialized.BitVector32;
 
 namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
 {
@@ -18,29 +26,51 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
             _connector = connector;
         }
 
-        public Models.Result Execute(Constructs construct)
+        public Models.Result Execute(QueryDirective query)
         {
             Models.Result result = null;
-
+            
             try
             {
                 var connection = _connector.Connect();
 
                 var session = connection.AsyncSession(configBuilder => configBuilder.WithDatabase("enrollmentdb"));
 
-                if (construct.Query != null)
+                if (query.Executable != null)
                 {
-                    session.WriteTransactionAsync(async tx =>
-                    {
-                        var response = tx.RunAsync(construct.Query);
+                    dynamic data = null;
 
-                        result = new Models.Result
+                    if (query.Command == Utils.Command.FETCH)
+                    {
+                        var results = session.ReadTransactionAsync(async tx =>
                         {
-                            Data = response,
-                            Message = "OK",
-                            Success = true
-                        };
-                    }).Wait();
+                            var cursor = await tx.RunAsync(query.Executable);
+
+                            var records = await cursor.ToListAsync();
+
+                            //codex instructions for results
+                            return ModelBuilder.Create(query.Codex, records);
+                        });
+
+                        data = results.Result;
+                    }
+                    else
+                    {
+                        var results = session.WriteTransactionAsync(async tx =>
+                        {
+                            return await tx.RunAsync(query.Executable);
+                        }).Result;
+
+                    }
+
+                    result = new Models.Result
+                    {
+                        Source = Common.Helpers.Utils.Database.NEO4J,
+                        Data = data,
+                        Status = "OK",
+                        Message = data != null ? string.Format("Query returned {0} record(s)", data.Count) : string.Format("{0} executed sucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
+                        Success = true
+                    };
                 }
             }
             catch (Exception ex)
@@ -49,7 +79,9 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
 
                 result = new Models.Result
                 {
+                    Source = Common.Helpers.Utils.Database.NEO4J,
                     Data = null,
+                    Status = "Error",
                     Message = ex.Message,
                     Success = false
                 };
@@ -57,174 +89,5 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
 
             return result;
         }
-
-        #region Data Load
-
-        public void Load(List<UDataset> dataset)
-        {
-            var query = string.Empty;
-
-            List<string> faculties = new List<string>();
-            List<string> courses = new List<string>();
-            List<string> country = new List<string>();
-            List<string> city = new List<string>();
-
-            IDriver connection = null;
-            IAsyncSession session = null;
-            int count = 0;
-
-            try
-            {
-                connection = _connector.Connect();
-
-                session = connection.AsyncSession(configBuilder => configBuilder.WithDatabase("enrollmentdb"));
-
-                var deleteAll = @"MATCH (n) DETACH DELETE n;";
-
-                // clear all nodes
-                session.WriteTransactionAsync(async tx =>
-                {
-                    var result = tx.RunAsync(deleteAll).Result;
-                });
-
-                //faculty
-                foreach (var faculty in dataset[0].Faculties)
-                {
-                    if (!faculties.Contains(faculty.Code))
-                    {
-                        query += "CREATE (" + faculty.Code + ":Faculty {name: '" + faculty.Description + "', code: '" + faculty.Code + "'})";
-                    }
-
-                    foreach (var course in faculty.Courses)
-                    {
-                        if (!courses.Contains(course.Code))
-                        {
-                            query += "CREATE (" + course.Code + ":Course {name: '" + course.Description + "', code: '" + course.Code + "'})";
-
-                            query += "CREATE (" + course.Code + ")-[:OFFERED_IN]->(" + faculty.Code + ") ";
-                        }
-
-                        foreach (var subject in course.Subjects)
-                        {
-                            query += "CREATE (" + subject.Code + "_" + course.Code + ":Subject {name: '" + subject.Description + "', code: '" + subject.Code + "', cost: " + subject.Price + "}) ";
-
-                            query += "CREATE (" + course.Code + ")-[:CONTAINS]->(" + subject.Code + "_" + course.Code + ")";
-                        }
-
-                        courses.Add(course.Code);
-                    }
-                    faculties.Add(faculty.Code);
-                }
-
-                session.WriteTransactionAsync(async tx =>
-                {
-                    var result = tx.RunAsync(query);
-                }).Wait();
-
-                foreach (var student in dataset[0].Students)
-                {
-                    query = string.Empty;
-
-                    query += "CREATE (" + student.Name + "_" + student.Surname.Trim() + "_" + student.Id + ":Pupil { title: '" + student.Title + "', name: '" + student.Name + "', surname: '" + student.Surname + "', idnumber: '" + student.IdNumber + "', dob: '" + student.DOB + "', gender: '" + student.Gender + "', email: '" + student.Email + "', mobile: '" + student.MobileNo + "', language: '" + student.Language + "'}) ";
-
-                    query += "CREATE (" + student.Surname.Trim() + "_" + student.Id + ":Progress {studentno: '" + student.Profile.StudentNo + "', name: '" + student.Name + "', marks: '" + JsonConvert.SerializeObject(student.Marks) + "'}) ";
-
-                    if (!country.Contains(student.Address.Location.CountryCode))
-                        query += "CREATE (" + student.Address.Location.CountryCode + ":Country {id: " + student.Address.Location.Id + ", code: '" + student.Address.Location.CountryCode + "'" + ", name: '" + student.Address.Location.Country + "'}) ";
-
-                    if (!city.Contains(student.Address.City))
-                        query += "CREATE (" + student.Address.City.Replace(" ", "").Replace(".", "") + ":City {name: '" + student.Address.City + "'}) ";
-
-                    country.Add(student.Address.Location.CountryCode);
-                    city.Add(student.Address.City);
-
-                    session.WriteTransactionAsync(async tx =>
-                    {
-                        var result = tx.RunAsync(query);
-                    }).Wait();
-
-                    count++;
-                }
-
-                query = string.Empty;
-
-                //enrolled in
-                foreach (var student in dataset[0].Students)
-                {
-                    if (student.Profile.Course != null)
-                        query = "MATCH (n:Pupil), (x:Course) WHERE n.idnumber = '" + student.IdNumber + "' AND x.code = '" + student.Profile.Course.Code + "' MERGE (n)-[r:ENROLLED_IN]->(x) ";
-
-                    session.WriteTransactionAsync(async tx =>
-                    {
-                        var result = tx.RunAsync(query);
-                    }).Wait();
-                }
-                //citizen of
-                foreach (var student in dataset[0].Students)
-                {
-                    query = "MATCH (n:Pupil), (x:Country) WHERE n.idnumber = '" + student.IdNumber + "' AND x.code = '" + student.Address.Location.CountryCode + "' MERGE (n)-[co:CITIZEN_OF]->(x)";
-
-                    session.WriteTransactionAsync(async tx =>
-                    {
-                        var result = tx.RunAsync(query);
-                    }).Wait();
-                }
-                //lives in
-                foreach (var student in dataset[0].Students)
-                {
-                    query = "MATCH (n:Pupil), (x:City) WHERE n.idnumber = '" + student.IdNumber + "' AND x.name = '" + student.Address.City + "' MERGE (n)-[li:LIVES_IN]->(x) ";
-
-                    session.WriteTransactionAsync(async tx =>
-                    {
-                        var result = tx.RunAsync(query);
-                    }).Wait();
-                }
-                //located in
-                var location = new List<string>();
-
-                foreach (var student in dataset[0].Students)
-                {
-                    if (!location.Contains(student.Address.Location.CountryCode + ":" + student.Address.City))
-                    {
-                        query = "MATCH  (x:City), (n:Country) WHERE n.code = '" + student.Address.Location.CountryCode + "' AND x.name = '" + student.Address.City + "' MERGE (x)-[li:IS_LOCATED_IN]->(n) ";
-
-                        session.WriteTransactionAsync(async tx =>
-                        {
-                            var result = tx.RunAsync(query);
-                        }).Wait();
-                    }
-
-                    location.Add(student.Address.Location.CountryCode + ":" + student.Address.City);
-                }
-
-                //transcript
-                foreach (var student in dataset[0].Students)
-                {
-                    query = "MATCH  (x:Pupil), (n:Progress) WHERE x.idnumber = '" + student.IdNumber + "' AND n.studentno = '" + student.Profile.StudentNo + "' MERGE (x)-[t:TRANSCRIPT]->(n) ";
-
-                    session.WriteTransactionAsync(async tx =>
-                    {
-                        var result = tx.RunAsync(query);
-                    }).Wait();
-                }
-            }
-            catch (Neo4jException ex)
-            {
-                Console.WriteLine($"Neo4jException - {ex.Message}");
-                throw;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception - {ex.Message}");
-                throw;
-            }
-            finally
-            {
-                if (_connector != null)
-                    _connector.Disconnect();
-            }
-        }
-
-        #endregion
     }
 }

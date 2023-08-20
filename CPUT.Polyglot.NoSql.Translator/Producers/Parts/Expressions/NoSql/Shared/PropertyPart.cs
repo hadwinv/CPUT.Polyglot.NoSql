@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Views;
+﻿using CPUT.Polyglot.NoSql.Common.Helpers;
+using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
@@ -20,32 +21,80 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared
 
         internal string Type { get; set; }
 
+        internal string Source { get; set; }
+
+        internal bool Ignore { get; set; }
+
         public PropertyPart(LinkedProperty mappedProperty)
         {
-            if(mappedProperty != null)
+            if (!string.IsNullOrEmpty(mappedProperty.Link.Property))
             {
                 if (mappedProperty.Link.Target == Enum.GetName(typeof(Database), Database.NEO4J).ToLower())
                 {
+                    
+
                     if (mappedProperty.Link.Property.IndexOf(".") > -1)
                     {
+                        var model = Assistor.NSchema[(int)Database.NEO4J].SelectMany(x => x.Model.Where(x => x.Name == mappedProperty.Link.Reference)).First();
+
                         Name = mappedProperty.Link.Property.Split(".")[mappedProperty.Link.Property.Split(".").Count() - 1];
-                        AliasIdentifier = mappedProperty.Link.Property.Split(".")[0].Substring(0, 3).ToLower();
+
+                        if (model.Type == "array")
+                            AliasIdentifier = model.Name.Substring(0, 3);
+                        else
+                            AliasIdentifier = mappedProperty.Link.Property.Split(".")[0].Substring(0, 3).ToLower();
                     }
                     else
+                    {
                         Name = mappedProperty.Link.Property;
+                        AliasIdentifier = mappedProperty.Link.Reference.Substring(0, 4).ToLower();
+                    }
                 }
                 else
                 {
-                    Name = mappedProperty.Link.Property;
-                    AliasIdentifier = mappedProperty.AliasIdentifier;
+                    if (mappedProperty.Type == typeof(JsonExpr))
+                    {
+                        Name = mappedProperty.Link.Property;
 
-                    AliasName = mappedProperty.Link.Property.IndexOf(".") > -1
-                        ? mappedProperty.Link.Property.Split(".")[mappedProperty.Link.Property.Split(".").Count() - 1] : mappedProperty.AliasName;
+                        if (!string.IsNullOrEmpty(mappedProperty.AliasName))
+                            AliasName = mappedProperty.AliasName;
+
+                        if (mappedProperty.AggregateType is not null)
+                        {
+                            var parts = Name.Split('.');
+
+                            var alias = string.Empty;
+
+                            if (parts.Length > 0)
+                            {
+                                for (var i = 0; i <= parts.Length - 1; i++)
+                                {
+                                    if (i == parts.Length - 1)
+                                        alias += parts[i];
+                                    else
+                                        alias += parts[i].Substring(0, 1) + "_";
+                                }
+                                AliasName = alias;
+                            }
+                        }
+                        
+                    }
+                    else
+                    {
+                        Name = mappedProperty.Link.Property;
+                        AliasName = !string.IsNullOrEmpty(mappedProperty.AliasName)
+                                        ? mappedProperty.AliasName
+                                        : Name;
+                    }
                 }
 
-                if (string.IsNullOrEmpty(AliasIdentifier))
-                    AliasIdentifier = mappedProperty.Link.Reference.Substring(0, 3).ToLower();
+                //if (string.IsNullOrEmpty(AliasIdentifier))
+                //    AliasIdentifier = mappedProperty.Link.Reference.Substring(0, 3).ToLower();
             }
+            else
+                Ignore = true;
+
+            Source = mappedProperty.Property;
         }
 
         public PropertyPart(BaseExpr baseExpr)

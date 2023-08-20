@@ -2,30 +2,37 @@
 	{
 		"view": {
 			"name": "student",
+			"binding": "ResultsModel",
 			"resources": [
+				{
+					"property": "base",
+					"link": [
+						{
+							"target": "cassandra",
+							"reference": "student"
+						},
+						{
+							"target": "redis",
+							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"reference": "pupil"
+						}
+					]
+				},
 				{
 					"property": "identifier",
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "stundentnum",
-							"reference": "pupil"
-						},
-						{
-							"target": "mongodb",
-							"property": "student_no",
-							"reference": "students"
-						},
-						{
 							"target": "cassandra",
-							"property": "studentno",
+							"property": "id",
 							"reference": "student"
-						},
-						{
-							"target": "redis",
-							"property": "student_number",
-							"reference": "user"
 						}
 					]
 				},
@@ -33,16 +40,6 @@
 					"property": "idnumber",
 					"type": "string",
 					"link": [
-						{
-							"target": "neo4j",
-							"property": "idnum",
-							"reference": "pupil"
-						},
-						{
-							"target": "mongodb",
-							"property": "id_number",
-							"reference": "students"
-						},
 						{
 							"target": "cassandra",
 							"property": "idno",
@@ -52,6 +49,16 @@
 							"target": "redis",
 							"property": "identity_number",
 							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "id_number",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "idnum",
+							"reference": "pupil"
 						}
 					]
 				},
@@ -59,16 +66,6 @@
 					"property": "title",
 					"type": "string",
 					"link": [
-						{
-							"target": "neo4j",
-							"property": "title",
-							"reference": "pupil"
-						},
-						{
-							"target": "mongodb",
-							"property": "title",
-							"reference": "students"
-						},
 						{
 							"target": "cassandra",
 							"property": "title",
@@ -78,6 +75,16 @@
 							"target": "redis",
 							"property": "title",
 							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "title",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "title",
+							"reference": "pupil"
 						}
 					]
 				},
@@ -85,11 +92,6 @@
 					"property": "preferredname",
 					"type": "string",
 					"link": [
-						{
-							"target": "neo4j",
-							"property": "alias",
-							"reference": "pupil"
-						},
 						{
 							"target": "cassandra",
 							"property": "aka",
@@ -99,6 +101,11 @@
 							"target": "redis",
 							"property": "other_name",
 							"reference": "user"
+						},
+						{
+							"target": "neo4j",
+							"property": "alias",
+							"reference": "pupil"
 						}
 					]
 				},
@@ -107,9 +114,9 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "initial",
-							"reference": "pupil"
+							"target": "cassandra",
+							"property": "initials",
+							"reference": "student"
 						},
 						{
 							"target": "mongodb",
@@ -117,9 +124,14 @@
 							"reference": "students"
 						},
 						{
-							"target": "cassandra",
-							"property": "initials",
-							"reference": "student"
+							"target": "mongodb",
+							"property": "init",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "initial",
+							"reference": "pupil"
 						}
 					]
 				},
@@ -127,16 +139,6 @@
 					"property": "name",
 					"type": "string",
 					"link": [
-						{
-							"target": "neo4j",
-							"property": "name",
-							"reference": "pupil"
-						},
-						{
-							"target": "mongodb",
-							"property": "name",
-							"reference": "students"
-						},
 						{
 							"target": "cassandra",
 							"property": "firstname",
@@ -146,6 +148,16 @@
 							"target": "redis",
 							"property": "first_name",
 							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "name",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "name",
+							"reference": "pupil"
 						}
 					]
 				},
@@ -153,16 +165,6 @@
 					"property": "surname",
 					"type": "string",
 					"link": [
-						{
-							"target": "neo4j",
-							"property": "surname",
-							"reference": "pupil"
-						},
-						{
-							"target": "mongodb",
-							"property": "surname",
-							"reference": "students"
-						},
 						{
 							"target": "cassandra",
 							"property": "lastname",
@@ -172,6 +174,16 @@
 							"target": "redis",
 							"property": "last_name",
 							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "surname",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "surname",
+							"reference": "pupil"
 						}
 					]
 				},
@@ -180,9 +192,14 @@
 					"type": "datetime",
 					"link": [
 						{
-							"target": "neo4j",
+							"target": "cassandra",
 							"property": "dob",
-							"reference": "pupil"
+							"reference": "student"
+						},
+						{
+							"target": "redis",
+							"property": "birth_date",
+							"reference": "user"
 						},
 						{
 							"target": "mongodb",
@@ -190,14 +207,9 @@
 							"reference": "students"
 						},
 						{
-							"target": "cassandra",
+							"target": "neo4j",
 							"property": "dob",
-							"reference": "student"
-						},
-						{
-							"target": "redis",
-							"property": "birthdate",
-							"reference": "user"
+							"reference": "pupil"
 						}
 					]
 				},
@@ -205,16 +217,6 @@
 					"property": "gender",
 					"type": "string",
 					"link": [
-						{
-							"target": "neo4j",
-							"property": "gender",
-							"reference": "pupil"
-						},
-						{
-							"target": "mongodb",
-							"property": "gender_identity",
-							"reference": "students"
-						},
 						{
 							"target": "cassandra",
 							"property": "genderid",
@@ -224,82 +226,38 @@
 							"target": "redis",
 							"property": "gender",
 							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "gender_identity",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "gender",
+							"reference": "pupil"
 						}
 					]
 				},
 				{
 					"property": "address",
 					"type": "address",
-					"link": [
-						{
-							"target": "mongodb",
-							"property": "address",
-							"reference": "students"
-						},
-						{
-							"target": "cassandra",
-							"property": "address",
-							"reference": "student"
-						}
-					]
+					"metadata": "class"
 				},
 				{
 					"property": "contact",
 					"type": "contact",
-					"link": [
-						{
-							"target": "mongodb",
-							"property": "contact",
-							"reference": "students"
-						}
-					]
+					"metadata": "class"
 				},
 				{
 					"property": "register",
 					"type": "register",
-					"link": [
-						{
-							"target": "neo4j",
-							"property": "course",
-							"reference": "course"
-						},
-						{
-							"target": "neo4j",
-							"property": "subject",
-							"reference": "subject"
-						},
-						{
-							"target": "mongodb",
-							"property": "enroll",
-							"reference": "students"
-						},
-						{
-							"target": "cassandra",
-							"property": "registered",
-							"reference": "student"
-						}
-					]
+					"metadata": "class"
 				},
 				{
 					"property": "transcript",
 					"type": "transcript",
-					"link": [
-						{
-							"target": "neo4j",
-							"property": "results",
-							"reference": "progress"
-						},
-						{
-							"target": "mongodb",
-							"property": "enroll",
-							"reference": "students"
-						},
-						{
-							"target": "cassandra",
-							"property": "grades",
-							"reference": "student"
-						}
-					]
+					"metadata": "class"
 				}
 			]
 		}
@@ -307,19 +265,20 @@
 	{
 		"view": {
 			"name": "faculty",
+			"binding": "FacultyModel",
 			"resources": [
 				{
 					"property": "code",
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "key",
+							"target": "mongodb",
+							"property": "short_code",
 							"reference": "faculty"
 						},
 						{
-							"target": "mongodb",
-							"property": "short_code",
+							"target": "neo4j",
+							"property": "key",
 							"reference": "faculty"
 						}
 					]
@@ -329,9 +288,9 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "description",
-							"reference": "faculty"
+							"target": "cassandra",
+							"property": "faculty",
+							"reference": "registered"
 						},
 						{
 							"target": "mongodb",
@@ -339,9 +298,9 @@
 							"reference": "faculty"
 						},
 						{
-							"target": "cassndra",
-							"property": "faculty",
-							"reference": "registered"
+							"target": "neo4j",
+							"property": "description",
+							"reference": "faculty"
 						}
 					]
 				}
@@ -351,19 +310,20 @@
 	{
 		"view": {
 			"name": "course",
+			"binding": "CourseModel",
 			"resources": [
 				{
 					"property": "code",
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "key",
+							"target": "mongodb",
+							"property": "short_code",
 							"reference": "course"
 						},
 						{
-							"target": "mongodb",
-							"property": "short_code",
+							"target": "neo4j",
+							"property": "key",
 							"reference": "course"
 						}
 					]
@@ -373,9 +333,9 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "description",
-							"reference": "course"
+							"target": "cassandra",
+							"property": "course",
+							"reference": "registered"
 						},
 						{
 							"target": "mongodb",
@@ -383,9 +343,9 @@
 							"reference": "course"
 						},
 						{
-							"target": "cassandra",
-							"property": "course",
-							"reference": "registered"
+							"target": "neo4j",
+							"property": "description",
+							"reference": "course"
 						}
 					]
 				}
@@ -395,19 +355,20 @@
 	{
 		"view": {
 			"name": "subject",
+			"binding": "SubjectModel",
 			"resources": [
 				{
 					"property": "code",
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "key",
+							"target": "mongodb",
+							"property": "short_code",
 							"reference": "subject"
 						},
 						{
-							"target": "cassandra",
-							"property": "short_code",
+							"target": "neo4j",
+							"property": "key",
 							"reference": "subject"
 						}
 					]
@@ -417,21 +378,18 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "description",
-							"type": "direct",
+							"target": "cassandra",
+							"property": "descr",
 							"reference": "subject"
 						},
 						{
 							"target": "mongodb",
 							"property": "name",
-							"type": "direct",
 							"reference": "subject"
 						},
 						{
-							"target": "cassandra",
-							"property": "descr",
-							"type": "direct",
+							"target": "neo4j",
+							"property": "description",
 							"reference": "subject"
 						}
 					]
@@ -441,8 +399,8 @@
 					"type": "decimal",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "cost",
+							"target": "cassandra",
+							"property": "price",
 							"reference": "subject"
 						},
 						{
@@ -451,8 +409,8 @@
 							"reference": "subject"
 						},
 						{
-							"target": "cassandra",
-							"property": "price",
+							"target": "neo4j",
+							"property": "cost",
 							"reference": "subject"
 						}
 					]
@@ -462,8 +420,8 @@
 					"type": "double",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "term",
+							"target": "cassandra",
+							"property": "period",
 							"reference": "subject"
 						},
 						{
@@ -472,8 +430,8 @@
 							"reference": "subject"
 						},
 						{
-							"target": "cassandra",
-							"property": "period",
+							"target": "neo4j",
+							"property": "term",
 							"reference": "subject"
 						}
 					]
@@ -484,6 +442,7 @@
 	{
 		"view": {
 			"name": "address",
+			"binding": "AddressModel",
 			"resources": [
 				{
 					"property": "streetno",
@@ -501,45 +460,24 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "mongodb",
-							"property": "street",
-							"reference": "address"
-						},
-						{
 							"target": "cassandra",
 							"property": "streetname",
 							"reference": "address"
-						}
-					]
-				},
-				{
-					"property": "suburb",
-					"type": "string",
-					"link": [
-						{
-							"target": "cassandra",
-							"property": "suburb",
-							"reference": "address"
-						}
-					]
-				},
-				{
-					"property": "city",
-					"type": "string",
-					"link": [
-						{
-							"target": "neo4j",
-							"property": "name",
-							"reference": "city"
 						},
 						{
 							"target": "mongodb",
-							"property": "city",
+							"property": "street",
 							"reference": "address"
-						},
+						}
+					]
+				},
+				{
+					"property": "postaladdress",
+					"type": "string",
+					"link": [
 						{
 							"target": "cassandra",
-							"property": "city",
+							"property": "postalcode",
 							"reference": "address"
 						}
 					]
@@ -549,25 +487,86 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "mongodb",
-							"property": "code",
+							"target": "cassandra",
+							"property": "postalcode",
 							"reference": "address"
 						},
 						{
+							"target": "mongodb",
+							"property": "code",
+							"reference": "address"
+						}
+					]
+				},
+				{
+					"property": "city",
+					"type": "string",
+					"link": [
+						{
 							"target": "cassandra",
-							"property": "postalcode",
+							"property": "city",
+							"reference": "address"
+						},
+						{
+							"target": "redis",
+							"property": "city",
+							"reference": "user"
+						},
+						{
+							"target": "neo4j",
+							"property": "description",
+							"reference": "city"
+						}
+					]
+				},
+				{
+					"property": "province",
+					"type": "string",
+					"link": [
+						{
+							"target": "cassandra",
+							"property": "province",
 							"reference": "address"
 						}
 					]
 				},
 				{
 					"property": "country",
+					"type": "country",
+					"metadata": "class"
+				}
+			]
+		}
+	},
+	{
+		"view": {
+			"name": "country",
+			"binding": "CountryModel",
+			"resources": [
+				{
+					"property": "code",
 					"type": "string",
 					"link": [
 						{
 							"target": "neo4j",
-							"property": "country.name",
+							"property": "key",
 							"reference": "country"
+						}
+					]
+				},
+				{
+					"property": "name",
+					"type": "string",
+					"link": [
+						{
+							"target": "cassandra",
+							"property": "country",
+							"reference": "address"
+						},
+						{
+							"target": "redis",
+							"property": "country",
+							"reference": "user"
 						},
 						{
 							"target": "mongodb",
@@ -575,9 +574,9 @@
 							"reference": "address"
 						},
 						{
-							"target": "cassandra",
-							"property": "country",
-							"reference": "address"
+							"target": "neo4j",
+							"property": "description",
+							"reference": "country"
 						}
 					]
 				}
@@ -587,15 +586,16 @@
 	{
 		"view": {
 			"name": "contact",
+			"binding": "ContactModel",
 			"resources": [
 				{
 					"property": "email",
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
+							"target": "cassandra",
 							"property": "email",
-							"reference": "pupil"
+							"reference": "student"
 						},
 						{
 							"target": "mongodb",
@@ -603,9 +603,9 @@
 							"reference": "contact"
 						},
 						{
-							"target": "cassandra",
+							"target": "neo4j",
 							"property": "email",
-							"reference": "student"
+							"reference": "pupil"
 						}
 					]
 				},
@@ -614,9 +614,9 @@
 					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "mobile",
-							"reference": "pupil"
+							"target": "cassandra",
+							"property": "cellno",
+							"reference": "student"
 						},
 						{
 							"target": "mongodb",
@@ -624,9 +624,9 @@
 							"reference": "contact"
 						},
 						{
-							"target": "cassandra",
-							"property": "cellno",
-							"reference": "student"
+							"target": "neo4j",
+							"property": "mobile",
+							"reference": "pupil"
 						}
 					]
 				}
@@ -636,43 +636,48 @@
 	{
 		"view": {
 			"name": "register",
+			"binding": "RegisterModel",
 			"resources": [
 				{
-					"property": "course",
-					"type": "course",
+					"property": "studentno",
+					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "course",
-							"reference": "course"
+							"target": "cassandra",
+							"property": "studentno",
+							"reference": "student"
 						},
 						{
-							"target": "cassandra",
-							"property": "registered",
-							"reference": "student"
+							"target": "redis",
+							"property": "student_number",
+							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "student_no",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "studentnum",
+							"reference": "pupil"
 						}
 					]
 				},
 				{
+					"property": "faculty",
+					"type": "faculty",
+					"metadata": "class"
+				},
+				{
+					"property": "course",
+					"type": "course",
+					"metadata": "class"
+				},
+				{
 					"property": "subject",
 					"type": "subject",
-					"link": [
-						{
-							"target": "neo4j",
-							"property": "subject",
-							"reference": "subject"
-						},
-						{
-							"target": "mongodb",
-							"property": "enroll.subjects",
-							"reference": "students"
-						},
-						{
-							"target": "cassandra",
-							"property": "registered.subject",
-							"reference": "student"
-						}
-					]
+					"metadata": "class"
 				},
 				{
 					"property": "username",
@@ -703,7 +708,18 @@
 						{
 							"target": "mongodb",
 							"property": "enrollment_type",
-							"reference": "register"
+							"reference": "enroll"
+						}
+					]
+				},
+				{
+					"property": "ipaddress",
+					"type": "string",
+					"link": [
+						{
+							"target": "redis",
+							"property": "ip_address",
+							"reference": "user"
 						}
 					]
 				},
@@ -712,14 +728,14 @@
 					"type": "datetime",
 					"link": [
 						{
-							"target": "mongodb",
-							"property": "enrollment_date",
-							"reference": "register"
-						},
-						{
 							"target": "cassandra",
 							"property": "registerdate",
-							"reference": "register"
+							"reference": "registered"
+						},
+						{
+							"target": "mongodb",
+							"property": "enrollment_date",
+							"reference": "enroll"
 						}
 					]
 				}
@@ -729,26 +745,21 @@
 	{
 		"view": {
 			"name": "transcript",
+			"binding": "TranscriptModel",
 			"resources": [
 				{
 					"property": "subject",
-					"type": "subject",
+					"type": "string",
 					"link": [
 						{
-							"target": "neo4j",
-							"property": "subject",
-							"reference": "subject"
-							//progress
-						},
-						{
-							"target": "mongodb",
-							"property": "enroll.subjects",
-							"reference": "students"
-						},
-						{
 							"target": "cassandra",
-							"property": "grades.subject",
-							"reference": "student"
+							"property": "subject",
+							"reference": "grades"
+						},
+						{
+							"target": "neo4j",
+							"property": "results.subject.description",
+							"reference": "progress"
 						}
 					]
 				},
@@ -757,14 +768,14 @@
 					"type": "double",
 					"link": [
 						{
+							"target": "cassandra",
+							"property": "marks",
+							"reference": "grades"
+						},
+						{
 							"target": "neo4j",
 							"property": "results.score",
 							"reference": "progress"
-						},
-						{
-							"target": "cassandra",
-							"property": "grades.marks",
-							"reference": "student"
 						}
 					]
 				},
@@ -773,14 +784,14 @@
 					"type": "string",
 					"link": [
 						{
+							"target": "cassandra",
+							"property": "symbol",
+							"reference": "grades"
+						},
+						{
 							"target": "neo4j",
 							"property": "results.grade",
 							"reference": "progress"
-						},
-						{
-							"target": "cassandra",
-							"property": "grades.symbol",
-							"reference": "student"
 						}
 					]
 				}

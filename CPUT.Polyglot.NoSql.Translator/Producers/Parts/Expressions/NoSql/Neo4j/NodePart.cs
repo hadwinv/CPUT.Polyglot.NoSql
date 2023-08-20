@@ -12,12 +12,17 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
 
         internal List<RelationshipPart> Relations { get; set; }
 
+        internal string Source { get; set; }
+
+        internal bool ReferenceAliasOnly { get; set; }
+
         public NodePart() { }
 
-        public NodePart(string name, string alias, Relations[] relations)
+        public NodePart(string name, string source, Relations[] relations)
         {
             Name = name;
-            AliasIdentifier = name.Substring(0,3).ToLower();
+            AliasIdentifier = name.Substring(0,4).ToLower();
+            Source = source;
 
             if (relations != null)
             {

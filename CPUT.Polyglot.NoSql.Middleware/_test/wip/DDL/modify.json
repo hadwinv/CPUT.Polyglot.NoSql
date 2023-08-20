@@ -1,5 +1,0 @@
-{
-  //MODIFY [Entity]
-  //TARGET [Neo4j|Cassandra|Redis|MongoDB]
-  //FILTER ON [Entity.filter1 = filter1 AND\OR,...,Entity.filtern = filtern]
-}

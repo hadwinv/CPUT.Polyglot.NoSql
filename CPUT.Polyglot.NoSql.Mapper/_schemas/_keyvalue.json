@@ -17,7 +17,7 @@
 					},
 					{
 						"property": "title",
-						"type": "string"
+						"model": "string"
 					},
 					{
 						"property": "other_name",
@@ -66,6 +66,18 @@
 					{
 						"property": "logout_date",
 						"type": "datetime"
+					},
+					{
+						"property": "audit_date",
+						"type": "datetime"
+					},
+					{
+						"property": "city",
+						"type": "string"
+					},
+					{
+						"property": "country",
+						"type": "string"
 					}
 				],
 				"type": "table"

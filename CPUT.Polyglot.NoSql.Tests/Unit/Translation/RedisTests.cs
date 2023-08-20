@@ -61,7 +61,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("KEYS *").Replace(" ", "")
             );
         }
@@ -91,7 +91,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("GET \"62408306136\"").Replace(" ", "")
             );
         }
@@ -121,7 +121,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("KEYS *").Replace(" ", "")
             );
 
@@ -152,7 +152,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("GET \"62408306148\"").Replace(" ", "")
             );
         }
@@ -182,7 +182,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("KEYS *").Replace(" ", "")
             );
         }
@@ -212,7 +212,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("GET \"62408306136\";SET 62408306136 {0}").Replace(" ", "")
             );
         }
@@ -242,7 +242,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("KEYS * ;SET {0} {0}").Replace(" ", "")
             );
         }
@@ -271,7 +271,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SET 624083061364 {0}").Replace(" ", "")
             );
         }
@@ -300,7 +300,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query).Should().Equal(
+            results.Select(x => x.Result.Query).Should().Equal(
                 ("Cannot generate Redis command")
             );
         }

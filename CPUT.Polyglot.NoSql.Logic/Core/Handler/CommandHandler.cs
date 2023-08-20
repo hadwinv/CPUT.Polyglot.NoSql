@@ -30,7 +30,5 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.Handler
                 return null;
             }
         }
-
-        
     }
 }

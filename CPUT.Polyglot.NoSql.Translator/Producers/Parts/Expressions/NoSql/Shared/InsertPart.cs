@@ -4,6 +4,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
 {
     public class InsertPart : IExpression
     {
+        internal string CollectionName { get; set; }
+
         internal IExpression[] Properties { get; set; }
 
         public InsertPart(IExpression[] properties)

@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+﻿using CPUT.Polyglot.NoSql.Models.Translator.Parts;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 
 namespace CPUT.Polyglot.NoSql.Models.Translator
@@ -7,10 +8,10 @@ namespace CPUT.Polyglot.NoSql.Models.Translator
     {
         public Database Target { get; set; }
 
-        public string DataModel { get; set; }
+        public OutputPart Result { get; set; }
 
-        public dynamic Query { get; set; }
+        public string Message { get; set; }
 
-        public BaseExpr Expression { get; set; }
+        public bool Success { get; set; }
     }
 }

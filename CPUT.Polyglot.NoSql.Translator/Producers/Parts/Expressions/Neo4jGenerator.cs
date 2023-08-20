@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Common.Helpers.NodeExpressions;
+﻿using Cassandra.DataStax.Graph;
+using CPUT.Polyglot.NoSql.Common.Helpers.NodeExpressions;
 using CPUT.Polyglot.NoSql.Models._data.prep;
 using CPUT.Polyglot.NoSql.Models.Views.Native;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4j;
@@ -7,12 +8,15 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Operators;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+using Microsoft.VisualBasic;
 using MongoDB.Driver;
 using Neo4jClient;
+using Neo4jClient.Cypher;
 using Pipelines.Sockets.Unofficial.Arenas;
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
 using static CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.Neo4jGenerator;
 
@@ -67,66 +71,397 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             //create object tree
             var tree = CreateTree(nodes);
 
-            _query.Append("MATCH ");
-
-            var parent = new List<NodePart>();
-
             var names = new List<string>();
+
+            var aliases = new List<string>();
+
+            NodePart parent = null;
+
+            var direction = DirectionType.None;
+            var match = true;
+            var parentNodeCreated = false;
 
             foreach (var node in UnwindTree(tree))
             {
                 if (names.Contains(node.Name))
                     continue;//skip iteration
 
+                var branch = nodes.First(x => x.Name == node.Name);
+
                 if (node.Parent.Id == "root")
                 {
+                    parent = branch;
+
                     if (node.Children.Count() > 1)
-                        parent.Add(nodes.First(x => x.Name == node.Name));
+                    {
+                        if (node.Children.Count() >= 2)
+                            aliases.Add(parent.AliasIdentifier);
+                        else
+                            match = false;
+                    }
                     else
-                        DoNodePart(nodes.First(x => x.Name == node.Name));
+                    {
+                        if(names.Count() > 0)
+                            _query.Append("OPTIONAL MATCH ");
+                        else
+                            _query.Append("MATCH ");
+
+                        DoNodePart(parent);
+
+                        aliases.Add(parent.AliasIdentifier);
+
+                        _query.Append(" WITH " + string.Join(", ", aliases) + " ");
+
+                        names.Add(parent.Name);
+
+                        match = false;
+                    }
+                 
+                    if (match)
+                    {
+                        if (node.Children.Count() > 0)
+                        {
+                            var children = node.Children.Select(x => x.Name).ToList();
+                            var allnodes = nodes.Select(x => x.Name).ToList();
+                            var matches = allnodes.Where(x => children.Contains(x)).ToList();
+
+                            if(matches.Count > 0)
+                            {
+                                _query.Append("MATCH ");
+
+                                DoNodePart(parent);
+
+                                parentNodeCreated = true;
+
+                                if (aliases.Count > 0)
+                                {
+                                    _query.Append(" WITH " + string.Join(", ", aliases) + " ");
+
+                                    parent.ReferenceAliasOnly = true;
+                                }
+                            }
+
+                            foreach (var child in node.Children.Where(x => matches.Contains(x.Name)))
+                            {
+                                if (direction == DirectionType.None)
+                                    direction = DirectionType.Backward;
+                                else if (direction == DirectionType.Backward)
+                                    direction = DirectionType.Forward;
+                                else if (direction == DirectionType.Forward)
+                                    direction = DirectionType.Backward;
+
+                                var cardinality = parent.Relations.First(x => x.Reference == child.Id);
+
+                                var offspring = nodes.First(x => x.Name == child.Name);
+
+                                aliases.Add(offspring.AliasIdentifier);
+
+                                if (direction == DirectionType.Backward)
+                                {
+                                    _query.Append(" MATCH ");
+
+                                    CreateRelationship(offspring, cardinality, direction, parent);
+                                }
+                                else if (direction == DirectionType.Forward)
+                                {
+                                    CreateRelationship(offspring, cardinality, direction, null);
+
+                                    _query.Append(" WITH " + string.Join(", ", aliases) + " ");
+
+                                    offspring.ReferenceAliasOnly = true;
+                                }
+
+                                names.Add(child.Name);
+                            }
+
+                            if (direction == DirectionType.Backward)
+                                direction = DirectionType.Forward;
+                        }
+                    }
                 }
                 else
-                {    
-                    if (parent.Count > 0)
+                {
+                    var ancestor = nodes.First(x => x.Name == node.Parent.Id);
+                    
+                    ancestor.ReferenceAliasOnly = true;
+
+                    //check if parent has been used
+                    if (names.Contains(node.Parent.Id))
                     {
-                        foreach (var child in node.Children)
+                        if(node.Parent.Children.Count() > 0)
                         {
-                            DoNodePart(nodes.First(x => x.Name == child.Name));
+                            var children = node.Parent.Children.Select(x => x.Name).ToList();
+                            var allnodes = nodes.Select(x => x.Name).ToList();
+                            var matches = allnodes.Where(x => children.Contains(x)).ToList();
 
-                            var childCardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == child.Id)).First();
+                            foreach (var child in node.Parent.Children.Where(x => matches.Contains(x.Name)))
+                            {
+                                if (direction == DirectionType.None)
+                                    direction = DirectionType.Backward;
+                                else if (direction == DirectionType.Backward)
+                                    direction = DirectionType.Forward;
+                                else if (direction == DirectionType.Forward)
+                                    direction = DirectionType.Backward;
 
-                            DoRelationshipPart(childCardinality, DirectionType.Backward);
+                                var cardinality = ancestor.Relations.First(x => x.Reference == child.Id);
 
-                            names.Add(child.Name);
+                                var offspring = nodes.First(x => x.Name == child.Name);
+
+                                aliases.Add(offspring.AliasIdentifier);
+
+                                if (direction == DirectionType.Backward)
+                                {
+                                    _query.Append(" MATCH ");
+
+                                    CreateRelationship(offspring, cardinality, direction, ancestor);
+                                }
+                                else if (direction == DirectionType.Forward)
+                                {
+                                    CreateRelationship(offspring, cardinality, direction, null);
+
+                                    _query.Append(" WITH " + string.Join(", ", aliases) + " ");
+
+                                    offspring.ReferenceAliasOnly = true;
+                                }
+
+                                names.Add(child.Name);
+                            }
+
+                            if (direction == DirectionType.Backward)
+                                direction = DirectionType.Forward;
                         }
 
-                        DoNodePart(nodes.First(x => x.Name == node.Name));
-
-                        var cardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
-
-                        DoRelationshipPart(cardinality, DirectionType.Backward);
-
-                        if (parent.Count > 0)
+                        if(!names.Contains( branch.Name))
                         {
-                            DoNodePart(parent[0]);
+                            if (direction == DirectionType.Forward)
+                            {
+                                direction = DirectionType.Backward;
 
-                            parent.RemoveAt(0);
+                                _query.Append(" MATCH ");
+
+                                var acardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
+
+                                CreateRelationship(branch, acardinality, direction, ancestor);
+
+
+                            }
+                            else if (direction == DirectionType.Backward)
+                            {
+                                direction = DirectionType.Forward;
+
+                                var acardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
+
+                                CreateRelationship(branch, acardinality, direction, null);
+
+                                _query.Append(" WITH " + string.Join(", ", aliases));
+                            }
                         }
+
+                        
                     }
                     else
                     {
-                        var cardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
 
-                        DoRelationshipPart(cardinality, DirectionType.Forward);
-
-                        DoNodePart(nodes.First(x => x.Name == node.Name));
                     }
                 }
-
-                names.Add(node.Name);
+               
             }
         }
 
+        //public void Visit(MatchPart part)
+        //{
+        //    var nodes = part.Properties.Where(x => x.GetType().Equals(typeof(NodePart))).Cast<NodePart>().ToList();
+
+        //    //create object tree
+        //    var tree = CreateTree(nodes);
+
+        //    var names = new List<string>();
+
+        //    var aliases = new List<string>();
+
+        //    NodePart parent = null;
+
+        //    var direction = DirectionType.None;
+        //    var match = true;
+        //    var parentNodeCreated = false;
+
+        //    foreach (var node in UnwindTree(tree))
+        //    {
+        //        if (names.Contains(node.Name))
+        //            continue;//skip iteration
+
+        //        var branch = nodes.First(x => x.Name == node.Name);
+
+        //        if (node.Parent.Id == "root")
+        //        {
+        //            parent = branch;
+
+        //            if (node.Children.Count() > 1)
+        //            {
+        //                if (node.Children.Count() > 2)
+        //                    aliases.Add(parent.AliasIdentifier);
+        //                else
+        //                    match = false;
+        //            }
+
+        //            if (match)
+        //            {
+        //                _query.Append("MATCH ");
+
+        //                DoNodePart(parent);
+
+        //                parentNodeCreated = true;
+
+        //                if (aliases.Count > 0)
+        //                {
+        //                    _query.Append(" WITH " + string.Join(", ", aliases));
+
+        //                    parent.ReferenceAliasOnly = true;
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //descendants
+        //            if (node.Children.Count() > 0)
+        //            {
+        //                if (node.Parent.Name == parent.Name)
+        //                {
+        //                    _query.Append(" MATCH ");
+
+        //                    if (node.Children.Count() == 1)
+        //                    {
+        //                        //create match for children with parent
+        //                        foreach (var child in node.Children)
+        //                        {
+        //                            if (direction == DirectionType.None)
+        //                                direction = DirectionType.Backward;
+        //                            else if (direction == DirectionType.Backward)
+        //                                direction = DirectionType.Forward;
+        //                            else if (direction == DirectionType.Forward)
+        //                                direction = DirectionType.Backward;
+
+        //                            var cardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == child.Id)).First();
+
+        //                            var offspring = nodes.First(x => x.Name == child.Name);
+
+        //                            if (direction == DirectionType.Backward)
+        //                                CreateRelationship(offspring, cardinality, direction, parent);
+        //                            else if (direction == DirectionType.Forward)
+        //                                CreateRelationship(offspring, cardinality, direction, null);
+
+        //                            names.Add(child.Name);
+
+        //                            aliases.Add(offspring.AliasIdentifier);
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        //create match for children with parent
+        //                        foreach (var child in node.Children)
+        //                        {
+        //                            if (direction == DirectionType.None)
+        //                                direction = DirectionType.Backward;
+        //                            else if (direction == DirectionType.Backward)
+        //                                direction = DirectionType.Forward;
+        //                            else if (direction == DirectionType.Forward)
+        //                                direction = DirectionType.Backward;
+
+        //                            var cardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == child.Id)).First();
+
+        //                            var offspring = nodes.First(x => x.Name == child.Name);
+
+        //                            if (direction == DirectionType.Backward)
+        //                                CreateRelationship(offspring, cardinality, direction, branch);
+        //                            else if (direction == DirectionType.Forward)
+        //                                CreateRelationship(offspring, cardinality, direction, null);
+
+        //                            names.Add(child.Name);
+
+        //                            aliases.Add(offspring.AliasIdentifier);
+        //                        }
+        //                    }
+
+        //                    if (direction == DirectionType.Forward)
+        //                    {
+        //                        _query.Append(" WITH " + string.Join(", ", aliases));
+
+        //                        branch.ReferenceAliasOnly = true;
+        //                    }
+
+        //                }
+        //                else
+        //                {
+
+        //                }
+
+        //                //if(direction == DirectionType.None || direction == DirectionType.Forward)
+        //                //{
+
+        //                //}
+        //            }
+
+        //            if (direction == DirectionType.None)
+        //            {
+        //                direction = DirectionType.Forward;
+
+
+        //                var acardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
+
+        //                CreateRelationship(branch, acardinality, direction, parent);
+
+        //                aliases.Add(branch.AliasIdentifier);
+        //            }
+
+        //            else if (direction == DirectionType.Forward)
+        //            {
+        //                direction = DirectionType.Backward;
+
+        //                _query.Append(" MATCH ");
+
+        //                var acardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
+
+        //                CreateRelationship(branch, acardinality, direction, parent);
+
+        //                aliases.Add(branch.AliasIdentifier);
+        //            }
+        //            else if (direction == DirectionType.Backward)
+        //            {
+        //                direction = DirectionType.Forward;
+
+        //                var acardinality = nodes.SelectMany(x => x.Relations.Where(x => x.Reference == node.Id)).First();
+
+        //                CreateRelationship(branch, acardinality, direction, null);
+
+        //                aliases.Add(branch.AliasIdentifier);
+
+        //                _query.Append(" WITH " + string.Join(", ", aliases));
+        //            }
+        //        }
+
+        //        names.Add(node.Name);
+        //    }
+        //}
+
+        private void CreateRelationship(NodePart child, RelationshipPart cardinality, DirectionType direction, NodePart? parent)
+        {
+            if (direction == DirectionType.Backward)
+            {
+                DoNodePart(child);
+
+                DoRelationshipPart(cardinality, direction);
+            }
+            else if (direction == DirectionType.Forward)
+            {
+                DoRelationshipPart(cardinality, direction);
+
+                DoNodePart(child);
+            }
+
+            if(parent != null)
+                DoNodePart(parent);
+
+        }
         #region DML
 
         public void Visit(SetPart part)
@@ -198,7 +533,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(NodePart part)
         {
-            _query.Append(part.AliasIdentifier + ":" + part.Name);
+            if(part.ReferenceAliasOnly)
+                _query.Append(part.AliasIdentifier);
+            else
+                _query.Append(part.AliasIdentifier + ":" + part.Name);
+
         }
 
         public void Visit(RelationshipPart part)
@@ -395,6 +734,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             part.Accept(this);
 
             _query.Append(")");
+
         }
 
         private IEnumerable<Tree> UnwindTree(Tree nodes)
@@ -425,17 +765,21 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
                 //determine if node is a child in the current list of nodes
                 if (parts.Exists(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)))
                 {
-                    var parent = parts.Where(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)).FirstOrDefault();
-                    //link child to parent
-                    if (parent != null)
+                    var parents = parts.Where(x => x.Relations != null && x.Relations.Any(x => x.Reference == part.Name && x.Name != part.Name)).ToList();
+
+                    if(parents != null)
                     {
-                        nodes.Add(
-                            new TreeNode
-                            {
-                                Name = part.Name,
-                                Parent = parent.Name,
-                                Cardinality = parent.Relations.First(x => x.Reference == part.Name).Reference
-                            });
+                        foreach (var parent in parents)
+                        {
+                            //link child to parent
+                            nodes.Add(
+                                    new TreeNode
+                                    {
+                                        Name = part.Name,
+                                        Parent = parent.Name,
+                                        Cardinality = parent.Relations.First(x => x.Reference == part.Name).Reference
+                                    });
+                        }
                     }
                 }
                 else

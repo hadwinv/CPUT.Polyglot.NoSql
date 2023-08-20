@@ -35,8 +35,8 @@ namespace CPUT.Polyglot.NoSql.Translator
 
         public async Task<List<Constructs>> Convert(ConstructPayload payload)
         {
-            List<Constructs> constructs = new List<Constructs>();
-            List<Task<Constructs>> tasks = new List<Task<Constructs>>();
+            var constructs = new List<Constructs>();
+            var tasks = new List<Task<Constructs>>();
 
             //get targeted databases
             var targetExpr = (TargetExpr)payload.BaseExpr.ParseTree.Single(x => x.GetType().Equals(typeof(TargetExpr)));

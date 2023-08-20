@@ -15,12 +15,5 @@
         public UProfile Profile { get; set; }
         public UAddress Address { get; set; }
         public List<UMarks> Marks { get; set; }
-
-        public UStudent()
-        {
-            Profile = new UProfile();
-            Address = new UAddress();
-            Marks = new List<UMarks>();
-        }
     }
 }

@@ -61,7 +61,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student;").Replace(" ", "")
             );
         }
@@ -91,7 +91,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student LIMIT 10;").Replace(" ", "")
             );
         }
@@ -121,7 +121,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname ASC;").Replace(" ", "")
             );
             // SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname  ASC ;
@@ -152,7 +152,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname ASC, lastname ASC;").Replace(" ", "")
             );
         }
@@ -182,7 +182,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student ORDER BY firstname DESC;").Replace(" ", "")
             );
         }
@@ -212,7 +212,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\";").Replace(" ", "")
             );
         }
@@ -242,7 +242,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\";").Replace(" ", "")
 
             );
@@ -273,7 +273,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\" AND idno = \"624083061344\";").Replace(" ", "")
             );
         }
@@ -303,7 +303,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" OR idno = \"624083061345\" OR idno = \"624083061344\";").Replace(" ", "")
             );
         }
@@ -333,7 +333,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\" OR idno = \"624083061344\";").Replace(" ", "")
             );
         }
@@ -362,7 +362,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT grades.subject,  grades.marks FROM student;").Replace(" ", "")
             );
         }
@@ -391,11 +391,12 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT grades.subject.descr,  grades.marks FROM student;").Replace(" ", "")
             );
         }
 
+        [Test]
         public void Convert13_ComplexFetchOneToManyObject_ReturnExecutableQuery()
         {
             List<Constructs> results = null;
@@ -419,7 +420,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT registered.subject FROM student;").Replace(" ", "")
             );
         }
@@ -450,7 +451,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, SUM(grades.marks) as marks FROM student;").Replace(" ", "")
             );
         }
@@ -479,7 +480,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, AVG(grades.marks) as marks FROM student;").Replace(" ", "")
             );
         }
@@ -508,7 +509,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, COUNT(grades.marks) as marks FROM student;").Replace(" ", "")
             );
         }
@@ -537,7 +538,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, MIN(grades.marks) as marks FROM student;").Replace(" ", "")
             );
         }
@@ -566,7 +567,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, MAX(grades.marks) as marks FROM student;").Replace(" ", "")
             );
         }
@@ -595,7 +596,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, SUM(grades.marks) as marks FROM student;").Replace(" ", "")
             );
         }
@@ -625,7 +626,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, AVG(grades.marks) as marks FROM student WHERE idno = \"05506604815\";").Replace(" ", "")
             );
         }
@@ -655,7 +656,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                  ("SELECT studentno, COUNT(grades.marks) as marks FROM student WHERE idno = \"05506604815\";").Replace(" ", "")
             );
         }
@@ -685,7 +686,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, MIN(grades.marks) as marks FROM student WHERE idno = \"05506604815\";").Replace(" ", "")
             );
         }
@@ -715,7 +716,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, MAX(grades.marks) as marks FROM student WHERE idno = \"05506604815\";").Replace(" ", "")
             );
         }
@@ -747,7 +748,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("UPDATE student SET firstname = \"Chuck T\" WHERE idno = \"62408306136\";").Replace(" ", "")
             );
         }
@@ -776,7 +777,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("UPDATE student SET firstname = \"Chuck T\", lastname = \"Tylers\" WHERE idno = \"62408306136\";").Replace(" ", "")
             );
         }
@@ -804,7 +805,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("UPDATE student SET firstname = \"Chuck T\";").Replace(" ", "")
             );
         }
@@ -832,7 +833,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("UPDATE student SET firstname = \"Chuck T\", lastname = \"Tylers\";").Replace(" ", "")
             );
         }
@@ -861,7 +862,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("INSERT INTO student (firstname) VALUES (\"Chuck T\");").Replace(" ", "")
             );
         }
@@ -890,7 +891,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                  ("INSERT INTO student (firstname, lastname) VALUES (\"Chuck T\", \"Tylers\");").Replace(" ", "")
             );
         }
@@ -919,7 +920,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT grades.subject,  grades.marks FROM student;").Replace(" ", "")
             );
         }
@@ -949,7 +950,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT firstname, lastname, idno, dob FROM student WHERE initials = \"test\" ALLOW FILTERING;").Replace(" ", "")
             );
         }
@@ -979,7 +980,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, idno, title, aka, initials, firstname, lastname, dob, genderid, address, registered, grades FROM student;").Replace(" ", "")
             );
         }
@@ -1009,7 +1010,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("SELECT studentno, idno, title, aka, initials, firstname, lastname, dob, genderid, address, registered, grades FROM student;").Replace(" ", "")
             );
         }

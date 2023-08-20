@@ -1,4 +1,10 @@
-﻿using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
+﻿using CPUT.Polyglot.NoSql.Models.Translator.Executors;
+using CPUT.Polyglot.NoSql.Models.Translator.Parts;
+using CPUT.Polyglot.NoSql.Models.Views;
+using CPUT.Polyglot.NoSql.Models.Views.Shared;
+using CPUT.Polyglot.NoSql.Models.Views.Unified;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Parts;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex;
 using CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Simple;
@@ -10,6 +16,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared.Op
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using Pipelines.Sockets.Unofficial.Arenas;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
@@ -21,7 +28,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     {
         protected string Target = "cassandra";
 
-        public override string Fetch()
+        public override OutputPart Fetch()
         {
             Console.WriteLine("Starting Cassandra - Fetch");
 
@@ -30,22 +37,31 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             //set expression parts
             var targetQuery = ConvertToSelectModel();
 
-            //pass query expresion
-            var match = new QueryPart(targetQuery.ToArray());
+            if (targetQuery.Count() > 0)
+            {
+                //pass query expresion
+                var match = new QueryPart(targetQuery.ToArray());
 
-            //initialise cassandra query generator
-            var generator = new CassandraGenerator(query);
+                //initialise cassandra query generator
+                var generator = new CassandraGenerator(query);
 
-            //kick off visitors
-            match.Accept(generator);
+                //kick off visitors
+                match.Accept(generator);
+            }
 
-            Console.WriteLine(query);
+            //Console.WriteLine(query);
 
-            return query.ToString();
+            return new OutputPart
+            {
+                Query = query.ToString(),
+                Codex = BuildCodex(targetQuery)
+            };
         }
 
-        public override string Modify()
+        public override OutputPart Modify()
         {
+            var output = new OutputPart();
+
             Console.WriteLine("Starting Cassandra - Modify");
 
             var query = new StringBuilder();
@@ -53,22 +69,29 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             //set expression parts
             var targetQuery = ConvertToUpdateModel();
 
-            //pass query expresion
-            var match = new QueryPart(targetQuery.ToArray());
+            if (targetQuery.Count() > 0)
+            {
+                //pass query expresion
+                var match = new QueryPart(targetQuery.ToArray());
 
-            //initialise cassandra query generator
-            var generator = new CassandraGenerator(query);
+                //initialise cassandra query generator
+                var generator = new CassandraGenerator(query);
 
-            //kick off visitors
-            match.Accept(generator);
+                //kick off visitors
+                match.Accept(generator);
+            }
 
             Console.WriteLine(query);
 
-            return query.ToString();
+            output.Query = query.ToString();
+
+            return output;
         }
 
-        public override string Add()
+        public override OutputPart Add()
         {
+            var output = new OutputPart();
+
             Console.WriteLine("Starting Cassandra - Add");
 
             var query = new StringBuilder();
@@ -76,18 +99,23 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             //set expression parts
             var targetQuery = ConvertToAddModel();
 
-            //pass query expresion
-            var match = new QueryPart(targetQuery.ToArray());
+            if (targetQuery.Count() > 0)
+            {
+                //pass query expresion
+                var match = new QueryPart(targetQuery.ToArray());
 
-            //initialise cassandra query generator
-            var generator = new CassandraGenerator(query);
+                //initialise cassandra query generator
+                var generator = new CassandraGenerator(query);
 
-            //kick off visitors
-            match.Accept(generator);
+                //kick off visitors
+                match.Accept(generator);
+            }
 
             Console.WriteLine(query);
 
-            return query.ToString();
+            output.Query = query.ToString();
+
+            return output;
         }
 
         #region Expression Parts
@@ -117,7 +145,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                 if(FilterExpr != null)
                 {
-                    if(!IsConditionIndexed(parts))
+                    if(!DetermineIfIndexed(parts))
                         parts.Add(new AllowFilterPart());
                 }
             }
@@ -188,7 +216,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         {
                             parts.Add(new PropertyPart(mappedProperty));
                             parts.Add(new SeparatorPart(","));
-                        };
+                        }
                     }
                     else if (part is FunctionExpr)
                     {
@@ -196,17 +224,14 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                         foreach (var func in expr.Value)
                         {
-                            BaseExpr.BaseExpr @base;
-
-                            if (func is PropertyExpr)
-                                @base = (PropertyExpr)func;
-                            else
-                                @base = (JsonExpr)func;
+                            dynamic @base = func is PropertyExpr ? ((PropertyExpr)func) : ((JsonExpr)func);
 
                             var mappedProperty = GetMappedProperty(@base, Target);
 
                             if (mappedProperty != null && mappedProperty.Link != null)
                             {
+                                mappedProperty.AggregateType = expr.Type;
+
                                 parts.Add(
                                     new NativeFunctionPart(
                                         new PropertyPart(mappedProperty), expr.Type)
@@ -246,7 +271,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             .FirstOrDefault();
 
                         if (link != null)
-                            parts.Add(new TablePart(link.Reference, ""));
+                            parts.Add(new TablePart(link.Reference, "", data.Value));
                     }
                 }
             }
@@ -271,8 +296,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var operatorPart = new OperatorPart(operatorExpr.Operator, Database.CASSANDRA);
                         var comparePart = new ComparePart(operatorExpr.Compare, Database.CASSANDRA);
 
-                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target,(int)Database.CASSANDRA);
-                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.CASSANDRA);
+                        var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                        var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
                         parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
@@ -301,8 +326,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
                             var operatorPart = new OperatorPart(operatorExpr.Operator, Database.CASSANDRA);
 
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.CASSANDRA);
-                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.CASSANDRA);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
                             exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
                             exprs.Add(new SeparatorPart(","));
@@ -331,8 +356,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             {
                 foreach (var groups in PropertiesExpr.Value)
                 {
-                    var exprs = new List<IExpression>();
-
                     var leftExprs = new List<IExpression>();
                     var rightExprs = new List<IExpression>();
 
@@ -343,8 +366,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var groupExpr = (GroupExpr)part;
                             var operatorExpr = (OperatorExpr)groupExpr.Value;
 
-                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target, (int)Database.CASSANDRA);
-                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target, (int)Database.CASSANDRA);
+                            var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
+                            var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
                             if (leftPart != null && rightPart != null)
                             {
@@ -374,7 +397,211 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return parts.ToArray();
         }
 
-        private bool IsConditionIndexed(List<IExpression> parts)
+        private LinkedProperty GetMappedProperty(BaseExpr.BaseExpr baseExpr, string database)
+        {
+            LinkedProperty mappedProperty = new LinkedProperty();
+
+            dynamic? expr = baseExpr is PropertyExpr ? ((PropertyExpr)baseExpr) :
+                            baseExpr is TermExpr ? ((TermExpr)baseExpr) :
+                            baseExpr is OrderByPropertyExpr ? ((OrderByPropertyExpr)baseExpr) :
+                            baseExpr is JsonExpr ? ((JsonExpr)baseExpr) : default;
+
+            if (expr != null)
+            {
+                mappedProperty.Type = baseExpr.GetType();
+                mappedProperty.Property = expr.Value;
+                mappedProperty.AliasIdentifier = expr.AliasIdentifier;
+
+                //if (expr.GetType().GetProperty("AliasName") != null)
+                //    mappedProperty.AliasName = expr.AliasName;
+
+                if (DataModelExpr != null)
+                {
+                    DataExpr dataExpr;
+
+                    if (!string.IsNullOrEmpty(mappedProperty.AliasIdentifier))
+                        dataExpr = DataModelExpr.Value.Cast<DataExpr>().ToList().Single(x => x.AliasIdentifier == mappedProperty.AliasIdentifier);
+                    else
+                        dataExpr = DataModelExpr.Value.Cast<DataExpr>().First();
+
+                    if (mappedProperty.Property.IndexOf('.') > -1)
+                    {
+                        var iterator = 0;
+
+                        Resources resource = null;
+                        Resources prevresource = null;
+
+                        mappedProperty.Link = new Link();
+
+                        var @base = Assistor.USchema.Single(x => x.View.Name == dataExpr.Value);
+
+                        var target = (Database)Enum.Parse(typeof(Database), database.ToUpper());
+
+                        //get link references based on the data model
+                        var references = @base.View.Resources
+                                        .Where(x => x.Property == "base")
+                                        .SelectMany(x => x.Link.Where(x => x.Target == database))
+                                        .First();
+
+                        //get all linked properties, model, etc
+                        var native = Assistor.NSchema[(int)target]
+                            .SelectMany(s => s.Model)
+                            .Where(x => x.Name == references.Reference)
+                            .FirstOrDefault();
+
+                        foreach (var reference in mappedProperty.Property.Split('.'))
+                        {
+                            if (iterator == 0)
+                            {
+                                //set base reference i.e first reference in json path
+                                resource = @base.View.Resources.Single(x => x.Property == reference);
+                            }
+                            else
+                            {
+                                @base = Assistor.USchema.Single(x => x.View.Name == prevresource?.Type);
+
+                                resource = @base.View.Resources.Single(x => x.Property == reference);
+                            }
+
+                            if (resource.Metadata != "class")
+                            {
+                                var link = SearchAndFindPropertyLink(prevresource?.Property, reference, database);
+
+                                if (link != null)
+                                {
+                                    var field = Assistor.NSchema[(int)target]
+                                        .SelectMany(x => x.Model.Where(x => x.Name == link.Reference))
+                                        .SelectMany(x => x.Properties.Where(x => x.Property == link.Property))
+                                        .First();
+
+                                    //find root 
+                                    var path = GetPropertyPath(native.Name, link.Reference, target);
+
+                                    if (!string.IsNullOrEmpty(path))
+                                    {
+                                        if (path != dataExpr.Value)
+                                            mappedProperty.Link.Property = path + "." + field.Property;
+                                        else
+                                            mappedProperty.Link.Property = field.Property;
+                                    }
+                                    else
+                                        mappedProperty.Link.Property = field.Property;
+
+                                    mappedProperty.Link.Reference = link.Reference;
+                                    mappedProperty.Link.Target = link.Target;
+                                    mappedProperty.SourceReference = @base.View.Name;
+
+                                }
+                                else
+                                    mappedProperty.Link = default;
+                            }
+
+                            prevresource = resource;
+                            iterator++;
+                        }
+                    }
+                    else
+                    {
+                        mappedProperty.Link = SearchAndFindPropertyLink(dataExpr.Value, mappedProperty.Property, database);
+                        mappedProperty.SourceReference = dataExpr.Value;
+                    }
+
+                }
+            }
+
+            return mappedProperty;
+        }
+
+        private PropertyPart? LeftRightPart(OperatorExpr operatorExpr, DirectionType direction, string database)
+        {
+            if (DirectionType.Left == direction)
+            {
+                var left = GetMappedProperty(operatorExpr.Left, database);
+
+                if (left.Link != null)
+                    return new PropertyPart(left);
+            }
+
+            else
+            {
+                if (operatorExpr.Right is PropertyExpr || operatorExpr.Right is TermExpr || operatorExpr.Right is JsonExpr)
+                {
+                    var right = GetMappedProperty(operatorExpr.Right, database);
+
+                    if (right.Link != null)
+                        return new PropertyPart(right);
+                }
+                else
+                    return new PropertyPart(operatorExpr.Right);
+            }
+
+            return default;
+        }
+
+        private OrderByPart GetOrderPart(string database)
+        {
+            OrderByPart part = null;
+
+            if (OrderByExpr != null)
+            {
+                var parts = new List<IExpression>();
+
+                foreach (var expr in OrderByExpr.Properties)
+                {
+                    var mappedProperty = GetMappedProperty((OrderByPropertyExpr)expr, database);
+
+                    if (mappedProperty != null)
+                    {
+                        parts.Add(new OrderByPropertyPart(mappedProperty.Link, (OrderByPropertyExpr)expr));
+                        parts.Add(new SeparatorPart(","));
+                    }
+                }
+
+                if (parts.Count > 0)
+                    parts.RemoveAt(parts.Count - 1);
+
+                part = new OrderByPart(parts.ToArray());
+            }
+
+            return part;
+        }
+
+        private string GetPropertyPath(string @base, string propertyReference, Database target)
+        {
+            var path = string.Empty;
+
+            var models = Assistor.NSchema[(int)target]
+                                      .SelectMany(x => x.Model)
+                                      .Where(x => x.Properties.Exists(t => t.Property == propertyReference))
+                                      .FirstOrDefault();
+            //x.Name == modelReference &&
+            //string modelReference,
+            if (models != null)
+            {
+                if (@base == models.Name)
+                    path = propertyReference;
+                else
+                {
+                    var test = GetPropertyPath(@base, models.Name, target);
+
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        if (string.IsNullOrEmpty(test))
+                            path = models.Name + "." + propertyReference;
+                        else
+                            path = test + "." + propertyReference;
+                    }
+
+                    else
+                        path = path + "." + test;
+                }
+            }
+
+            return path;
+
+        }
+
+        private bool DetermineIfIndexed(List<IExpression> parts)
         {
             var properties = parts
                         .Where(x => x.GetType().Equals(typeof(ConditionPart)))
@@ -385,21 +612,112 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         .Where(x => x.Left.GetType().Equals(typeof(PropertyPart)))
                         .Select(x => x.Left).ToList();
 
-            if(properties != null && properties.Count() > 0)
-            {
-                var indexedProperties = Assistor.NSchema[(int)Database.CASSANDRA]
-                     .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                     .Where(x => (x.Indexed))
-                     .Union(
-                             Assistor.NSchema[(int)Database.CASSANDRA]
+            var clusteredIndexes = Assistor.NSchema[(int)Database.CASSANDRA]
                              .SelectMany(x => x.Model.SelectMany(x => x.Properties))
-                             .Where(x => (x.Key))).ToList();
+                             .Where(x => x.Key)
+                             .Select(x => x.Property).ToList();
 
-                if (indexedProperties != null)
-                    return properties.Exists(x => indexedProperties.Exists(y => y.Property == x.Name));
+            var nonClusteredIndexes = Assistor.NSchema[(int)Database.CASSANDRA]
+                             .SelectMany(x => x.Model.SelectMany(x => x.Properties))
+                             .Where(x => (x.Indexed))
+                             .Select(x => x.Property).ToList();
+
+           
+            if (properties != null && properties.Count() > 0)
+            {
+                var count = clusteredIndexes.Count(x => properties.Select(x => x.Name).Contains(x));
+
+                if (count == clusteredIndexes.Count)
+                    return true;
+                else
+                {
+                    count = nonClusteredIndexes.Count(x => properties.Select(x => x.Name).Contains(x));
+
+                    if (count > 1)
+                        return true;
+                }
             }
 
             return default;
+        }
+
+        private Codex BuildCodex(List<IExpression> parts)
+        {
+            FromProperty from;
+            ToProperty to;
+
+            var codex = new Codex
+            {
+                Target = Database.CASSANDRA,
+                PropertyModel = new List<Model>(),
+                DataModel = DataModelExpr
+            };
+
+            var fromPart = (FromPart?)parts.SingleOrDefault(x => x.GetType().Equals(typeof(FromPart)));
+
+            if(fromPart != null)
+            {
+                foreach (TablePart table in fromPart.Properties.Where(x => x.GetType().Equals(typeof(TablePart))))
+                {
+                    var model = new Model
+                    {
+                        Name = table.Source,
+                        Views = new Dictionary<FromProperty, ToProperty>()
+                    };
+
+                    var selectPart = (SelectPart?)parts.SingleOrDefault(x => x.GetType().Equals(typeof(SelectPart)));
+
+                    if(selectPart != null)
+                    {
+                        foreach (var select in selectPart.Properties)
+                        {
+                            if(select is PropertyPart)
+                            {
+                                var property = (PropertyPart)select;
+
+                                from = new FromProperty
+                                {
+                                    Name = property.Name,
+                                    Alias = property.AliasName
+                                };
+
+                                to = new ToProperty
+                                {
+                                    Name = property.Source
+                                };
+
+                                model.Views.Add(from, to);
+                            }
+                            else if (select is NativeFunctionPart)
+                            {
+                                var function = (NativeFunctionPart)select;
+
+                                if(function.Property is PropertyPart)
+                                {
+                                    var property = (PropertyPart)function.Property;
+
+                                    from = new FromProperty
+                                    {
+                                        Name = property.Name,
+                                        Alias = property.AliasName
+                                    };
+
+                                    to = new ToProperty
+                                    {
+                                        Name = property.Source
+                                    };
+
+                                    model.Views.Add(from, to);
+                                }
+                            }
+                        }
+                    }
+
+                    codex.PropertyModel.Add(model);
+                }
+            }
+            
+            return codex;
         }
     }
 }

@@ -91,7 +91,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append(" " + part.Left.Name + " " + part.Operator.Type + " ");
 
             if (part.Right.Type == "string")
-                _query.Append("\"" + part.Right.Name + "\"");
+                _query.Append("'" + part.Right.Name + "'");
             else
                 _query.Append(part.Right.Name);
         }
@@ -132,11 +132,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
                     if (prop.Type == "string")
                     {
-                        _query.Append("\"");
+                        _query.Append("'");
 
                         prop.Accept(this);
 
-                        _query.Append("\"");
+                        _query.Append("'");
                     }
                     else
                         prop.Accept(this);
@@ -189,13 +189,67 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
         {
             _query.Append(" WHERE ");
 
-            foreach (var expr in part.Logic)
+            var filters = part.Logic
+                .Where(x => x.GetType().Equals(typeof(LogicalPart)))
+                .Select(x => (LogicalPart)x)
+                .Where(x => !string.IsNullOrEmpty(x.Compare.Type) && (x.Compare.Type.ToUpper() == "OR" || x.Compare.Type.ToUpper() == "AND"))
+                .OrderBy(x => x.Left.Name);
+
+            if (filters.Count() > 0)
             {
-                if (expr is LogicalPart)
-                    ((LogicalPart)expr).Accept(this);
-                else if (expr is ConditionPart)
-                    ((ConditionPart)expr).Accept(this);
+                var property = string.Empty;
+                int next = 0;
+                int iterator = 0;
+
+                var filter = part.Logic
+                    .Where(x => x.GetType().Equals(typeof(LogicalPart)))
+                    .Select(x => (LogicalPart)x)
+                    .OrderBy(x => x.Left.Name)
+                    .ToList();
+
+                foreach (var expr in filter)
+                {
+                    if((iterator + 1) < (filter.Count() - 1))
+                        next = iterator + 1;
+
+                    if (property != expr.Left.Name)
+                    {
+                        if(!string.IsNullOrEmpty(property))
+                            _query.Append(" AND ");
+
+                        _query.Append(expr.Left.Name + " IN (");
+                    }
+                        
+                    if (expr.Right.Type == "string")
+                        _query.Append("'" + expr.Right.Name + "'");
+                    else
+                        _query.Append(expr.Right.Name );
+
+                    if (iterator == (filter.Count() - 1))
+                        _query.Append(")");
+                    else
+                    {
+                        if (filter[next].Left.Name == expr.Left.Name)
+                            _query.Append(",");
+                        else
+                            _query.Append(")");
+                    }
+
+                    property = expr.Left.Name;
+                    iterator++;
+                }
             }
+            else
+            {
+                foreach (var expr in part.Logic)
+                {
+                    if (expr is LogicalPart)
+                        ((LogicalPart)expr).Accept(this);
+                    else if (expr is ConditionPart)
+                        ((ConditionPart)expr).Accept(this);
+                }
+            }
+
         }
 
         public void Visit(LogicalPart part)
@@ -208,7 +262,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
             _query.Append(" " + part.Operator.Type + " ");
 
             if (part.Right.Type == "string")
-                _query.Append("\"" + part.Right.Name + "\"");
+                _query.Append("'" + part.Right.Name + "'");
             else
                 _query.Append(part.Right.Name);
         }

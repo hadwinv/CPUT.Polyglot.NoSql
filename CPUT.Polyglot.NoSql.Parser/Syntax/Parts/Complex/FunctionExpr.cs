@@ -5,7 +5,6 @@ namespace CPUT.Polyglot.NoSql.Parser.SyntaxExpr.Parts.Complex
 {
     public class FunctionExpr : BaseExpr
     {
-
         public BaseExpr[] Value { get; set; }
 
         public AggregateType Type { get; set; }

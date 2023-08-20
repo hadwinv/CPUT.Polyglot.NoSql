@@ -5,6 +5,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 {
     public class AggregatePart : IExpression
     {
+        internal string CollectionName { get; set; }
+
         internal MatchPart? Match { get; set; }
 
         internal UnwindGroupPart? Unwind { get; set; }
@@ -19,16 +21,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Mongo
 
         public AggregatePart()
         {
-        }
-            
-        public AggregatePart(MatchPart? match, UnwindGroupPart? unwind, ProjectPart? project, GroupByPart? groupBy, OrderByPart? orderBy, RestrictPart? restrict)
-        {
-            Match = match;
-            Unwind = unwind;
-            Project = project;
-            GroupBy = groupBy;
-            OrderBy = orderBy;
-            Restrict = restrict;
         }
 
         public void Accept(INeo4jVisitor visitor)

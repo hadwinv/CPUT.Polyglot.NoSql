@@ -17,9 +17,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Neo4j
         {
             if(mappedProperty.Link != null)
             {
-                UnwindProperty = mappedProperty.Link.Property;
-                ParentReferenceAlias = mappedProperty.Link.Reference.Substring(0, 3).ToLower();
-                UnwindedAlias = UnwindProperty.Substring(0, 3).ToLower();
+                var parts = mappedProperty.Link.Property.Split(".");
+                //parts[0].Substring(0, 4) + "." +
+                UnwindProperty =  parts[0];
+                ParentReferenceAlias = mappedProperty.Link.Reference.Substring(0, 4).ToLower();
+                UnwindedAlias = parts[0].Substring(0, 3).ToLower();
             }    
         }
 

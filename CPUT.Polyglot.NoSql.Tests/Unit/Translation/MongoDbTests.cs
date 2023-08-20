@@ -12,7 +12,9 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using Superpower;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
@@ -61,8 +63,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", "")
             );
 
         }
@@ -92,8 +94,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1}).limit(10)").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}, limit : 10}").Replace(" ", "")
             );
         }
 
@@ -122,8 +124,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", { name : 1 })").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}, sort : {name : 1}}").Replace(" ", "")
             );
         }
 
@@ -152,8 +154,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", { name : 1 , surname : 1})").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}, sort : {name : 1, surname : 1}}").Replace(" ", "")
             );
         }
 
@@ -182,8 +184,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", { name : -1 })").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}, sort : {name : -1}}").Replace(" ", "")
             );
         }
 
@@ -212,8 +214,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"id_number\" : \"62408306136\"},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', filter : {id_number : '62408306136'}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", "")
             );
 
         }
@@ -243,8 +245,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", ""));
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', filter : {$and : [{id_number : '62408306136'},{id_number : '624083061345'}]}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", ""));
         }
 
         [Test]
@@ -272,8 +274,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"},{\"id_number\" : \"624083061344\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', filter : {$and : [{id_number : '62408306136'},{id_number : '624083061345'},{id_number : '624083061344'}]}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", "")
             );
         }
 
@@ -302,8 +304,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$or\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"},{\"id_number\" : \"624083061344\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', filter : {$or : [{id_number : '62408306136'},{id_number : '624083061345'},{id_number : '624083061344'}]}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", "")
             );
         }
 
@@ -332,8 +334,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"}],\"$or\" : [{\"id_number\" : \"624083061344\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ find: 'students', filter : { $or : [{ $and : [{ id_number : '62408306136' }, { id_number : '624083061345' }] }, { id_number : '624083061344' }] }, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", "")
             );
         }
 
@@ -361,8 +363,8 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate([{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$enroll.subjects.name\", duration : \"$enroll.subjects.duration\" }}])").Replace(" ", "")
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
+                ("{ aggregate: 'students', pipeline: [ { $unwind : {path: '$enroll.subject'}},{ $project : { _id: '$_id', e_s_name : '$enroll.subject.name', e_s_duration : '$enroll.subject.duration'}}],cursor: { }}").Replace(" ", "")
             );
         }
 
@@ -391,9 +393,16 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate([{ $match : {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$enroll.subjects.name\", duration : \"$enroll.subjects.duration\" }}])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                aggregate: 'students', 
+                    pipeline: [ 
+                        { $match : { 'enroll.subject.duration' : { $gt : 0 } }},
+                        { $unwind : {path: '$enroll.subject'}},
+                        { $project : { _id: '_id', e_s_name : '$enroll.subject.name', e_s_duration : '$enroll.subject.duration'}}
+                    ],
+                    cursor: { }}", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -422,34 +431,20 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $match : {" +
-                "       \"$or\" : [" +
-                "           {\"id_number\" : \"35808404617\"}," +
-                "           {\"id_number\" : \"21708702176\"}" +
-                "       ]," +
-                "       \"$and\" : [" +
-                "           {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }" +
-                "       ]}}," +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $sum: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $match: { $or: [{ id_number: '35808404617' }, { id_number: '21708702176' }], 'enroll.subject.duration' : { $gt: 0 } } },
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $sum: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -479,34 +474,20 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $match : {" +
-                "       \"$or\" : [" +
-                "           {\"id_number\" : \"35808404617\"}," +
-                "           {\"id_number\" : \"21708702176\"}" +
-                "       ]," +
-                "       \"$and\" : [" +
-                "           {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }" +
-                "       ]}}," +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $count: {}}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                  aggregate: 'students',
+                    pipeline: [
+                        { $match: { $or: [{ id_number: '35808404617' }, { id_number: '21708702176' }], 'enroll.subject.duration' : { $gt: 0 } } },
+                        { $unwind: { path: '$enroll.subject'} },
+                        { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                        { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $count: {}} } },
+                        { $sort: { name: 1 } },
+                        { $limit: 2}
+                    ],
+                    cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -535,34 +516,20 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $match : {" +
-                "       \"$or\" : [" +
-                "           {\"id_number\" : \"35808404617\"}," +
-                "           {\"id_number\" : \"21708702176\"}" +
-                "       ]," +
-                "       \"$and\" : [" +
-                "           {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }" +
-                "       ]}}," +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $avg: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-        );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $match: { $or: [{ id_number: '35808404617' }, { id_number: '21708702176' }], 'enroll.subject.duration' : { $gt: 0 } } },
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $avg: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -591,34 +558,20 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $match : {" +
-                "       \"$or\" : [" +
-                "           {\"id_number\" : \"35808404617\"}," +
-                "           {\"id_number\" : \"21708702176\"}" +
-                "       ]," +
-                "       \"$and\" : [" +
-                "           {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }" +
-                "       ]}}," +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $min: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $match: { $or: [{ id_number: '35808404617' }, { id_number: '21708702176' }], 'enroll.subject.duration' : { $gt: 0 } } },
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $min: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -647,34 +600,20 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $match : {" +
-                "       \"$or\" : [" +
-                "           {\"id_number\" : \"35808404617\"}," +
-                "           {\"id_number\" : \"21708702176\"}" +
-                "       ]," +
-                "       \"$and\" : [" +
-                "           {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }" +
-                "       ]}}," +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $max: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-        );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $match: { $or: [{ id_number: '35808404617' }, { id_number: '21708702176' }], 'enroll.subject.duration' : { $gt: 0 } } },
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $max: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -682,7 +621,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.name, s.surname, s.idnumber, nsum(s.transcript.subject.duration) }
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nsum(s.register.subject.duration) }
                     DATA_MODEL { student AS s}
                     RESTRICT_TO { 2 }
                     ORDER_BY { s.name }
@@ -702,26 +641,19 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $sum: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $sum: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -729,7 +661,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.name, s.surname, s.idnumber, ncount(s.transcript.subject.duration) }
+            var input = @"FETCH { s.name, s.surname, s.idnumber, ncount(s.register.subject.duration) }
                     DATA_MODEL { student AS s }
                     RESTRICT_TO { 2 }
                     ORDER_BY { s.name }
@@ -749,26 +681,20 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $count: {}}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-            );
+
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $count: {}} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -776,7 +702,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.name, s.surname, s.idnumber, navg(s.transcript.subject.duration) }
+            var input = @"FETCH { s.name, s.surname, s.idnumber, navg(s.register.subject.duration) }
                     DATA_MODEL { student AS s}
                     RESTRICT_TO { 2 }
                     ORDER_BY { s.name }
@@ -799,26 +725,19 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $avg: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-        );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $avg: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -826,7 +745,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.name, s.surname, s.idnumber, nmin(s.transcript.subject.duration) }
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nmin(s.register.subject.duration) }
                     DATA_MODEL { student AS s}
                     RESTRICT_TO { 2 }
                     ORDER_BY { s.name }
@@ -846,26 +765,19 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $min: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $min: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -873,7 +785,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
         {
             List<Constructs> results = null;
 
-            var input = @"FETCH { s.name, s.surname, s.idnumber, nmax(s.transcript.subject.duration) }
+            var input = @"FETCH { s.name, s.surname, s.idnumber, nmax(s.register.subject.duration) }
                     DATA_MODEL { student AS s}
                     RESTRICT_TO { 2 }
                     ORDER_BY { s.name }
@@ -893,26 +805,19 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate(" +
-                "[" +
-                "   { $unwind : {" +
-                "       path: \"$enroll.subjects\"}}," +
-                "   { $project : { " +
-                "       _id: \"$_id\", " +
-                "       name : \"$name\", " +
-                "       surname : \"$surname\", " +
-                "       id_number : \"$id_number\", " +
-                "       subjects : \"$enroll.subjects\"}}," +
-                "   { $group : { " +
-                "       _id: \"$_id\", " +
-                "       name : { \"$first\" : \"$name\"}, " +
-                "       surname : { \"$first\" : \"$surname\"}, " +
-                "       id_number : { \"$first\" : \"$id_number\"}, " +
-                "       duration: { $max: \"$subjects.duration\"}}}, " +
-                "   { $sort : { name : 1 } }, " +
-                "   { $limit : 2 }])").Replace(" ", "")
-                );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project: { _id: '$_id', name: '$name', surname: '$surname', id_number: '$id_number', subject: '$enroll.subject'} },
+                            { $group: { _id: '$_id', name: { '$first' : '$name'}, surname: { '$first' : '$surname'}, id_number: { '$first' : '$id_number'}, duration: { $max: '$subject.duration'} } },
+                            { $sort: { name: 1 } },
+                            { $limit: 2}
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -940,9 +845,17 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({\"id_number\" : \"62408306136\"},{$set: {\"name\" : \"Chuck T\"}})").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    update: 'students',
+                    updates: [
+                            {
+                              q: { id_number : '62408306136' },
+                              u: { $set: {name : 'Chuck T'}} 
+                            }
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -969,9 +882,17 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({\"id_number\" : \"62408306136\"},{$set: {\"name\" : \"Chuck T\", \"surname\" : \"Tylers\"}})").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    update: 'students',
+                    updates: [
+                            {
+                              q: { id_number : '62408306136' },
+                              u: { $set: {name : 'Chuck T'}, {surname : 'Tylers'}} 
+                            }
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -997,9 +918,17 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({},{$set: {\"name\" : \"Chuck T\"}})").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    update: 'students',
+                    updates: [
+                            {
+                              q: { },
+                              u: { $set: {name : 'Chuck T'}} 
+                            }
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -1025,9 +954,17 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").updateMany({},{$set: {\"name\" : \"Chuck T\", \"surname\" : \"Tylers\"}})").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    update: 'students',
+                    updates: [
+                            {
+                              q: { },
+                              u: { $set: {name : 'Chuck T'}, {surname : 'Tylers'}} 
+                            }
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -1054,9 +991,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\"}])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    insert: 'students',
+                    documents: [
+                             { name: 'Chuck T'}
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -1083,9 +1025,14 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    insert: 'students',
+                    documents: [
+                             { name: 'Chuck T', surname: 'Tylers' }
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -1112,9 +1059,15 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").insertMany([{\"name\" : \"Chuck T\",  \"surname\" : \"Tylers\"}, {\"name\" : \"Taylor\",  \"surname\" : \"Test\"}])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    insert: 'students',
+                    documents: [
+                             { name: 'Chuck T', surname: 'Tylers' },
+                             { name: 'Taylor', surname: 'Test' }
+                        ]
+                    }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
         }
 
         [Test]
@@ -1142,9 +1095,18 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
-                ("db.getCollection(\"students\").aggregate([{ $match : {\"enroll.subjects.duration\": { $gt : NumberLong(0) } }},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$enroll.subjects.name\", duration : \"$enroll.subjects.duration\" }}])").Replace(" ", "")
-            );
+            var output = String.Compare(@"{ 
+                    aggregate: 'students',
+                        pipeline: [
+                            { $match : { 'enroll.subject.duration' : { $gt : 0 } }},
+                            { $unwind: { path: '$enroll.subject'} },
+                            { $project : { _id: '$_id', e_s_name : '$enroll.subject.name', e_s_duration : '$enroll.subject.duration'} }
+                        ],
+                        cursor: { }
+            }", results[0].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
+
         }
 
     }

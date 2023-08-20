@@ -66,7 +66,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", "")
             );
         }
@@ -96,7 +96,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) RETURN pup.name, pup.surname, pup.idnum, pup.dob LIMIT 10").Replace(" ", "")
             );
         }
@@ -126,7 +126,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) RETURN pup.title, pup.name, pup.surname, pup.idnum, pup.dob ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
@@ -156,7 +156,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) RETURN pup.title, pup.name, pup.surname, pup.idnum, pup.dob ORDER BY pup.name ASC, pup.surname ASC").Replace(" ", "")
             );
         }
@@ -186,7 +186,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) RETURN pup.name, pup.surname, pup.idnum, pup.dob ORDER BY pup.name DESC").Replace(" ", "")
             );
         }
@@ -216,7 +216,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil )  WHERE pup.idnum = \"62408306136\" RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", "")
             );
         }
@@ -246,7 +246,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil )  WHERE pup.idnum = \"62408306136\" AND pup.idnum = \"624083061345\" RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", "")
 
             );
@@ -277,7 +277,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil )  WHERE pup.idnum = \"62408306136\" AND pup.idnum = \"624083061345\" AND pup.idnum = \"624083061344\" RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", "")
             );
         }
@@ -307,7 +307,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil )  WHERE pup.idnum = \"62408306136\" OR pup.idnum = \"624083061345\" OR pup.idnum = \"624083061344\" RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", "")
             );
         }
@@ -337,7 +337,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil )  WHERE pup.idnum = \"62408306136\" AND pup.idnum = \"624083061345\" OR pup.idnum = \"624083061344\" RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", "")
             );
         }
@@ -367,7 +367,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress ) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, res.score LIMIT 10").Replace(" ", "")
             );
         }
@@ -399,7 +399,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res WITH res WHERE res.score > 0 AND res.grade = \"A\" RETURN res.grade, res.score").Replace(" ", "")
             );
         }
@@ -429,7 +429,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.name, pup.surname,  pup.idnum, res.grade,  res.score LIMIT 10").Replace(" ", "")
             );
         }
@@ -459,7 +459,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.title, pup.name, pup.surname, cou.description, res.score LIMIT 10").Replace(" ", "")
             );
         }
@@ -489,7 +489,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (sub:subject)<-[:CONTAINS]-(cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.title, pup.name, pup.surname, cou.description, sub.description, res.score LIMIT 10").Replace(" ", "")
             );
         }
@@ -518,7 +518,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, SUM(res.score) as score").Replace(" ", "")
             );
         }
@@ -547,7 +547,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, AVG(res.score) as score").Replace(" ", "")
             );
         }
@@ -576,7 +576,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, COUNT(res.score) as score").Replace(" ", "")
             );
         }
@@ -605,7 +605,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, MIN(res.score) as score").Replace(" ", "")
             );
         }
@@ -634,7 +634,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, MAX(res.score) as score").Replace(" ", "")
             );
         }
@@ -664,7 +664,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res WITH pup, cou, res WHERE res.score > 0 RETURN pup.title, pup.name, pup.surname, cou.description, SUM(res.score) as score LIMIT 10").Replace(" ", "")
             );
         }
@@ -694,7 +694,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                  ("MATCH (cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res WITH pup, cou, res WHERE res.score > 0 RETURN pup.title, pup.name, pup.surname, cou.description, AVG(res.score) as score LIMIT 10").Replace(" ", "")
              );
         }
@@ -724,7 +724,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res WITH pup, cou, res WHERE res.score > 0 RETURN pup.title, pup.name, pup.surname, cou.description, COUNT(res.score) as score LIMIT 10").Replace(" ", "")
             );
         }
@@ -754,7 +754,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res WITH pup, cou, res WHERE res.score > 0 RETURN pup.title, pup.name, pup.surname, cou.description, MIN(res.score) as score LIMIT 10").Replace(" ", "")
             );
         }
@@ -784,7 +784,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (cou:course)<-[:ENROLLED_IN]-(pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res WITH pup, cou, res WHERE res.score > 0 RETURN pup.title, pup.name, pup.surname, cou.description, MAX(res.score) as score LIMIT 10").Replace(" ", "")
             );
         }
@@ -814,7 +814,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 (@"MATCH (pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.name, pup.surname, pup.idnum, res.grade, SUM(res.score) as score ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
@@ -844,7 +844,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 (@"MATCH (pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.name, pup.surname, pup.idnum, res.grade, AVG(res.score) as score ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
@@ -871,7 +871,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
             });
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 (@"MATCH (pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.name, pup.surname, pup.idnum, res.grade, COUNT(res.score) as score ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
@@ -901,7 +901,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 (@"MATCH (pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.name, pup.surname, pup.idnum, res.grade, MIN(res.score) as score ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
@@ -931,7 +931,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 (@"MATCH (pup:pupil)-[:TRANSCRIPT]->(pro:progress) UNWIND apoc.convert.fromJsonList( pro.results) as res RETURN pup.name, pup.surname, pup.idnum, res.grade, MAX(res.score) as score ORDER BY pup.name ASC").Replace(" ", "")
             );
         }
@@ -961,7 +961,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) WHERE pup.idnum = \"62408306136\" SET pup.name = \"Chuck T\"").Replace(" ", "")
             );
         }
@@ -990,7 +990,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) WHERE pup.idnum = \"62408306136\" SET pup.name = \"Chuck T\", pup.surname = \"Tylers\"").Replace(" ", "")
             );
         }
@@ -1018,7 +1018,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) SET pup.name = \"Chuck T\"").Replace(" ", "")
             );
         }
@@ -1046,7 +1046,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH ( pup:pupil ) SET pup.name = \"Chuck T\", pup.surname = \"Tylers\"").Replace(" ", "")
             );
         }
@@ -1075,7 +1075,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("CREATE ( pup:pupil { name : \"Chuck T\"} )").Replace(" ", "")
             );
         }
@@ -1104,7 +1104,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                  ("CREATE ( pup:pupil { name : \"Chuck T\", surname : \"Tylers\"} )").Replace(" ", "")
             );
         }
@@ -1134,7 +1134,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results = transformed.Result;
 
-            results.Select(x => x.Query.Replace(" ", "")).Should().Equal(
+            results.Select(x => x.Result.Query.Replace(" ", "")).Should().Equal(
                 ("MATCH (pro:progress ) UNWIND apoc.convert.fromJsonList(pro.results) as res RETURN res.grade, res.score LIMIT 10").Replace(" ", "")
             );
         }

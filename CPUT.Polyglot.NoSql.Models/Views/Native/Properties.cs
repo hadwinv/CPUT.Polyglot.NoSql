@@ -11,5 +11,7 @@ namespace CPUT.Polyglot.NoSql.Models.Views.Native
         public bool Key { get; set; }
 
         public bool Indexed { get; set; }
+
+        public string Metadata { get; set; }
     }
 }

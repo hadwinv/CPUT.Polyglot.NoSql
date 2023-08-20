@@ -17,7 +17,9 @@ using NUnit.Framework;
 using NUnit.Framework.Internal;
 using StackExchange.Redis;
 using Superpower;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -68,22 +70,22 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                 .Where(x => x.Target == Utils.Database.NEO4J)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("MATCH (pup:pupil) RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").find({},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", ""));
+                .Select(x => x.Result.Query.Replace(" ", ""))
+                .Should().Equal(("{ find: 'students', projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("SELECT firstname, lastname, idno, dob FROM student;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("KEYS*").Replace(" ", ""));
         }
 
@@ -112,22 +114,22 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                 .Where(x => x.Target == Utils.Database.NEO4J)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("MATCH(pup: pupil) WHERE pup.idnum = \"62408306136\" RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").find({ \"id_number\" : \"62408306136\"},{ name: 1, surname: 1, id_number: 1, date_of_birth: 1})").Replace(" ", ""));
+                .Select(x => x.Result.Query.Replace(" ", ""))
+                .Should().Equal(("{ find: 'students', filter : {id_number : '62408306136'}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\";").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"62408306136\"").Replace(" ", ""));
         }
 
@@ -157,22 +159,22 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                .Where(x => x.Target == Utils.Database.NEO4J)
-               .Select(x => x.Query.Replace(" ", ""))
+               .Select(x => x.Result.Query.Replace(" ", ""))
                .Should().Equal(("MATCH(pup: pupil) WHERE pup.idnum = \"62408306136\" AND pup.idnum = \"624083061345\"   RETURN pup.name, pup.surname, pup.idnum, pup.dob").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").find({\"$and\" : [{\"id_number\" : \"62408306136\"},{\"id_number\" : \"624083061345\"}]},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})").Replace(" ", ""));
+                .Select(x => x.Result.Query.Replace(" ", ""))
+                .Should().Equal(("{ find: 'students', filter : {$and : [{id_number : '62408306136'},{id_number : '624083061345'}]}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}}").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"62408306136\" AND idno = \"624083061345\";").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"62408306136\"; GET \"624083061345\"").Replace(" ", ""));
         }
 
@@ -203,22 +205,22 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
               .Where(x => x.Target == Utils.Database.NEO4J)
-              .Select(x => x.Query.Replace(" ", ""))
+              .Select(x => x.Result.Query.Replace(" ", ""))
               .Should().Equal(("MATCH (pup:pupil) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, pup.dob ORDER BY pup.name ASC").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").find({\"id_number\" : \"35808404617\"},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", {name  : 1 })").Replace(" ", ""));
+                .Select(x => x.Result.Query.Replace(" ", ""))
+                .Should().Equal(("{ find: 'students', filter : {id_number : '35808404617'}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}, sort : {name : 1}}").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 
@@ -250,22 +252,22 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
               .Where(x => x.Target == Utils.Database.NEO4J)
-              .Select(x => x.Query.Replace(" ", ""))
+              .Select(x => x.Result.Query.Replace(" ", ""))
               .Should().Equal(("MATCH (pup:pupil) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, pup.dob ORDER BY pup.name ASC LIMIT 10").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").find({\"id_number\" : \"35808404617\"},{name : 1, surname : 1, id_number : 1, date_of_birth : 1})._addSpecial(\"$orderby\", {name  : 1 }).limit(10)").Replace(" ", ""));
+                .Select(x => x.Result.Query.Replace(" ", ""))
+                .Should().Equal(("{ find: 'students', filter : {id_number : '35808404617'}, projection: {name : 1, surname : 1, id_number : 1, date_of_birth : 1}, sort : {name : 1}, limit : 10}").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("SELECT firstname, lastname, idno, dob FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC  LIMIT 10;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 
@@ -297,22 +299,31 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
               .Where(x => x.Target == Utils.Database.NEO4J)
-              .Select(x => x.Query.Replace(" ", ""))
+              .Select(x => x.Result.Query.Replace(" ", ""))
               .Should().Equal(("MATCH (pup:pupil)-[:ENROLLED_IN]->(cou:course)-[:CONTAINS]->(sub:subject) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, cou.description, AVG(sub.term) as term ORDER BY pup.name ASC LIMIT 10").Replace(" ", ""));
 
-            results
-                .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").aggregate([{ $match : {\"id_number\" : \"35808404617\"}},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$name\", surname : \"$surname\", id_number : \"$id_number\", name : \"$name\", subjects : \"$enroll.subjects\"}},{ $group : { _id: \"$_id\", name : { \"$first\" : \"$name\"}, surname : { \"$first\" : \"$surname\"}, id_number : { \"$first\" : \"$id_number\"}, name : { \"$first\" : \"$name\"}, duration: { $avg: \"$subjects.duration\"}}}, { $sort : { name  : 1  } }, { $limit : 10 }])").Replace(" ", ""));
+            var output = String.Compare(@"{ 
+                    aggregate: 'students', 
+                    pipeline: [ 
+                        { $match : { id_number : '35808404617' }},
+                        { $unwind : {path: '$enroll.subject'}},
+                        { $project : { _id: '$_id', name : '$name', surname : '$surname', id_number : '$id_number', coursename : '$enroll.course.name', subject : '$enroll.subject'}},
+                        { $group : { _id: '$_id', name : { '$first' : '$name'}, surname : { '$first' : '$surname'}, id_number : { '$first' : '$id_number'}, coursename : { '$first' : '$coursename'}, duration: { $avg: '$subject.duration'}}},
+                        { $sort: {name  : 1 }},
+                        { $limit: 10}
+                    ],
+                    cursor: { }}", results[1].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal((" SELECT firstname, lastname, idno, registered.course,  AVG(registered.subject.period) as period FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC  LIMIT 10;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 
@@ -344,22 +355,31 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                 .Where(x => x.Target == Utils.Database.NEO4J)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("MATCH (pup:pupil)-[:ENROLLED_IN]->(cou:course)-[:CONTAINS]->(sub:subject) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, cou.description, SUM(sub.term) as term ORDER BY pup.name ASC LIMIT 10").Replace(" ", ""));
 
-            results
-                .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").aggregate([{ $match : {\"id_number\" : \"35808404617\"}},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$name\", surname : \"$surname\", id_number : \"$id_number\", name : \"$name\", subjects : \"$enroll.subjects\"}},{ $group : { _id: \"$_id\", name : { \"$first\" : \"$name\"}, surname : { \"$first\" : \"$surname\"}, id_number : { \"$first\" : \"$id_number\"}, name : { \"$first\" : \"$name\"}, duration: { $sum: \"$subjects.duration\"}}}, { $sort : { name  : 1  } }, { $limit : 10 }])").Replace(" ", ""));
+            var output = String.Compare(@"{ 
+                    aggregate: 'students', 
+                    pipeline: [ 
+                        { $match : { id_number : '35808404617' }},
+                        { $unwind : {path: '$enroll.subject'}},
+                        { $project : { _id: '$_id', name : '$name', surname : '$surname', id_number : '$id_number', coursename : '$enroll.course.name', subject : '$enroll.subject'}},
+                        { $group : { _id: '$_id', name : { '$first' : '$name'}, surname : { '$first' : '$surname'}, id_number : { '$first' : '$id_number'}, coursename : { '$first' : '$coursename'}, duration: { $sum: '$subject.duration'}}},
+                        { $sort: {name  : 1 }},
+                        { $limit: 10}
+                    ],
+                    cursor: { }}", results[1].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal((" SELECT firstname, lastname, idno, registered.course,  SUM(registered.subject.period) as period FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC  LIMIT 10;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 
@@ -391,22 +411,31 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                 .Where(x => x.Target == Utils.Database.NEO4J)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("MATCH (pup:pupil)-[:ENROLLED_IN]->(cou:course)-[:CONTAINS]->(sub:subject) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, cou.description, MIN(sub.term) as term ORDER BY pup.name ASC LIMIT 10").Replace(" ", ""));
 
-            results
-                .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").aggregate([{ $match : {\"id_number\" : \"35808404617\"}},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$name\", surname : \"$surname\", id_number : \"$id_number\", name : \"$name\", subjects : \"$enroll.subjects\"}},{ $group : { _id: \"$_id\", name : { \"$first\" : \"$name\"}, surname : { \"$first\" : \"$surname\"}, id_number : { \"$first\" : \"$id_number\"}, name : { \"$first\" : \"$name\"}, duration: { $min: \"$subjects.duration\"}}}, { $sort : { name  : 1  } }, { $limit : 10 }])").Replace(" ", ""));
+            var output = String.Compare(@"{ 
+                    aggregate: 'students', 
+                    pipeline: [ 
+                        { $match : { id_number : '35808404617' }},
+                        { $unwind : {path: '$enroll.subject'}},
+                        { $project : { _id: '$_id', name : '$name', surname : '$surname', id_number : '$id_number', coursename : '$enroll.course.name', subject : '$enroll.subject'}},
+                        { $group : { _id: '$_id', name : { '$first' : '$name'}, surname : { '$first' : '$surname'}, id_number : { '$first' : '$id_number'}, coursename : { '$first' : '$coursename'}, duration: { $min: '$subject.duration'}}},
+                        { $sort: {name  : 1 }},
+                        { $limit: 10}
+                    ],
+                    cursor: { }}", results[1].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal((" SELECT firstname, lastname, idno, registered.course,  MIN(registered.subject.period) as period FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC  LIMIT 10;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 
@@ -438,22 +467,31 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                 .Where(x => x.Target == Utils.Database.NEO4J)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("MATCH (pup:pupil)-[:ENROLLED_IN]->(cou:course)-[:CONTAINS]->(sub:subject) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, cou.description, MAX(sub.term) as term ORDER BY pup.name ASC LIMIT 10").Replace(" ", ""));
 
-            results
-                .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").aggregate([{ $match : {\"id_number\" : \"35808404617\"}},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$name\", surname : \"$surname\", id_number : \"$id_number\", name : \"$name\", subjects : \"$enroll.subjects\"}},{ $group : { _id: \"$_id\", name : { \"$first\" : \"$name\"}, surname : { \"$first\" : \"$surname\"}, id_number : { \"$first\" : \"$id_number\"}, name : { \"$first\" : \"$name\"}, duration: { $max: \"$subjects.duration\"}}}, { $sort : { name  : 1  } }, { $limit : 10 }])").Replace(" ", ""));
+            var output = String.Compare(@"{ 
+                    aggregate: 'students', 
+                    pipeline: [ 
+                        { $match : { id_number : '35808404617' }},
+                        { $unwind : {path: '$enroll.subject'}},
+                        { $project : { _id: '$_id', name : '$name', surname : '$surname', id_number : '$id_number', coursename : '$enroll.course.name', subject : '$enroll.subject'}},
+                        { $group : { _id: '$_id', name : { '$first' : '$name'}, surname : { '$first' : '$surname'}, id_number : { '$first' : '$id_number'}, coursename : { '$first' : '$coursename'}, duration: { $max: '$subject.duration'}}},
+                        { $sort: {name  : 1 }},
+                        { $limit: 10}
+                    ],
+                    cursor: { }}", results[1].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal((" SELECT firstname, lastname, idno, registered.course,  MAX(registered.subject.period) as period FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC  LIMIT 10;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 
@@ -485,22 +523,31 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             results
                 .Where(x => x.Target == Utils.Database.NEO4J)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("MATCH (pup:pupil)-[:ENROLLED_IN]->(cou:course)-[:CONTAINS]->(sub:subject) WHERE pup.idnum = \"35808404617\" RETURN pup.name, pup.surname, pup.idnum, cou.description, COUNT(sub.term) as term ORDER BY pup.name ASC LIMIT 10").Replace(" ", ""));
 
-            results
-                .Where(x => x.Target == Utils.Database.MONGODB)
-                .Select(x => x.Query.Replace(" ", ""))
-                .Should().Equal(("db.getCollection(\"students\").aggregate([{ $match : {\"id_number\" : \"35808404617\"}},{ $unwind : {path: \"$enroll.subjects\"}},{ $project : { _id: \"$_id\", name : \"$name\", surname : \"$surname\", id_number : \"$id_number\", name : \"$name\", subjects : \"$enroll.subjects\"}},{ $group : { _id: \"$_id\", name : { \"$first\" : \"$name\"}, surname : { \"$first\" : \"$surname\"}, id_number : { \"$first\" : \"$id_number\"}, name : { \"$first\" : \"$name\"}, duration: { $count: {}}}}, { $sort : { name  : 1  } }, { $limit : 10 }])").Replace(" ", ""));
+            var output = String.Compare(@"{ 
+                    aggregate: 'students', 
+                    pipeline: [ 
+                        { $match : { id_number : '35808404617' }},
+                        { $unwind : {path: '$enroll.subject'}},
+                        { $project : { _id: '$_id', name : '$name', surname : '$surname', id_number : '$id_number', coursename : '$enroll.course.name', subject : '$enroll.subject'}},
+                        { $group : { _id: '$_id', name : { '$first' : '$name'}, surname : { '$first' : '$surname'}, id_number : { '$first' : '$id_number'}, coursename : { '$first' : '$coursename'}, duration: { $count: {}}}},
+                        { $sort: {name  : 1 }},
+                        { $limit: 10}
+                    ],
+                    cursor: { }}", results[1].Result.Query, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols);
+
+            output.Should().Be(0);
 
             results
                 .Where(x => x.Target == Utils.Database.CASSANDRA)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal((" SELECT firstname, lastname, idno, registered.course,  COUNT(registered.subject.period) as period FROM student WHERE idno = \"35808404617\" ORDER BY firstname  ASC  LIMIT 10;").Replace(" ", ""));
 
             results
                 .Where(x => x.Target == Utils.Database.REDIS)
-                .Select(x => x.Query.Replace(" ", ""))
+                .Select(x => x.Result.Query.Replace(" ", ""))
                 .Should().Equal(("GET \"35808404617\"").Replace(" ", ""));
         }
 

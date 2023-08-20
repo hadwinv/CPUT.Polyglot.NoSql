@@ -20,7 +20,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
 
         public AddHandler(IValidator validator, ITranslate translate) : base(validator, translate)
         {
-            _translate = translate;
+            _validator = validator;
             _translate = translate;
         }
 

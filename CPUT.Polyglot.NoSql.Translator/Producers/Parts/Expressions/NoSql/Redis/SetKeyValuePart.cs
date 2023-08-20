@@ -1,4 +1,5 @@
 ﻿using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Base;
+using System.Collections.Specialized;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Redis
 {
@@ -6,9 +7,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Redis
     {
         internal string Key { get; set; }
 
-        internal string Value { get; set; }
+        internal List<string> Value { get; set; }
 
-        public SetKeyValuePart(string key, string value)
+        public SetKeyValuePart(string key, List<string> value)
         {
             Key = key;
             Value = value;

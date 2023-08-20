@@ -2,6 +2,7 @@
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Redis;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Shared;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
@@ -30,20 +31,18 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions
 
         public void Visit(KeyPart part)
         {
-            _query.Append("KEYS " + part.Value);
+            _query.Append("KEYS| " + part.Value);
         }
 
         public void Visit(SetKeyValuePart part)
         {
-            _query.Append("SET " + part.Key + " " + part.Value);
+           
+            _query.Append("SET|" + part.Key + "%" + string.Join(",", part.Value));
         }
 
         public void Visit(PropertyPart part)
         {
-            if (part.Type == "string")
-                _query.Append("GET \"" + part.Name + "\"");
-            else
-                _query.Append("GET " + part.Name);
+            _query.Append("GET|" + part.Name);
         }
     }
 }

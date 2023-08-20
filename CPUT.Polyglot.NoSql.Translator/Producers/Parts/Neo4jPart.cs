@@ -18,8 +18,9 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
             return new Constructs
             {
                 Target = Database.NEO4J,
-                Query = query,
-                Expression = request.BaseExpr,
+                Result = query,
+                Message = string.IsNullOrEmpty(query.Query) ? "Unable to generate Neo4j query." : "Neo4j query generated.",
+                Success = !string.IsNullOrEmpty(query.Query)
             };
         }
     }

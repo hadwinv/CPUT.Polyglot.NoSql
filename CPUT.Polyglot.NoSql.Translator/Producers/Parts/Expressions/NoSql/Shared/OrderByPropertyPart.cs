@@ -27,7 +27,13 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql.Share
                 AliasIdentifier = expr.AliasIdentifier;
 
             if (string.IsNullOrEmpty(AliasIdentifier))
-                AliasIdentifier = mappedProperty.Reference.Substring(0, 3).ToLower();
+            {
+                if (mappedProperty.Target == Enum.GetName(typeof(Database), Database.NEO4J).ToLower())
+                    AliasIdentifier = mappedProperty.Reference.Substring(0, 4).ToLower();
+                else
+                    AliasIdentifier = mappedProperty.Reference.Substring(0, 3).ToLower();
+            }
+                
 
             Direction = new DirectionPart(expr.Direction);
 

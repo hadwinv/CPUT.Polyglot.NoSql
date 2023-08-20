@@ -30,7 +30,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Expressions.NoSql
         void Visit(UnwindGroupPart unwindPart);
         void Visit(GroupByPart groupPart);
         void Visit(ProjectPart projectPart);
-        void Visit(UnwindJsonPart unwindJsonPart);
+        void Visit(UnwindArrayPart unwindJsonPart);
         void Visit(ProjectFieldPart projectPropertyPart);
         void Visit(GroupByFieldPart groupByFieldPart);
         void Visit(NativeFunctionPart nFunctionPart);

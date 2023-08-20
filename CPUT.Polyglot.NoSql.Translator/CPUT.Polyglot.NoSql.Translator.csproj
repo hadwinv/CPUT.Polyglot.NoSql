@@ -13,6 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="App.Metrics.Concurrency" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.InfluxDB" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
   </ItemGroup>

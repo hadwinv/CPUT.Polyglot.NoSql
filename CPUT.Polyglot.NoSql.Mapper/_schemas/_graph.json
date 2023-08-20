@@ -87,7 +87,9 @@
 						"type": "string"
 					}
 				],
-				"type": "node"
+				"type": "node",
+				"relations": [
+				]
 			},
 			{
 				"name": "course",
@@ -156,7 +158,9 @@
 						"type": "string"
 					}
 				],
-				"type": "node"
+				"type": "node",
+				"relations": [
+				]
 			},
 			{
 				"name": "city",
@@ -187,19 +191,21 @@
 						"type": "int"
 					},
 					{
-						"property": "subject",
-						"type": "subject"
-					},
-					{
 						"property": "results",
-						"type": "json"
+						"type": "results"
 					}
 				],
-				"type": "node"
+				"type": "node",
+				"relations": [
+				]
 			},
 			{
 				"name": "results",
 				"properties": [
+					{
+						"property": "subject",
+						"type": "subject"
+					},
 					{
 						"property": "score",
 						"type": "decimal"
@@ -209,7 +215,7 @@
 						"type": "string"
 					}
 				],
-				"type": "json"
+				"type": "array"
 			}
 		]
 	}

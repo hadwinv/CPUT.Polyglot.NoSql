@@ -1,4 +1,7 @@
-﻿using CPUT.Polyglot.NoSql.Common.Helpers;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Common.Helpers;
+using CPUT.Polyglot.NoSql.Common.Reporting;
+using CPUT.Polyglot.NoSql.DataStores.Repos._data;
 using CPUT.Polyglot.NoSql.Interface.Delegator;
 using CPUT.Polyglot.NoSql.Interface.Logic;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
@@ -6,23 +9,33 @@ using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Logic.Core.DML;
 using CPUT.Polyglot.NoSql.Logic.Core.Events;
 using CPUT.Polyglot.NoSql.Models;
+using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Parser.Tokenizers;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace CPUT.Polyglot.NoSql.Logic
 {
     public class ServiceLogic : IServiceLogic
     {
         private ICommandEvent _commandEvent;
-        private IProxy _proxy;
+        private IExecutor _executor;
+        private IMockData _mockData;
+        private IMetrics _metrics;
 
         public ServiceLogic(ICommandEvent commandEvent, 
             ITranslate translate,
             IValidator validator,
-            IProxy proxy)
+            IExecutor executor,
+            IMockData mockData,
+            IMetrics metrics)
         {
             _commandEvent = commandEvent;
-            _proxy = proxy;
+            _executor = executor;
+            _mockData = mockData;
+            _metrics = metrics;
 
             //handlers to construct queries
             _commandEvent.Add((int)Utils.Command.FETCH, new FetchHandler(validator, translate));
@@ -30,11 +43,12 @@ namespace CPUT.Polyglot.NoSql.Logic
             _commandEvent.Add((int)Utils.Command.ADD, new AddHandler(validator, translate));
         }
 
-        public void DataLoad()
+
+        public void GenerateData()
         {
             try
             {
-                _proxy.Load();
+                _mockData.GenerateData();
             }
             catch (Exception ex)
             {
@@ -42,51 +56,71 @@ namespace CPUT.Polyglot.NoSql.Logic
             }
         }
 
-        public Models.Result Query(string input)
+        public void DataLoad()
         {
-            Models.Result result = null;
-            Query query = null;
+            try
+            {
+                _mockData.Load();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception - {ex.Message}");
+            }
+        }
+
+        public List<Models.Result> Query(string input)
+        {
+            List<Models.Result> results = null;
 
             try
             {
-                //get quey model
-                query = GetQueryModel(input);
-
-                //check if system was able to determine the command type
-                if(query.Command != Utils.Command.NONE)
+                using (_metrics.Measure.Apdex.Track(AppMetricsRegistry.ApdexScores.PolyglotNoSqlApdex))
                 {
-                    var output = _commandEvent.Run(query);
+                    //get quey model
+                    var query = GetQueryModel(input);
 
-                    foreach(var target in output.Constructs)
-                        result = _proxy.Forward(target);
-
-                    if (result.Success)
+                    //check if system was able to determine the command type
+                    if (query.Command != Utils.Command.NONE)
                     {
-                        //bind data
+                        //run command to generate native query
+                        var output = _commandEvent.Run(query);
+
+                        if (output != null)
+                        {
+                            //send native query for execution
+                            results = _executor.Forward(query.Command, output).Result;
+                        }
                     }
-                }
-                else
-                {
-                    //error or invalid
-                    result = new Models.Result
+                    else
                     {
-                        Success = false,
-                        Message = "Invalid Command",
-                    };
+                        results = new List<Models.Result>
+                        {
+                            new Result
+                            {
+                                Success = false,
+                                Message = "Invalid Command",
+                                Status = "Failed"
+                            }
+                        };
+                    }
                 }
             }
             catch (Exception ex)
             {
-                result = new Models.Result
-                {
-                    Success = false,
-                    Message = ex.Message,
-                };
+                results = new List<Models.Result>
+                        {
+                            new Result
+                            {
+                                Success = false,
+                                Message = ex.Message,
+                                Status = "Error"
+                            }
+                        };
 
                 Console.WriteLine($"Exception - {ex.Message}");
             }
 
-            return result;
+            return results;
         }
 
         private Query GetQueryModel(string input)

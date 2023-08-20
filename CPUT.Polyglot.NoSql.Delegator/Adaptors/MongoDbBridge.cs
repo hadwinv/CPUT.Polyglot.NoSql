@@ -1,4 +1,4 @@
-﻿using CPUT.Polyglot.NoSql.Interface.Delegator;
+﻿using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 using MongoDB.Driver;
 
 namespace CPUT.Polyglot.NoSql.Delegator.Adaptors

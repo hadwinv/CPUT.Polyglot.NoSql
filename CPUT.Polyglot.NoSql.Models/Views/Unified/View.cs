@@ -4,9 +4,8 @@
     {
         public string Name { get; set; }
 
-        public List<Resources> Resources { get; set; }
+        public string Binding { get; set; }
 
-        //public List<Linkage> Linkages { get; set; }
-        
+        public List<Resources> Resources { get; set; }
     }
 }

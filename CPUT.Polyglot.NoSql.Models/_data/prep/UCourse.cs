@@ -4,12 +4,7 @@
     {
         public int Id { get; set; }
         public string Code { get; set; }
-        public string Description { get; set; }
+        public string Name { get; set; }
         public List<USubject> Subjects { get; set; }
-
-        public UCourse()
-        {
-            Subjects = new List<USubject>();
-        }
     }
 }

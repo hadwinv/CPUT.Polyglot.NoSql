@@ -135,7 +135,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
 
         private List<string> GetDataModels(DataModelExpr dataModelExpr, List<string> fields)
         {
-            List<string> matchedFields = new List<string>();
+            var matchedFields = new List<string>();
 
             foreach (DataExpr data in dataModelExpr.Value)
             {
@@ -143,8 +143,41 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
                 {
                     foreach (var column in fields)
                     {
-                        if (column == properties.Property)
-                            matchedFields.Add(column);
+                        if(column.IndexOf('.') > -1)
+                        {
+                            var parts = column.Split('.');
+                            var found = false;
+
+                            for (int i = 0; i <= parts.Length - 1; i++)
+                            {
+                                if (_global.Exists(x => x.View.Name == parts[i]))
+                                    found = true;
+                                else
+                                {
+                                    var resources = _global.Where(x => x.View.Name == parts[i - 1]).SelectMany(x => x.View.Resources);
+
+                                    if(resources.Any(x => x.Property == parts[i]))
+                                        found = true;
+                                }
+
+                                if (!found)
+                                    break;
+                            }
+
+                            if(found)
+                            {
+                                if (parts[0] == properties.Property)
+                                    if(!matchedFields.Contains(column))
+                                        matchedFields.Add(column);
+                            }
+                            
+                        }
+                        else
+                        {
+                            if (column == properties.Property)
+                                if (!matchedFields.Contains(column))
+                                    matchedFields.Add(column);
+                        }
                     }
                 }
             }
@@ -165,16 +198,33 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
                     if (!specifiedFields.Contains(property.Value))
                         specifiedFields.Add(property.Value);
                 }
+                else if (part is JsonExpr)
+                {
+                    JsonExpr property = (JsonExpr)part;
+
+                    if (!specifiedFields.Contains(property.Value))
+                        specifiedFields.Add(property.Value);
+                }
                 else if (part is FunctionExpr)
                 {
                     FunctionExpr function = (FunctionExpr)part;
 
                     foreach (var func in function.Value)
                     {
-                        PropertyExpr property = (PropertyExpr)func;
+                        if(func is PropertyExpr)
+                        {
+                            PropertyExpr property = (PropertyExpr)func;
 
-                        if (!specifiedFields.Contains(property.Value))
-                            specifiedFields.Add(property.Value);
+                            if (!specifiedFields.Contains(property.Value))
+                                specifiedFields.Add(property.Value);
+                        }
+                        else if (func is JsonExpr)
+                        {
+                            JsonExpr property = (JsonExpr)func;
+
+                            if (!specifiedFields.Contains(property.Value))
+                                specifiedFields.Add(property.Value);
+                        }
                     }
                 }
                 else if (part is GroupExpr)
@@ -183,10 +233,20 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
 
                     OperatorExpr ops = (OperatorExpr)group.Value;
 
-                    TermExpr leftTerm = (TermExpr)ops.Left;
+                    if(ops.Left is TermExpr)
+                    {
+                        TermExpr leftTerm = (TermExpr)ops.Left;
 
-                    if (!specifiedFields.Contains(leftTerm.Value))
-                        specifiedFields.Add(leftTerm.Value);
+                        if (!specifiedFields.Contains(leftTerm.Value))
+                            specifiedFields.Add(leftTerm.Value);
+                    }
+                    else if( ops.Left is JsonExpr)
+                    {
+                        JsonExpr leftTerm = (JsonExpr)ops.Left;
+
+                        if (!specifiedFields.Contains(leftTerm.Value))
+                            specifiedFields.Add(leftTerm.Value);
+                    }
 
 
                     if (ops.Right is TermExpr)

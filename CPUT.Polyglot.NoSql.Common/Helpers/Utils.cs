@@ -5,11 +5,10 @@
 
         public enum Command
         {
-            LOAD_DATA,
+            NONE,
             FETCH,
             MODIFY,
-            ADD,
-            NONE,
+            ADD
         }
 
         public enum Database

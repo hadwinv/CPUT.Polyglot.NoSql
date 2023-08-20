@@ -23,12 +23,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommonServiceLocator" Version="2.0.7" />
     <PackageReference Include="Superpower" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Interface\CPUT.Polyglot.NoSql.Interface.csproj" />
     <ProjectReference Include="..\CPUT.Polyglot.NoSql.Parser\CPUT.Polyglot.NoSql.Parser.csproj" />
+    <ProjectReference Include="..\CPUT.Polyglot.NoSql.Translator\CPUT.Polyglot.NoSql.Translator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

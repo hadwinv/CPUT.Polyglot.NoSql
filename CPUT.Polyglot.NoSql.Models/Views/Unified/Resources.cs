@@ -8,6 +8,8 @@ namespace CPUT.Polyglot.NoSql.Models.Views.Unified
 
         public string Type { get; set; }
 
+        public string Metadata { get; set; }
+
         public List<Link> Link { get; set; }
     }
 }
