@@ -1,4 +1,8 @@
-﻿using CPUT.Polyglot.NoSql.Interface.Mapper;
+﻿using App.Metrics;
+using App.Metrics.Counter;
+using App.Metrics.Timer;
+using CPUT.Polyglot.NoSql.Common.Reporting;
+using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
 using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Component;
@@ -14,10 +18,16 @@ namespace CPUT.Polyglot.NoSql.Translator
         private IInterpreter _interpreter;
         private ISchema _schema;
 
-        public Translate(IInterpreter interpreter, ISchema schema)
+        private IMetrics _metrics;
+        private ITimer _timer;
+
+        public Translate(IInterpreter interpreter, ISchema schema, IMetrics metrics)
         {
             _interpreter = interpreter;
             _schema = schema;
+
+            _metrics = metrics;
+            _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Translator);
 
             //global schemas
             Assistor.USchema = _schema.UnifiedView();
@@ -36,7 +46,7 @@ namespace CPUT.Polyglot.NoSql.Translator
         public async Task<List<Constructs>> Convert(ConstructPayload payload)
         {
             var constructs = new List<Constructs>();
-            var tasks = new List<Task<Constructs>>();
+            var tasks = new List<Task<Constructs?>>();
 
             //get targeted databases
             var targetExpr = (TargetExpr)payload.BaseExpr.ParseTree.Single(x => x.GetType().Equals(typeof(TargetExpr)));
@@ -47,12 +57,21 @@ namespace CPUT.Polyglot.NoSql.Translator
                 tasks.Add(Task.Factory.StartNew(
                     () =>
                     {
-                        return _interpreter.Run(new Enquiry
+                        using var context = _timer.NewContext("Translator:" + storage.Value);
+                        try
                         {
-                            BaseExpr = payload.BaseExpr,
-                            Command = payload.Command,
-                            Database = GetDatabaseTarget(storage.Value),
-                        });
+                            return _interpreter.Run(new Enquiry
+                            {
+                                BaseExpr = payload.BaseExpr,
+                                Command = payload.Command,
+                                Database = GetDatabaseTarget(storage.Value),
+                            });
+                        }
+                        catch
+                        {
+                            _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Translator);
+                        }
+                        return default;
                     }));
             }
 

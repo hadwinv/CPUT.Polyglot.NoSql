@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Translator;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Models.Translator.Parts;
 using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy;
@@ -8,7 +9,7 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {
     public class MongoDbPart : Transcriber
     {
-        public MongoDbPart() { }
+        public MongoDbPart() {}
 
         public override Constructs Execute(CreatePart request)
         {

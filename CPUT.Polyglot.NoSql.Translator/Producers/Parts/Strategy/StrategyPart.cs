@@ -97,49 +97,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
             return new OutputPart();
         }
 
-        
-       
-
-       
-       
-
-        
-        //private Link[] ConvertJsonToLinks(USchema @base, string[] values, string database)
-        //{
-        //    var links = new List<Link>();
-
-        //    var iterator = 0;
-
-        //    Resources resource = null;
-        //    Resources presource = null;
-
-        //    foreach (var reference in values)
-        //    {
-        //        Link link = null;
-
-        //        if (iterator == 0)
-        //            //set base reference i.e first reference in json path
-        //            resource = @base.View.Resources.Single(x => x.Property == reference);
-        //        else
-        //        {
-        //            @base = Assistor.USchema.Single(x => x.View.Name == presource?.Type);
-
-        //            resource = @base.View.Resources.Single(x => x.Property == reference);
-        //        }
-
-        //        if(resource.Metadata != "class")
-        //            link = SearchAndFindPropertyLink(presource?.Property, reference, database);
-
-        //        if (link != null)
-        //            links.Add(link);
-
-        //        presource = resource;
-        //        iterator++;
-        //    }
-
-        //    return links.ToArray();
-        //}
-
         protected Link? SearchAndFindPropertyLink(string model, string property, string database)
         {
             return Assistor.USchema
@@ -150,7 +107,5 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         .Where(x => x.Target == database)
                         .FirstOrDefault();
         }
-
-        
     }
 }

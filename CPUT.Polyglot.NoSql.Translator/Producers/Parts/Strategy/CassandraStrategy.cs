@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Translator.Executors;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using CPUT.Polyglot.NoSql.Models.Translator.Parts;
 using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Models.Views.Shared;
@@ -27,6 +28,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
     public class CassandraStrategy : StrategyPart
     {
         protected string Target = "cassandra";
+
+        public CassandraStrategy() { }
 
         public override OutputPart Fetch()
         {

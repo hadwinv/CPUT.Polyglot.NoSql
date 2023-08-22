@@ -1,8 +1,4 @@
-﻿
-
-
-
-using App.Metrics.Counter;
+﻿using App.Metrics.Counter;
 using App.Metrics;
 using CPUT.Polyglot.NoSql.Console.Extensions;
 using CPUT.Polyglot.NoSql.Interface.Logic;
@@ -20,6 +16,7 @@ namespace CPUT.Polyglot.NoSql.Console
             var dataload = false;
 
             var host = CreateHostBuilder(args).Build();
+
 
             host.RunAsync();
 
@@ -44,15 +41,7 @@ namespace CPUT.Polyglot.NoSql.Console
             //execute tests
             executionBuilder.Run();
 
-            //var metrics = provider.GetRequiredService<IMetrics>();
-            //var counter = new CounterOptions { Name = "my_counter" };
-            
-            //metrics.Measure.Counter.Increment(counter);
-
-            //var s = metrics.Snapshot;
-
-            //System.Console.ReadKey();
-
+            System.Console.ReadKey();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

@@ -87,65 +87,63 @@ namespace CPUT.Polyglot.NoSql.Console
 
                 #region "Redis only"
 
-                //////retrieves data from source without filter
-                //_registeries.Add(testno, new RegisteryModel
-                //{
-                //    No = testno,
-                //    Description = "Retrieves data from source without filter",
-                //    Target = "Redis",
-                //    ExecutionTimes = 1,
-                //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                //                      s.address.street,s.address.city, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                //                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                //              DATA_MODEL { student AS s}
-                //              TARGET {   redis }",
-                //    Active = true
-                //});
+                ////retrieves data from source without filter
+                _registeries.Add(testno, new RegisteryModel
+                {
+                    No = testno,
+                    Description = "Retrieves data from source without filter",
+                    Target = "Redis",
+                    ExecutionTimes = 1,
+                    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+                                      s.address.street,s.address.city, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+                                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+                                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+                                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+                                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+                              DATA_MODEL { student AS s}
+                              TARGET {   redis }",
+                    Active = true
+                });
 
+                //retrieves data from source with filter on key
+                testno++;
+                _registeries.Add(testno, new RegisteryModel
+                {
+                    No = testno,
+                    Description = "Retrieves data from source with filter on key",
+                    Target = "Redis",
+                    ExecutionTimes = 1,
+                    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+                                      s.address.street,s.address.city, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+                                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+                                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+                                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+                                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+                              DATA_MODEL { student AS s}
+                              FILTER_ON {s.idnumber = '35808404617'}
+                              TARGET {   redis }",
+                    Active = true
+                });
 
-
-                ////retrieves data from source with filter on key
-                //testno++;
-                //_registeries.Add(testno, new RegisteryModel
-                //{
-                //    No = testno,
-                //    Description = "Retrieves data from source with filter on key",
-                //    Target = "Redis",
-                //    ExecutionTimes = 1,
-                //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                //                      s.address.street,s.address.city, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                //                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                //              DATA_MODEL { student AS s}
-                //              FILTER_ON {s.idnumber = '35808404617'}
-                //              TARGET {   redis }",
-                //    Active = true
-                //});
-
-                ////retrieves data from source with filter not on key
-                //testno++;
-                //_registeries.Add(testno, new RegisteryModel
-                //{
-                //    No = testno,
-                //    Description = "Retrieves data from source with filter not on key",
-                //    Target = "Redis",
-                //    ExecutionTimes = 1,
-                //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                //                      s.address.street,s.address.city, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                //                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                //              DATA_MODEL { student AS s}
-                //              FILTER_ON {s.gender = 'F'}
-                //              TARGET {   redis }",
-                //    Active = true
-                //});
+                //retrieves data from source with filter not on key
+                testno++;
+                _registeries.Add(testno, new RegisteryModel
+                {
+                    No = testno,
+                    Description = "Retrieves data from source with filter not on key",
+                    Target = "Redis",
+                    ExecutionTimes = 1,
+                    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+                                      s.address.street,s.address.city, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+                                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+                                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+                                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+                                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+                              DATA_MODEL { student AS s}
+                              FILTER_ON {s.gender = 'F'}
+                              TARGET {   redis }",
+                    Active = true
+                });
 
                 ////retrieves data from source with more than one filter on key AND non-key
                 //testno++;
@@ -1446,24 +1444,24 @@ namespace CPUT.Polyglot.NoSql.Console
                 //});
 
                 ////retrieves data from all sources with AND filters
-                testno++;
-                _registeries.Add(testno, new RegisteryModel
-                {
-                    No = testno,
-                    Description = "retrieves data from all sources with AND filters",
-                    Target = "ALL",
-                    ExecutionTimes = 1,
-                    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                                      s.address.street, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                                      s.register.date, s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                              DATA_MODEL { student AS s}
-                              FILTER_ON { s.idnumber = '21708702176' AND s.idnumber = '55600308764'}
-                              TARGET { redis, cassandra, mongodb, neo4j }",
-                    Active = true
-                });
+                //testno++;
+                //_registeries.Add(testno, new RegisteryModel
+                //{
+                //    No = testno,
+                //    Description = "retrieves data from all sources with AND filters",
+                //    Target = "ALL",
+                //    ExecutionTimes = 1,
+                //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+                //                      s.address.street, s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+                //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+                //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+                //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+                //                      s.register.date, s.transcript.subject, s.transcript.result, s.transcript.symbol }
+                //              DATA_MODEL { student AS s}
+                //              FILTER_ON { s.idnumber = '21708702176' AND s.idnumber = '55600308764'}
+                //              TARGET { redis, cassandra, mongodb, neo4j }",
+                //    Active = true
+                //});
 
                 //retrieves data from all sources with OR filters
                 //testno++;

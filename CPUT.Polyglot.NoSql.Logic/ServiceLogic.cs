@@ -1,4 +1,5 @@
 ﻿using App.Metrics;
+using App.Metrics.Timer;
 using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Common.Reporting;
 using CPUT.Polyglot.NoSql.DataStores.Repos._data;
@@ -15,6 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using static CPUT.Polyglot.NoSql.Common.Reporting.MetricsRegistry;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CPUT.Polyglot.NoSql.Logic
 {
@@ -23,6 +26,7 @@ namespace CPUT.Polyglot.NoSql.Logic
         private ICommandEvent _commandEvent;
         private IExecutor _executor;
         private IMockData _mockData;
+        
         private IMetrics _metrics;
 
         public ServiceLogic(ICommandEvent commandEvent, 
@@ -38,11 +42,10 @@ namespace CPUT.Polyglot.NoSql.Logic
             _metrics = metrics;
 
             //handlers to construct queries
-            _commandEvent.Add((int)Utils.Command.FETCH, new FetchHandler(validator, translate));
-            _commandEvent.Add((int)Utils.Command.MODIFY, new ModifyHandler(validator, translate));
-            _commandEvent.Add((int)Utils.Command.ADD, new AddHandler(validator, translate));
+            _commandEvent.Add((int)Utils.Command.FETCH, new FetchHandler(validator, translate, metrics));
+            _commandEvent.Add((int)Utils.Command.MODIFY, new ModifyHandler(validator, translate, metrics));
+            _commandEvent.Add((int)Utils.Command.ADD, new AddHandler(validator, translate, metrics));
         }
-
 
         public void GenerateData()
         {
@@ -71,11 +74,18 @@ namespace CPUT.Polyglot.NoSql.Logic
         public List<Models.Result> Query(string input)
         {
             List<Models.Result> results = null;
-
+            
             try
             {
-                using (_metrics.Measure.Apdex.Track(AppMetricsRegistry.ApdexScores.PolyglotNoSqlApdex))
+                var cpu = new CpuUsage();
+                var memory = new MemoryUsage();
+
+                using (_metrics.Measure.Apdex.Track(MetricsRegistry.Apdex.Query))
                 {
+                    //start cpu utilisation
+                    cpu.Start();
+                    memory.Start();
+
                     //get quey model
                     var query = GetQueryModel(input);
 
@@ -103,6 +113,15 @@ namespace CPUT.Polyglot.NoSql.Logic
                             }
                         };
                     }
+
+                    //memory utilisation
+                    memory.CallMemory();
+                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.Memory.VirtualSize, memory.TotalVirtual);
+                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.Memory.PhysicalSize, memory.TotalPhysical);
+
+                    //cpu utilisation
+                    cpu.CallCpu();
+                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.CPU.Usage, cpu.Total);
                 }
             }
             catch (Exception ex)
@@ -117,7 +136,7 @@ namespace CPUT.Polyglot.NoSql.Logic
                             }
                         };
 
-                Console.WriteLine($"Exception - {ex.Message}");
+                _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.General);
             }
 
             return results;
@@ -134,6 +153,7 @@ namespace CPUT.Polyglot.NoSql.Logic
             catch (Exception ex)
             {
                 query.Message = ex.Message;
+                _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.General);
             }
             return query;
         }

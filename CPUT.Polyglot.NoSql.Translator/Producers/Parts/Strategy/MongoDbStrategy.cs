@@ -17,6 +17,7 @@ using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Shared;
 using System.Text;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static CPUT.Polyglot.NoSql.Common.Parsers.Operators;
+using App.Metrics;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
@@ -46,6 +47,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 return false;
             }
         }
+
+        public MongoDbStrategy() { }
 
         public override OutputPart Fetch()
         {

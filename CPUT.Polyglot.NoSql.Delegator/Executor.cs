@@ -5,6 +5,9 @@ using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using CPUT.Polyglot.NoSql.Models;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using System.Threading.Tasks;
+using CPUT.Polyglot.NoSql.Common.Reporting;
+using App.Metrics.Timer;
+using App.Metrics;
 
 namespace CPUT.Polyglot.NoSql.Delegator
 {
@@ -15,38 +18,49 @@ namespace CPUT.Polyglot.NoSql.Delegator
         private IMongoDbRepo _mongoRepo;
         private INeo4jRepo _neo4jRepo;
 
-        public Executor(IRedisRepo redisjRepo, ICassandraRepo cassandraRepo, IMongoDbRepo mongoRepo, INeo4jRepo neo4jRepo)
+        private IMetrics _metrics;
+        private readonly ITimer _timer;
+
+        public Executor(IRedisRepo redisjRepo, ICassandraRepo cassandraRepo, IMongoDbRepo mongoRepo, INeo4jRepo neo4jRepo, IMetrics metrics)
         {
             _redisjRepo = redisjRepo;
             _cassandraRepo = cassandraRepo;
             _mongoRepo = mongoRepo;
             _neo4jRepo = neo4jRepo;
+
+            _metrics = metrics;
+            _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Executor);
         }
 
         public async Task<List<Models.Result>> Forward(Command command, Output output)
         {
             var result = new List<Models.Result>();
 
-            var tasks = new List<Task<Models.Result>>();
+            var tasks = new List<Task<Models.Result?>>();
 
             //get query targets
             foreach (var target in output.Constructs)
             {
-
                 if (target.Success)
                 {
                     //run tasks
                     tasks.Add(Task.Factory.StartNew(
-                            () =>
-                            {
-                                return Action(
-                                    new QueryDirective
-                                    {
-                                        Command = command,
-                                        Executable = target.Result.Query,
-                                        Codex = target.Result.Codex
-                                    },
-                                    target.Target);
+                            () => {
+                                using var context = _timer.NewContext("Executor:" + target.Target);
+                                try
+                                {
+                                    return Action(new QueryDirective {
+                                            Command = command,
+                                            Executable = target.Result.Query,
+                                            Codex = target.Result.Codex
+                                        },
+                                        target.Target);
+                                }
+                                catch
+                                {
+                                    _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Executor);
+                                }
+                                return default;
                             }));
                 }
                 else
@@ -57,6 +71,8 @@ namespace CPUT.Polyglot.NoSql.Delegator
                         Source = target.Target,
                         Status = "Failed",
                     });
+
+                    _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Translator);
                 }
             }
 

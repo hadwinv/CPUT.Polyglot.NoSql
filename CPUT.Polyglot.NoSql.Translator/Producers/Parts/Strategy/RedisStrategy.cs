@@ -18,13 +18,17 @@ using CPUT.Polyglot.NoSql.Models.Views.Shared;
 using CPUT.Polyglot.NoSql.Models.Views.Unified;
 using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
+using App.Metrics;
+using App.Metrics.Timer;
+using CPUT.Polyglot.NoSql.Common.Reporting;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 {
     public class RedisStrategy : StrategyPart
     {
         protected string Target = "redis";
-        public RedisStrategy() {}
+
+        public RedisStrategy(){}
 
         public override OutputPart Fetch()
         {
@@ -46,8 +50,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 //kick off visitors
                 match.Accept(generator);
             }
-
-            Console.WriteLine(query);
 
             return new OutputPart
             {

@@ -3,6 +3,7 @@ using CPUT.Polyglot.NoSql.Models.Translator.Parts;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy;
 using CPUT.Polyglot.NoSql.Models.Views;
+using App.Metrics;
 
 namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts
 {

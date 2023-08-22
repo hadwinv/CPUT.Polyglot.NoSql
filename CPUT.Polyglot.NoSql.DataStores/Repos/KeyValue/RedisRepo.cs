@@ -1,5 +1,8 @@
 ﻿using Amazon.Auth.AccessControlPolicy;
+using App.Metrics;
+using App.Metrics.Timer;
 using Cassandra;
+using CPUT.Polyglot.NoSql.Common.Reporting;
 using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 using CPUT.Polyglot.NoSql.Interface.Repos;
 using CPUT.Polyglot.NoSql.Mapper.ViewMap;
@@ -28,6 +31,8 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
     {
         private IRedisBridge _connector;
 
+        private readonly ITimer _timer;
+
         public RedisRepo(IRedisBridge connector)
         {
             _connector = connector;
@@ -37,124 +42,126 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
         {
             Models.Result result = null;
 
-            try
+            var redis = _connector.Connect();
+
+            if (query.Executable != null)
             {
-                var redis = _connector.Connect();
+                RedisResult results = null;
 
-                if (query.Executable != null)
+                var data = new List<ResultsModel>();
+
+                var statements = query.Executable.Split(";");
+
+                var user = new rUser();
+                var type = typeof(rUser);
+
+                foreach (var statement in statements)
                 {
-                    RedisResult results = null;
+                    //execute command
+                    var parts = statement.Split("|");
 
-                    var data = new List<ResultsModel>();
-
-                    var statements = query.Executable.Split(";");
-
-                    var user = new rUser();
-                    var type = typeof(rUser);
-
-                    foreach (var statement in statements)
+                    if (parts[0] == "SET")
                     {
-                        //execute command
-                        var parts = statement.Split("|");
+                        var keyvalues = parts[1].Split("%");
 
-                        if (parts[0] == "SET")
+                        foreach (var expression in keyvalues[1].Split(","))
                         {
-                            var keyvalues = parts[1].Split("%");
+                            var fields = expression.Split("=");
 
-                            foreach (var expression in keyvalues[1].Split(","))
+                            var propertyInfo = type.GetProperty(fields[0]);
+
+                            if (propertyInfo != null)
                             {
-                                var fields = expression.Split("=");
-
-                                var propertyInfo = type.GetProperty(fields[0]);
-                                
-                                if (propertyInfo != null)
-                                {
-                                    propertyInfo.SetValue(user, fields[1], null);
-                                }
+                                propertyInfo.SetValue(user, fields[1], null);
                             }
-                            // +" " +
-                            results = redis.Execute(parts[0], new object[] { keyvalues[0], JsonConvert.SerializeObject(user) });
                         }
-                        else
+                        // +" " +
+                        results = redis.Execute(parts[0], new object[] { keyvalues[0], JsonConvert.SerializeObject(user) });
+                    }
+                    else
+                    {
+                        results = redis.Execute(parts[0], parts[1]);
+                    }
+
+
+                    if (!results.IsNull)
+                    {
+                        var response = new List<object>();
+
+                        bool success = true;
+
+                        var settings = new JsonSerializerSettings
                         {
-                            results = redis.Execute(parts[0], parts[1]);
-                        }   
-                         
+                            Error = (sender, args) => { success = false; args.ErrorContext.Handled = true; },
+                            MissingMemberHandling = MissingMemberHandling.Error
+                        };
 
-                        if (!results.IsNull)
+                        if (results.Type == ResultType.BulkString)
                         {
-                            var response = new List<object>();
+                            var record = ((RedisValue)results);
 
-                            bool success = true;
+                            var @object = JsonConvert.DeserializeObject<object>(record, settings);
 
-                            var settings = new JsonSerializerSettings
+                            if (success)
+                                response.Add(@object);
+
+                        }
+                        else if (results.Type == ResultType.MultiBulk)
+                        {
+                            var keys = ((RedisKey[])results);
+
+                            foreach (var key in keys)
                             {
-                                Error = (sender, args) => { success = false; args.ErrorContext.Handled = true; },
-                                MissingMemberHandling = MissingMemberHandling.Error
-                            };
-
-                            if (results.Type == ResultType.BulkString)
-                            {
-                                var record = ((RedisValue)results);
+                                var record = redis.StringGet(key);
 
                                 var @object = JsonConvert.DeserializeObject<object>(record, settings);
 
                                 if (success)
                                     response.Add(@object);
-
-                            }
-                            else if (results.Type == ResultType.MultiBulk)
-                            {
-                                var keys = ((RedisKey[])results);
-
-                                foreach (var key in keys)
-                                {
-                                    var record = redis.StringGet(key);
-
-                                    var @object = JsonConvert.DeserializeObject<object>(record, settings);
-
-                                    if (success)
-                                        response.Add(@object);
-                                }
-                            }
-
-                            if (query.Command == Common.Helpers.Utils.Command.MODIFY)
-                            {
-                                if (parts[0] == "GET")
-                                    user = JsonConvert.DeserializeObject<rUser>(results.ToString());
-                            }
-                            else
-                            {
-                                //check if codex instructions were configured
-                                if (query.Codex != null)
-                                    data.AddRange(ModelBuilder.Create(query.Codex, response));
                             }
                         }
+
+                        if (query.Command == Common.Helpers.Utils.Command.MODIFY)
+                        {
+                            if (parts[0] == "GET")
+                                user = JsonConvert.DeserializeObject<rUser>(results.ToString());
+                        }
+                        else
+                        {
+                            //check if codex instructions were configured
+                            if (query.Codex != null)
+                                data.AddRange(ModelBuilder.Create(query.Codex, response));
+                        }
                     }
-                    
-                    result = new Models.Result
-                    {
-                        Source = Common.Helpers.Utils.Database.REDIS,
-                        Data = data,
-                        Status = "OK",
-                        Message = string.Format("Query returned {0} record(s)", data.Count),
-                        Success = true
-                    };
                 }
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Exception - {ex.Message}");
 
                 result = new Models.Result
                 {
                     Source = Common.Helpers.Utils.Database.REDIS,
-                    Data = null,
-                    Status = "Error",
-                    Message = ex.Message,
-                    Success = false
+                    Data = data,
+                    Status = "OK",
+                    Message = string.Format("Query returned {0} record(s)", data.Count),
+                    Success = true
                 };
             }
+
+            //try
+            //{
+
+            //}
+            //catch(Exception ex)
+            //{
+            //    Console.WriteLine($"Exception - {ex.Message}");
+
+            //    result = new Models.Result
+            //    {
+            //        Source = Common.Helpers.Utils.Database.REDIS,
+            //        Data = null,
+            //        Status = "Error",
+            //        Message = ex.Message,
+            //        Success = false
+            //    };
+            //}
 
             return result;
         }

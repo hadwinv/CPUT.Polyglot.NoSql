@@ -1,19 +1,8 @@
 ﻿using CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue;
-using CPUT.Polyglot.NoSql.DataStores;
 using CPUT.Polyglot.NoSql.Interface.Repos;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using CPUT.Polyglot.NoSql.Interface.Logic;
 using CPUT.Polyglot.NoSql.Interface.Translator;
@@ -34,10 +23,8 @@ using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 using CPUT.Polyglot.NoSql.DataStores.Repos._data;
 using CPUT.Polyglot.NoSql.Delegator;
 using CPUT.Polyglot.NoSql.Delegator.Adaptors;
-using App.Metrics.Filtering;
 using App.Metrics;
-using App.Metrics.Formatters.InfluxDB;
-using App.Metrics.Filters;
+using CPUT.Polyglot.NoSql.Console.Middleware;
 
 namespace CPUT.Polyglot.NoSql.Console
 {
@@ -50,38 +37,13 @@ namespace CPUT.Polyglot.NoSql.Console
             Configuration = configuration;
         }
 
+       
+
         public void ConfigureServices(IServiceCollection services)
         {
-            //set up metrics
-            //var filter = new MetricsFilter().WhereType(MetricType.Timer);
-
-            var metrics = new MetricsBuilder()
-                .Report.ToInfluxDb(
-                    options =>
-                    {
-                        options.InfluxDb.BaseUri = new Uri("http://127.0.0.1:8086");
-                        options.InfluxDb.Database = "hadwin";
-                        options.InfluxDb.Consistenency = "consistency";
-                        options.InfluxDb.UserName = "admin";
-                        options.InfluxDb.Password = "adminadmin";
-                        options.InfluxDb.RetentionPolicy = "rp";
-                        options.InfluxDb.CreateDataBaseIfNotExists = true;
-                        options.HttpPolicy.BackoffPeriod = TimeSpan.FromSeconds(30);
-                        options.HttpPolicy.FailuresBeforeBackoff = 5;
-                        options.HttpPolicy.Timeout = TimeSpan.FromSeconds(10);
-                        options.MetricsOutputFormatter = new MetricsInfluxDbLineProtocolOutputFormatter();
-                        //options.Filter = filter;
-                        options.FlushInterval = TimeSpan.FromSeconds(20);
-                    })
-                .Report.ToTextFile(@"C:\metrics\metrics.txt")
-                .Report.ToConsole()
-            .Build();
-
-
             //configure your services here
             services
                 .AddMemoryCache()
-                .AddMetrics(metrics)
                 .AddScoped<IServiceLogic, ServiceLogic>()
                 .AddScoped<IValidator, Validator>()
                 .AddScoped<ITranslate, Translate>()
@@ -99,11 +61,15 @@ namespace CPUT.Polyglot.NoSql.Console
                 .AddScoped<ICassandraBridge, CassandraBridge>()
                 .AddScoped<IMongoDBBridge, MongoDbBridge>()
                 .AddScoped<IMockData, MockData>();
+
+            //application metrics
+            AppMetricsExtension.AddMetricsExtension(services);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime lifetime)
         {
             app.UseMetrics();
+            //app.UseMetricsReporting((Microsoft.AspNetCore.Hosting.IApplicationLifetime)lifetime);
         } 
     }
 }

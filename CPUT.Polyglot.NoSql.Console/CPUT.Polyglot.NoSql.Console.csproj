@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="App.Metrics" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.Abstractions" Version="4.3.0" />
     <PackageReference Include="App.Metrics.AspNetCore.Core" Version="4.3.0" />
     <PackageReference Include="App.Metrics.Concurrency" Version="4.3.0" />
     <PackageReference Include="App.Metrics.Extensions.Hosting" Version="4.3.0" />

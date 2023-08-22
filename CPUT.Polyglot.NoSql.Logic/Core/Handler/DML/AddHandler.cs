@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System;
 using Superpower;
+using App.Metrics;
+using CPUT.Polyglot.NoSql.Common.Reporting;
+using CPUT.Polyglot.NoSql.Parser.Syntax.Base;
 
 namespace CPUT.Polyglot.NoSql.Logic.Core.DML
 {
@@ -18,10 +21,14 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
         private IValidator _validator;
         private ITranslate _translate;
 
-        public AddHandler(IValidator validator, ITranslate translate) : base(validator, translate)
+        private static IMetrics _metrics;
+
+        public AddHandler(IValidator validator, ITranslate translate, IMetrics metrics) : base(validator, translate)
         {
             _validator = validator;
             _translate = translate;
+
+            _metrics = metrics;
         }
 
         public override Output Execute(TokenList<Lexicons> request)
@@ -30,11 +37,26 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
 
             try
             {
-                //generate abstract syntax tree
-                var syntaxExpr = Expressions.ADD.Parse(request);
+                Validators validatorResult = null;
+                BaseExpr syntaxExpr = null;
 
-                //validator syntax tree against global
-                var validatorResult = _validator.GlobalSchema(syntaxExpr);
+                var _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Parser);
+
+                using (var context = _timer.NewContext("ADD Parser"))
+                {
+                    try
+                    {
+                        //generate abstract syntax tree
+                        syntaxExpr = Expressions.ADD.Parse(request);
+
+                        //validator syntax tree against global
+                        validatorResult = _validator.GlobalSchema(syntaxExpr);
+                    }
+                    catch
+                    {
+                        _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Parser);
+                    }
+                }
 
                 //verify if query passed globa schema
                 if (validatorResult.Success)
@@ -50,9 +72,9 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
                     constructs = transformed.Result;
                 }
             }
-            catch (Exception ex)
+            catch 
             {
-                throw;
+                _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.General);
             }
 
             return new Output

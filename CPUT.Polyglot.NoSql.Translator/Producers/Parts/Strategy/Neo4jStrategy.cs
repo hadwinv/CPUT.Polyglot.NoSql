@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Models.Translator.Executors;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using CPUT.Polyglot.NoSql.Models.Translator.Parts;
 using CPUT.Polyglot.NoSql.Models.Views;
 using CPUT.Polyglot.NoSql.Models.Views.Native;
@@ -46,6 +47,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         }
 
         #endregion
+
+        public Neo4jStrategy() { }
 
         public override OutputPart Fetch()
         {

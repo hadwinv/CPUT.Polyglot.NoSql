@@ -1,4 +1,5 @@
-﻿using Cassandra;
+﻿using App.Metrics;
+using Cassandra;
 using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 using CPUT.Polyglot.NoSql.Interface.Repos;
@@ -29,63 +30,64 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
         public Models.Result Execute(QueryDirective query)
         {
             Models.Result result = null;
-            
-            try
+
+            var connection = _connector.Connect();
+
+            var session = connection.AsyncSession(configBuilder => configBuilder.WithDatabase("enrollmentdb"));
+
+            if (query.Executable != null)
             {
-                var connection = _connector.Connect();
+                dynamic data = null;
 
-                var session = connection.AsyncSession(configBuilder => configBuilder.WithDatabase("enrollmentdb"));
-
-                if (query.Executable != null)
+                if (query.Command == Utils.Command.FETCH)
                 {
-                    dynamic data = null;
-
-                    if (query.Command == Utils.Command.FETCH)
+                    var results = session.ReadTransactionAsync(async tx =>
                     {
-                        var results = session.ReadTransactionAsync(async tx =>
-                        {
-                            var cursor = await tx.RunAsync(query.Executable);
+                        var cursor = await tx.RunAsync(query.Executable);
 
-                            var records = await cursor.ToListAsync();
+                        var records = await cursor.ToListAsync();
 
-                            //codex instructions for results
-                            return ModelBuilder.Create(query.Codex, records);
-                        });
+                        //codex instructions for results
+                        return ModelBuilder.Create(query.Codex, records);
+                    });
 
-                        data = results.Result;
-                    }
-                    else
-                    {
-                        var results = session.WriteTransactionAsync(async tx =>
-                        {
-                            return await tx.RunAsync(query.Executable);
-                        }).Result;
-
-                    }
-
-                    result = new Models.Result
-                    {
-                        Source = Common.Helpers.Utils.Database.NEO4J,
-                        Data = data,
-                        Status = "OK",
-                        Message = data != null ? string.Format("Query returned {0} record(s)", data.Count) : string.Format("{0} executed sucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
-                        Success = true
-                    };
+                    data = results.Result;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception - {ex.Message}");
+                else
+                {
+                    var results = session.WriteTransactionAsync(async tx =>
+                    {
+                        return await tx.RunAsync(query.Executable);
+                    }).Result;
+
+                }
 
                 result = new Models.Result
                 {
                     Source = Common.Helpers.Utils.Database.NEO4J,
-                    Data = null,
-                    Status = "Error",
-                    Message = ex.Message,
-                    Success = false
+                    Data = data,
+                    Status = "OK",
+                    Message = data != null ? string.Format("Query returned {0} record(s)", data.Count) : string.Format("{0} executed sucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
+                    Success = true
                 };
             }
+            //try
+            //{
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Exception - {ex.Message}");
+
+            //    result = new Models.Result
+            //    {
+            //        Source = Common.Helpers.Utils.Database.NEO4J,
+            //        Data = null,
+            //        Status = "Error",
+            //        Message = ex.Message,
+            //        Success = false
+            //    };
+            //}
 
             return result;
         }

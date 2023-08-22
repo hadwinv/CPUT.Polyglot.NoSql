@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Common.Helpers;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Interface.Delegator.Adaptors;
 using CPUT.Polyglot.NoSql.Interface.Repos;
 using CPUT.Polyglot.NoSql.Mapper.ViewMap;
@@ -32,102 +33,103 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Document
         {
             Models.Result result = null;
 
-            try
+            if (query.Executable != null)
             {
-                if (query.Executable != null)
+                dynamic data = null;
+
+                //connect to database
+                var db = _connector.Connect();
+
+                var executable = BsonSerializer.Deserialize<BsonDocument>(query.Executable);
+
+                if (executable.ElementAt(0).Name == "aggregate" || executable.ElementAt(0).Name == "find")
                 {
-                    dynamic data = null;
+                    IAsyncCursor<BsonDocument> response = null;
 
-                    //connect to database
-                    var db = _connector.Connect();
+                    var collection = db.GetCollection<BsonDocument>(executable.ElementAt(0).Value.ToString());
 
-                    var executable = BsonSerializer.Deserialize<BsonDocument>(query.Executable);
-
-                    if (executable.ElementAt(0).Name == "aggregate" || executable.ElementAt(0).Name == "find")
+                    if (executable.ElementAt(0).Name == "aggregate")
                     {
-                        IAsyncCursor<BsonDocument> response = null;
+                        var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(executable.ElementAt(1).Value.ToString());
 
-                        var collection = db.GetCollection<BsonDocument>(executable.ElementAt(0).Value.ToString());
+                        response = collection.Aggregate<BsonDocument>(pipeline);
+                    }
+                    else if (executable.ElementAt(0).Name == "find")
+                    {
+                        var filter = new BsonDocument();
 
-                        if (executable.ElementAt(0).Name == "aggregate")
+                        var options = new FindOptions<BsonDocument>()
                         {
-                            var pipeline = BsonSerializer.Deserialize<BsonDocument[]>(executable.ElementAt(1).Value.ToString());
+                            Projection = executable.Contains("projection") ? BsonDocument.Parse(executable.GetElement("projection").Value.ToString()) : default,
+                            Sort = executable.Contains("sort") ? BsonDocument.Parse(executable.GetElement("sort").Value.ToString()) : default,
+                            Limit = executable.Contains("limit") ? int.Parse(executable.GetElement("limit").Value.ToString()) : default
+                        };
 
-                            response = collection.Aggregate<BsonDocument>(pipeline);
-                        }
-                        else if (executable.ElementAt(0).Name == "find")
-                        {
-                            var filter = new BsonDocument();
+                        if (executable.Contains("filter"))
+                            filter = BsonDocument.Parse(executable.GetElement("filter").Value.ToString());
 
-                            var options = new FindOptions<BsonDocument>()
-                            {
-                                Projection = executable.Contains("projection") ? BsonDocument.Parse(executable.GetElement("projection").Value.ToString()) : default,
-                                Sort = executable.Contains("sort") ? BsonDocument.Parse(executable.GetElement("sort").Value.ToString()) : default,
-                                Limit = executable.Contains("limit") ? int.Parse(executable.GetElement("limit").Value.ToString()) : default
-                            };
+                        response = collection.FindAsync(filter, options).Result;
+                    }
 
-                            if (executable.Contains("filter"))
-                                filter = BsonDocument.Parse(executable.GetElement("filter").Value.ToString());
+                    //check if codex instructions were configured
+                    if (query.Codex != null)
+                        data = ModelBuilder.Create(query.Codex, response);
 
-                            response = collection.FindAsync(filter, options).Result;
-                        }
-                        
-                        //check if codex instructions were configured
-                        if (query.Codex != null)
-                            data = ModelBuilder.Create(query.Codex, response);
+                    result = new Models.Result
+                    {
+                        Source = Common.Helpers.Utils.Database.MONGODB,
+                        Data = data,
+                        Status = "OK",
+                        Message = string.Format("Query returned {0} record(s)", data.Count),
+                        Success = true
+                    };
+                }
+                else
+                {
+                    var document = db.RunCommand<BsonDocument>(query.Executable);
 
-                        result = new Models.Result
+                    if (document.Contains("ok"))
+                    {
+                        return new Models.Result
                         {
                             Source = Common.Helpers.Utils.Database.MONGODB,
-                            Data = data,
+                            Data = null,
                             Status = "OK",
-                            Message = string.Format("Query returned {0} record(s)", data.Count),
+                            Message = string.Format("{0} executed sucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
                             Success = true
                         };
                     }
                     else
                     {
-                        var document = db.RunCommand<BsonDocument>(query.Executable);
-
-                        if (document.Contains("ok"))
+                        return new Models.Result
                         {
-                            return new Models.Result
-                            {
-                                Source = Common.Helpers.Utils.Database.MONGODB,
-                                Data = null,
-                                Status = "OK",
-                                Message = string.Format("{0} executed sucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
-                                Success = true
-                            };
-                        }
-                        else
-                        {
-                            return new Models.Result
-                            {
-                                Source = Common.Helpers.Utils.Database.MONGODB,
-                                Data = null,
-                                Status = "Failed",
-                                Message = string.Format("{0} executed unsucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
-                                Success = false
-                            };
-                        }
-                        
+                            Source = Common.Helpers.Utils.Database.MONGODB,
+                            Data = null,
+                            Status = "Failed",
+                            Message = string.Format("{0} executed unsucessfully", Enum.GetName(typeof(Command), query.Command).ToUpper()),
+                            Success = false
+                        };
                     }
+
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception - {ex.Message}");
+            //try
+            //{
 
-                result = new Models.Result
-                {
-                    Source = Common.Helpers.Utils.Database.MONGODB,
-                    Data = null,
-                    Status = "Error",
-                    Message = ex.Message,
-                    Success = false
-                };
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine($"Exception - {ex.Message}");
+
+            //    result = new Models.Result
+            //    {
+            //        Source = Common.Helpers.Utils.Database.MONGODB,
+            //        Data = null,
+            //        Status = "Error",
+            //        Message = ex.Message,
+            //        Success = false
+            //    };
+            //}
 
             return result;
         }

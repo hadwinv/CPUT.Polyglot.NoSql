@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Interface.Logic;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Interface.Logic;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Models.Translator;
 using CPUT.Polyglot.NoSql.Models.Views;
@@ -17,7 +18,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core
         private ISchema _schema;
         private List<USchema> _global;
 
-        public Validator(ISchema schema)
+        public Validator(ISchema schema, IMetrics metrics)
         {
             _schema = schema;
 
