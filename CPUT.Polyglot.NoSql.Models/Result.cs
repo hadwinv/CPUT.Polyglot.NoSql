@@ -10,6 +10,8 @@ namespace CPUT.Polyglot.NoSql.Models
 
         public bool Success  {get; set;}
 
+        public string Executable { get; set; }
+
         public string Status { get; set; }
 
         public string Message { get; set; }

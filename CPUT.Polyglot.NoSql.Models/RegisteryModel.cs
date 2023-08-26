@@ -10,6 +10,8 @@ namespace CPUT.Polyglot.NoSql.Models
     {
         public int No { get; set; }
 
+        public string Command { get; set; }
+
         public string Description { get; set; }
 
         public int ExecutionTimes { get; set; }

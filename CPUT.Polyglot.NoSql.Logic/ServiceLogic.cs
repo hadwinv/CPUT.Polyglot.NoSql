@@ -80,6 +80,7 @@ namespace CPUT.Polyglot.NoSql.Logic
                 var cpu = new CpuUsage();
                 var memory = new MemoryUsage();
 
+
                 using (_metrics.Measure.Apdex.Track(MetricsRegistry.Apdex.Query))
                 {
                     //start cpu utilisation
@@ -89,39 +90,53 @@ namespace CPUT.Polyglot.NoSql.Logic
                     //get quey model
                     var query = GetQueryModel(input);
 
-                    //check if system was able to determine the command type
-                    if (query.Command != Utils.Command.NONE)
+                    if(!query.Message.Contains("error"))
                     {
-                        //run command to generate native query
-                        var output = _commandEvent.Run(query);
-
-                        if (output != null)
+                        //check if system was able to determine the command type
+                        if (query.Command != Utils.Command.NONE)
                         {
-                            //send native query for execution
-                            results = _executor.Forward(query.Command, output).Result;
+                            //run command to generate native query
+                            var output = _commandEvent.Run(query);
+
+                            if (output != null)
+                            {
+                                //send native query for execution
+                                results = _executor.Forward(query.Command, output).Result;
+                            }
+                        }
+                        else
+                        {
+                            results = new List<Models.Result>
+                            {
+                                new Result
+                                {
+                                    Success = false,
+                                    Message = "Invalid Command",
+                                    Status = "Failed"
+                                }
+                            };
                         }
                     }
                     else
                     {
                         results = new List<Models.Result>
-                        {
-                            new Result
                             {
-                                Success = false,
-                                Message = "Invalid Command",
-                                Status = "Failed"
-                            }
-                        };
+                                new Result
+                                {
+                                    Success = false,
+                                    Message = query.Message,
+                                    Status = "Failed"
+                                }
+                            };
                     }
+                    
 
                     //memory utilisation
-                    memory.CallMemory();
-                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.Memory.VirtualSize, memory.TotalVirtual);
-                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.Memory.PhysicalSize, memory.TotalPhysical);
+                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.Memory.VirtualSize, () => { memory.VirtualMemoryUsage(); return memory.TotalVirtualMemory; });
+                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.Memory.PhysicalSize, () => { memory.PhysicalMemoryUsage(); return memory.TotalPhysicalMemory; });
 
                     //cpu utilisation
-                    cpu.CallCpu();
-                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.CPU.Usage, cpu.Total);
+                    _metrics.Measure.Gauge.SetValue(MetricsRegistry.CPU.Usage, () => { cpu.Usage(); return cpu.Total; });
                 }
             }
             catch (Exception ex)
@@ -144,7 +159,7 @@ namespace CPUT.Polyglot.NoSql.Logic
 
         private Query GetQueryModel(string input)
         {
-            Query query = new Query();
+            Query query = new Query { Message = string.Empty };
             try
             {
                 query.Command = GetCommand(input);
@@ -175,7 +190,5 @@ namespace CPUT.Polyglot.NoSql.Logic
 
             return Utils.Command.NONE;
         }
-
-
     }
 }

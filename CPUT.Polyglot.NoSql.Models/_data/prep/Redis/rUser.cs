@@ -2,6 +2,7 @@
 {
     public class rUser
     {
+        public string user_id { get; set; }
         public string identity_number { get; set; }
         public string student_number { get; set; }
         public string title { get; set; }

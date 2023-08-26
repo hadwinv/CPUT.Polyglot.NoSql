@@ -334,7 +334,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                         var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                        parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
+                        if(leftPart != null && rightPart != null)
+                            parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
                 }
             }
@@ -534,20 +535,25 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                             var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                            exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
-                            exprs.Add(new SeparatorPart(","));
+                            if (leftPart != null && rightPart != null)
+                            {
+                                exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
+                                exprs.Add(new SeparatorPart(","));
+                            }
                         }
                     }
 
                     if (exprs.Count > 0)
+                    {
                         exprs.RemoveAt(exprs.Count - 1);
 
-                    if (insert)
-                        parts.Add(new AddPart(exprs.ToArray()));
-                    else
-                        parts.Add(new SetPart(exprs.ToArray()));
+                        if (insert)
+                            parts.Add(new AddPart(exprs.ToArray()));
+                        else
+                            parts.Add(new SetPart(exprs.ToArray()));
 
-                    parts.Add(new SeparatorPart(","));
+                        parts.Add(new SeparatorPart(","));
+                    }
                 }
             }
 

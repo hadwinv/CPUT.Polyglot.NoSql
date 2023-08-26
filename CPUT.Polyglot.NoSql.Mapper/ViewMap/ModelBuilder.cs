@@ -211,7 +211,22 @@ namespace CPUT.Polyglot.NoSql.Mapper.ViewMap
                                                 if (link != null)
                                                 {
                                                     if (!string.IsNullOrEmpty(view.Key.Alias))
-                                                        propertyInfo.SetValue(instance, row[view.Key.Alias + "." + view.Key.Name].ToString(), null);
+                                                    {
+                                                        if(row[view.Key.Alias + "." + view.Key.Name] is Dictionary<string, object>)
+                                                        {
+                                                            var properties = (Dictionary<string, object>)row[view.Key.Alias + "." + view.Key.Name];
+
+                                                            var json = link.Property.Split(".");
+
+                                                            propertyInfo.SetValue(instance, properties[json[json.Length - 1]].ToString(), null);
+                                                            
+                                                        }
+                                                        else
+                                                        {
+                                                            propertyInfo.SetValue(instance, row[view.Key.Alias + "." + view.Key.Name].ToString(), null);
+                                                        }
+                                                    }
+                                                        
                                                     else
                                                         propertyInfo.SetValue(instance, row[view.Key.Name].ToString(), null);
                                                 }
@@ -252,7 +267,6 @@ namespace CPUT.Polyglot.NoSql.Mapper.ViewMap
                     }
                 }
             }
-
 
             return results;
         }

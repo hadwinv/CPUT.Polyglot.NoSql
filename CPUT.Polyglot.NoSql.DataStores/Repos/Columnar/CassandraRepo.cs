@@ -45,29 +45,6 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Columnar
                 };
             }
 
-            //try
-            //{
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"Exception - {ex.Message}");
-
-            //    result = new Models.Result
-            //    {
-            //        Source = Common.Helpers.Utils.Database.CASSANDRA,
-            //        Data = data,
-            //        Status = "Error",
-            //        Message = ex.Message,
-            //        Success = false
-            //    };
-
-            //    _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Executor);
-            //}
-            //finally
-            //{
-               
-            //}
             if (_session != null)
                 _session.Disconnect();
 

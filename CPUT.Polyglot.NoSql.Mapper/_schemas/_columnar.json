@@ -14,12 +14,12 @@
 					{
 						"property": "idno",
 						"type": "string",
-						"key": true
+						"indexed": true
 					},
 					{
 						"property": "studentno",
 						"type": "string",
-						"key": true
+						"indexed": true
 					},
 					{
 						"property": "title",

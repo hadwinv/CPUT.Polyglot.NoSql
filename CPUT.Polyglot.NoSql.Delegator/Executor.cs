@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CPUT.Polyglot.NoSql.Common.Reporting;
 using App.Metrics.Timer;
 using App.Metrics;
+using Superpower.Model;
 
 namespace CPUT.Polyglot.NoSql.Delegator
 {
@@ -19,7 +20,7 @@ namespace CPUT.Polyglot.NoSql.Delegator
         private INeo4jRepo _neo4jRepo;
 
         private IMetrics _metrics;
-        private readonly ITimer _timer;
+        private ITimer _timer;
 
         public Executor(IRedisRepo redisjRepo, ICassandraRepo cassandraRepo, IMongoDbRepo mongoRepo, INeo4jRepo neo4jRepo, IMetrics metrics)
         {
@@ -36,7 +37,7 @@ namespace CPUT.Polyglot.NoSql.Delegator
         {
             var result = new List<Models.Result>();
 
-            var tasks = new List<Task<Models.Result?>>();
+            var tasks = new List<Task<Models.Result>>();
 
             //get query targets
             foreach (var target in output.Constructs)
@@ -46,26 +47,47 @@ namespace CPUT.Polyglot.NoSql.Delegator
                     //run tasks
                     tasks.Add(Task.Factory.StartNew(
                             () => {
+                                
+                                Models.Result result;
+
                                 using var context = _timer.NewContext("Executor:" + target.Target);
-                                try
                                 {
-                                    return Action(new QueryDirective {
-                                            Command = command,
+                                    try
+                                    {
+                                        result = Action(
+                                            new QueryDirective
+                                            {
+                                                Command = command,
+                                                Executable = target.Result.Query,
+                                                Codex = target.Result.Codex
+                                            },
+                                            target.Target);
+
+                                        result.Executable = target.Result.Query;
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Executor);
+
+                                        result = new Models.Result
+                                        {
                                             Executable = target.Result.Query,
-                                            Codex = target.Result.Codex
-                                        },
-                                        target.Target);
+                                            Success = false,
+                                            Message = ex.Message,
+                                            Source = target.Target,
+                                            Status = "Failed",
+                                        };
+                                    }
                                 }
-                                catch
-                                {
-                                    _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Executor);
-                                }
-                                return default;
+
+                                return result;
                             }));
                 }
                 else
                 {
-                    result.Add(new Result { 
+                    result.Add(new Models.Result
+                    {
+                        Executable = target.Result is not null ? target.Result.Query : string.Empty,
                         Success = target.Success,
                         Message = target.Message,
                         Source = target.Target,
@@ -86,7 +108,7 @@ namespace CPUT.Polyglot.NoSql.Delegator
             return result;
         }
 
-        private Result Action(QueryDirective directive, Database target)
+        private Models.Result Action(QueryDirective directive, Database target)
         {
             var result = new Models.Result();
 

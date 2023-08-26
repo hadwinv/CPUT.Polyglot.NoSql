@@ -37,8 +37,6 @@ namespace CPUT.Polyglot.NoSql.Console
             Configuration = configuration;
         }
 
-       
-
         public void ConfigureServices(IServiceCollection services)
         {
             //configure your services here
@@ -66,10 +64,9 @@ namespace CPUT.Polyglot.NoSql.Console
             AppMetricsExtension.AddMetricsExtension(services);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseMetrics();
-            //app.UseMetricsReporting((Microsoft.AspNetCore.Hosting.IApplicationLifetime)lifetime);
         } 
     }
 }

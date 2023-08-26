@@ -66,7 +66,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
                 }
 
                 //verify if query passed globa schema
-                if (validatorResult.Success)
+                if (validatorResult != null && validatorResult.Success)
                 {
                     //convert to native queries
                     var transformed = _translate.Convert(
@@ -80,11 +80,22 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
                 }
                 else
                 {
-                    constructs.Add(new Constructs
+                    if(validatorResult != null )
                     {
-                        Success = validatorResult.Success,
-                        Message = validatorResult.Message
-                    });
+                        constructs.Add(new Constructs
+                        {
+                            Success = validatorResult.Success,
+                            Message = validatorResult.Message
+                        });
+                    }
+                    else
+                    {
+                        constructs.Add(new Constructs
+                        {
+                            Success = false,
+                            Message = "Syntax error occurred."
+                        });
+                    }
                 }
             }
             catch

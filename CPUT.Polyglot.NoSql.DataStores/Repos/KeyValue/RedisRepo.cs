@@ -75,12 +75,11 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
                                 propertyInfo.SetValue(user, fields[1], null);
                             }
                         }
-                        // +" " +
-                        results = redis.Execute(parts[0], new object[] { keyvalues[0], JsonConvert.SerializeObject(user) });
+                        results = redis.Execute(parts[0].Trim(), new object[] { keyvalues[0].Trim(), JsonConvert.SerializeObject(user) });
                     }
                     else
                     {
-                        results = redis.Execute(parts[0], parts[1]);
+                        results = redis.Execute(parts[0].Trim(), parts[1].Trim());
                     }
 
 
@@ -140,28 +139,12 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.KeyValue
                     Source = Common.Helpers.Utils.Database.REDIS,
                     Data = data,
                     Status = "OK",
-                    Message = string.Format("Query returned {0} record(s)", data.Count),
+                    Message = query.Command != Common.Helpers.Utils.Command.FETCH 
+                                    ?string.Format("{0} executed sucessfully", Enum.GetName(typeof(Common.Helpers.Utils.Command), query.Command).ToUpper()) :
+                                                string.Format("Query returned {0} record(s)", data.Count),
                     Success = true
                 };
             }
-
-            //try
-            //{
-
-            //}
-            //catch(Exception ex)
-            //{
-            //    Console.WriteLine($"Exception - {ex.Message}");
-
-            //    result = new Models.Result
-            //    {
-            //        Source = Common.Helpers.Utils.Database.REDIS,
-            //        Data = null,
-            //        Status = "Error",
-            //        Message = ex.Message,
-            //        Success = false
-            //    };
-            //}
 
             return result;
         }

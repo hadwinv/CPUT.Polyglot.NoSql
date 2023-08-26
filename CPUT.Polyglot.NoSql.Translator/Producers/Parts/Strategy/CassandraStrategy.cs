@@ -302,7 +302,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                         var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                        parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
+                        if (leftPart != null && rightPart != null)
+                            parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
                 }
             }
@@ -332,16 +333,22 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                             var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                            exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
-                            exprs.Add(new SeparatorPart(","));
+                            if (leftPart != null && rightPart != null)
+                            {
+                                exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
+                                exprs.Add(new SeparatorPart(","));
+                            }
+                                
                         }
                     }
 
                     if (exprs.Count > 0)
+                    {
                         exprs.RemoveAt(exprs.Count - 1);
 
-                    parts.Add(new SetPart(exprs.ToArray()));
-                    parts.Add(new SeparatorPart(","));
+                        parts.Add(new SetPart(exprs.ToArray()));
+                        parts.Add(new SeparatorPart(","));
+                    }
                 }
             }
 
@@ -389,8 +396,11 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                     if (rightExprs.Count > 0)
                         rightExprs.RemoveAt(rightExprs.Count - 1);
 
-                    parts.Add(new InsertValuePart(leftExprs.ToArray(), rightExprs.ToArray()));
-                    parts.Add(new SeparatorPart(","));
+                    if(leftExprs.Count > 0 && rightExprs.Count > 0)
+                    {
+                        parts.Add(new InsertValuePart(leftExprs.ToArray(), rightExprs.ToArray()));
+                        parts.Add(new SeparatorPart(","));
+                    }
                 }
             }
 

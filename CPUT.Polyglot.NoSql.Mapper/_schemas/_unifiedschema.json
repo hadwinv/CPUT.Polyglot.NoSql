@@ -33,6 +33,21 @@
 							"target": "cassandra",
 							"property": "id",
 							"reference": "student"
+						},
+						{
+							"target": "redis",
+							"property": "user_id",
+							"reference": "user"
+						},
+						{
+							"target": "mongodb",
+							"property": "student_id",
+							"reference": "students"
+						},
+						{
+							"target": "neo4j",
+							"property": "pupilid",
+							"reference": "pupil"
 						}
 					]
 				},

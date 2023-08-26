@@ -16,7 +16,8 @@ namespace CPUT.Polyglot.NoSql.Console
             var dataload = false;
 
             var host = CreateHostBuilder(args).Build();
-
+            
+            System.Console.WriteLine("Host created...");
 
             host.RunAsync();
 
@@ -24,16 +25,14 @@ namespace CPUT.Polyglot.NoSql.Console
             var serviceScope = services.CreateScope();
             var provider = serviceScope.ServiceProvider;
 
-            System.Console.WriteLine("Host created...");
-
-            //get logic interface
+           //get logic interface
             var serviceLogic = provider.GetRequiredService<IServiceLogic>();
 
             var executionBuilder = new ExecutionBuilder(serviceLogic);
 
             //setup data
             if (dataload)
-                executionBuilder.Setup(); 
+                executionBuilder.Setup();
 
             //create test scenarios
             executionBuilder.Create();

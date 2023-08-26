@@ -13,24 +13,28 @@ namespace CPUT.Polyglot.NoSql.Common.Reporting
     {
         private static Process _process;
 
-        public long _physical { get; private set; }
+        private long _physical { get; set; }
 
-        public long _virtual { get; private set; }
+        private long _virtual { get; set; }
 
-        public double TotalPhysical { get; private set; }
+        public double TotalPhysicalMemory { get; private set; }
 
-        public double TotalVirtual { get; private set; }
+        public double TotalVirtualMemory { get; private set; }
 
-        public void CallMemory()
+        public void VirtualMemoryUsage()
         {
-            TotalPhysical = _process.WorkingSet64 - _physical;
+            TotalVirtualMemory = _process.VirtualMemorySize64 - _virtual;
+        }
 
-            TotalVirtual = _process.VirtualMemorySize64 - _virtual;
+        public void PhysicalMemoryUsage()
+        {
+            TotalPhysicalMemory = _process.WorkingSet64 - _physical;
         }
 
         public void Start()
         {
             _process = Process.GetCurrentProcess();
+
             _physical = _process.WorkingSet64;
             _virtual = _process.VirtualMemorySize64;
         }

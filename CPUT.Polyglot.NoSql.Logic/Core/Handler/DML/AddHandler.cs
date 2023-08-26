@@ -33,7 +33,7 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
 
         public override Output Execute(TokenList<Lexicons> request)
         {
-            List<Constructs> constructs = null;
+            List<Constructs> constructs = new List<Constructs>();
 
             try
             {
@@ -59,17 +59,36 @@ namespace CPUT.Polyglot.NoSql.Logic.Core.DML
                 }
 
                 //verify if query passed globa schema
-                if (validatorResult.Success)
+                if (validatorResult != null && validatorResult.Success)
                 {
                     //convert to native queries
                     var transformed = _translate.Convert(
-                             new ConstructPayload
-                             {
-                                 BaseExpr = syntaxExpr,
-                                 Command = Utils.Command.ADD
-                             });
+                            new ConstructPayload
+                            {
+                                BaseExpr = syntaxExpr,
+                                Command = Utils.Command.ADD
+                            });
 
                     constructs = transformed.Result;
+                }
+                else
+                {
+                    if (validatorResult != null)
+                    {
+                        constructs.Add(new Constructs
+                        {
+                            Success = validatorResult.Success,
+                            Message = validatorResult.Message
+                        });
+                    }
+                    else
+                    {
+                        constructs.Add(new Constructs
+                        {
+                            Success = false,
+                            Message = "Syntax error occurred."
+                        });
+                    }
                 }
             }
             catch 

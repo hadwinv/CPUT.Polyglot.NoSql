@@ -1,4 +1,5 @@
 ﻿using App.Metrics;
+using Cassandra.DataStax.Graph;
 using CPUT.Polyglot.NoSql.Models.Translator.Executors;
 using CPUT.Polyglot.NoSql.Models.Translator.Parts;
 using CPUT.Polyglot.NoSql.Models.Views;
@@ -332,7 +333,8 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                         var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                        parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
+                        if (leftPart != null && rightPart != null)
+                            parts.Add(new LogicalPart(leftPart, operatorPart, rightPart, comparePart));
                     }
                 }
             }
@@ -410,24 +412,31 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                             var leftPart = LeftRightPart(operatorExpr, DirectionType.Left, Target);
                             var rightPart = LeftRightPart(operatorExpr, DirectionType.Right, Target);
 
-                            if (add)
-                                exprs.Add(new InsertNodePart(leftPart, operatorPart, rightPart));
-                            else
-                                exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
+                            if (leftPart != null && rightPart != null)
+                            {
+                                if (add)
+                                    exprs.Add(new InsertNodePart(leftPart, operatorPart, rightPart));
+                                else
+                                    exprs.Add(new SetValuePart(leftPart, operatorPart, rightPart));
 
-                            exprs.Add(new SeparatorPart(","));
+                                exprs.Add(new SeparatorPart(","));
+                            }
+                                
                         }
                     }
 
                     if (exprs.Count > 0)
+                    {
                         exprs.RemoveAt(exprs.Count - 1);
 
-                    if (add)
-                        parts.Add(new ValuesPart(exprs.ToArray()));
-                    else
-                        parts.Add(new SetPart(exprs.ToArray()));
+                        if (add)
+                            parts.Add(new ValuesPart(exprs.ToArray()));
+                        else
+                            parts.Add(new SetPart(exprs.ToArray()));
 
-                    parts.Add(new SeparatorPart(","));
+                        parts.Add(new SeparatorPart(","));
+                    }
+                        
                 }
             }
 
@@ -443,10 +452,10 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
         {
             var parts = new List<IExpression>();
 
+            var graphs = new List<IExpression>();
+
             if (DeclareExpr != null)
             {
-                var graphs = new List<IExpression>();
-
                 foreach (var expr in DeclareExpr.Value)
                 {
                     if (expr is not FunctionExpr)
@@ -525,6 +534,56 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 }
             }
 
+            if(FilterExpr != null)
+            {
+                foreach (var part in FilterExpr.Value)
+                {
+                    if (part is GroupExpr)
+                    {
+                        var groupExpr = (GroupExpr)part;
+                        var operatorExpr = (OperatorExpr)groupExpr.Value;
+
+                        var operatorPart = new OperatorPart(operatorExpr.Operator, Common.Helpers.Utils.Database.NEO4J);
+                        var comparePart = new ComparePart(operatorExpr.Compare, Common.Helpers.Utils.Database.NEO4J);
+
+                        var left = GetMappedProperty(operatorExpr.Left, Target);
+
+                        if (left.Link != null)
+                        {
+                            var reference = string.Empty;
+
+                            if (left.Link.Property.IndexOf(".") > 0)
+                                reference = left.Link.Property.Split(".")[0];
+                            else
+                                reference = left.Link.Reference;
+
+                            var model = Assistor.NSchema[(int)Database.NEO4J].SelectMany(x => x.Model.Where(x => x.Name == reference)).FirstOrDefault();
+
+                            if (model != null)
+                            {
+                                if (model.Type == "array")
+                                {
+                                    var graph = new UnwindGraphPart(left);
+
+                                    if (graphs
+                                        .Where(x => x.GetType().Equals(typeof(UnwindGraphPart)))
+                                        .Count(x => ((UnwindGraphPart)x).UnwindProperty == graph.UnwindProperty) < 1)
+                                    {
+                                        graphs.Add(graph);
+                                        graphs.Add(new SeparatorPart(","));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (graphs.Count > 0 && graphs.ToArray()[graphs.Count - 1] is SeparatorPart)
+                {
+                    graphs.RemoveAt(graphs.Count - 1);
+                    parts.Add(new UnwindGroupPart(graphs.ToArray()));
+                }
+            }
             return parts.ToArray();
         }
 
@@ -660,9 +719,62 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         }
                     }
                 }
-
-                return references;
             }
+
+            if (FilterExpr != null)
+            {
+                //get json expressions
+                var properties = GetFilter<TermExpr>();
+
+                if (properties != null)
+                {
+                    foreach (var property in properties)
+                    {
+                        var mappedProperty = GetMappedProperty(property, target);
+
+                        if (mappedProperty.Link != null)
+                        {
+                            if (!references.ContainsKey(mappedProperty.Link.Reference))
+                                references.Add(mappedProperty.Link.Reference, mappedProperty.SourceReference);
+                        }
+                    }
+                }
+
+                //get json expressions
+                var jsons = GetFilter<JsonExpr>();
+
+                if (jsons != null)
+                {
+                    foreach (var json in jsons)
+                    {
+                        var mappedProperty = GetMappedProperty(json, target);
+
+                        if (mappedProperty.Link != null)
+                        {
+                            var model = Assistor.NSchema[(int)Database.NEO4J].SelectMany(x => x.Model.Where(x => x.Name == mappedProperty.Link.Reference)).First();
+
+                            if (model.Type != "array")
+                            {
+                                if (!references.ContainsKey(mappedProperty.Link.Reference))
+                                    references.Add(mappedProperty.Link.Reference, mappedProperty.SourceReference);
+                            }
+                            else
+                            {
+                                var referenceModel = Assistor.NSchema[(int)Database.NEO4J].SelectMany(x => x.Model)
+                                    .Where(x => x.Properties.Exists(x => x.Property == model.Name))
+                                    .First();
+
+                                if (!references.ContainsKey(referenceModel.Name))
+                                    references.Add(referenceModel.Name, mappedProperty.Property.Split(".")[0]);
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            if(references.Count > 0)
+                return references;
 
             return default;
         }
@@ -855,7 +967,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                 if (left.Link != null)
                     return new PropertyPart(left);
             }
-
             else
             {
                 if (operatorExpr.Right is PropertyExpr || operatorExpr.Right is TermExpr || operatorExpr.Right is JsonExpr)
@@ -934,7 +1045,6 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
 
         }
 
-        
         private T[]? GetDeclare<T>()
         {
             return DeclareExpr?.Value
@@ -947,6 +1057,19 @@ namespace CPUT.Polyglot.NoSql.Translator.Producers.Parts.Strategy
                         .SelectMany(x => x.Value.Where(x => x.GetType().Equals(typeof(T)))
                                     .Select(x => (T)Convert.ChangeType(x, typeof(T)))))
                     .ToArray();
+        }
+
+        private T[]? GetFilter<T>()
+        {
+            return FilterExpr?.Value
+                        .Where(x => x.GetType().Equals(typeof(GroupExpr)))
+                        .Select(x => ((GroupExpr)x).Value)
+                        .Where(x => x.GetType().Equals(typeof(OperatorExpr)))
+                        .Select(x => ((OperatorExpr)x).Left)
+                        .Where(x => x.GetType().Equals(typeof(T)))
+                        .Select(x => (T)Convert.ChangeType(x, typeof(T)))
+                        .ToArray();
+
         }
 
         private T[]? GetProperties<T>()

@@ -217,14 +217,14 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
             {
                 var dataset = LoadDataset();
 
-                // data test data
-                //LoadRedis(dataset);
+                //data test data
+                LoadRedis(dataset);
 
                 LoadCassandra(dataset);
 
-                //LoadMongoDB(dataset);
+                LoadMongoDB(dataset);
 
-                //LoadNeo4j(dataset);
+                LoadNeo4j(dataset);
             }
             catch (Exception ex)
             {
@@ -244,6 +244,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                 _redisConnector.Flush();
                 
                 var pidnumber = string.Empty;
+                var iterator = 1;
 
                 foreach (var student in dataset.Students)
                 {
@@ -251,6 +252,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                     {
                         var user = new rUser
                         {
+                            user_id = iterator.ToString(),
                             identity_number = student.idnumber,
                             student_number = student.register.studentno,
                             title = student.title,
@@ -274,6 +276,8 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                         var jsonConvert = JsonConvert.SerializeObject(user);
 
                         redis.StringSet(key: student.idnumber, value: jsonConvert, expiry: new TimeSpan(5, 0, 0, 0));
+
+                        iterator++;
                     }
                     
 
@@ -386,6 +390,8 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                     iterator++;
                 }
 
+                _cassandraConnector.Connect().Execute("CREATE INDEX idno_idx ON cput.student(idno);");
+                _cassandraConnector.Connect().Execute("CREATE INDEX studentno_idx ON cput.student(studentno);");
                 _cassandraConnector.Connect().Execute("CREATE INDEX genderid_idx ON cput.student(genderid);");
                 _cassandraConnector.Connect().Execute("CREATE INDEX lastname_idx ON cput.student(lastname);");
             }
@@ -462,8 +468,8 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                     address frozen<address>,
                     registered frozen<registered>,
                     grades frozen<grades>,
-                    PRIMARY KEY (id, idno, studentno)
-                    ) WITH CLUSTERING ORDER BY (idno ASC, studentno ASC); ";
+                    PRIMARY KEY (id)
+                    ); ";
 
             _cassandraConnector.Connect().Execute(student);
         }
@@ -500,6 +506,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                     {
                         var students = new mStudents
                         {
+                            student_id = iterator.ToString(),
                             student_no = student.register.studentno.ToString(),
                             id_number = student.idnumber,
                             title = student.title,
@@ -595,8 +602,8 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                 //clear all nodes
                 session.WriteTransactionAsync(async tx =>
                 {
-                    var result = tx.RunAsync(deleteAll).Result;
-                });
+                    var result = tx.RunAsync(deleteAll);
+                }).Wait();
 
                 //faculty
                 foreach (var faculty in dataset.Faculties)
@@ -622,7 +629,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
 
                     session.WriteTransactionAsync(async tx =>
                     {
-                        var result = tx.RunAsync(query).Result;
+                        var result = tx.RunAsync(query);
                     }).Wait();
                 }
 
@@ -644,7 +651,8 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                     if ((iterator < next && student.idnumber != dataset.Students[next].idnumber) || next == iterator)
                     {
                         query = "CREATE ( p_" + student.register.studentno + " :pupil { " +
-                                      "studentnum: " + student.register.studentno + "" +
+                                      "pupilid: " + iterator + "" +
+                                      ", studentnum: " + student.register.studentno + "" +
                                       ", idnum: '" + student.idnumber + "'" +
                                       ", title: '" + student.title + "'" +
                                       ", alias: '" + student.surname + "'" +
@@ -681,7 +689,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
                         
                         session.WriteTransactionAsync(async tx =>
                         {
-                            var result = tx.RunAsync(query).Result;;
+                            var result = tx.RunAsync(query);;
                         }).Wait();
 
                         subjectResults = new List<nMarks>();
@@ -715,7 +723,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
 
                         session.WriteTransactionAsync(async tx =>
                         {
-                            var result = tx.RunAsync(query).Result;;
+                            var result = tx.RunAsync(query);;
                         }).Wait();
                     }
 
@@ -736,7 +744,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
 
                         session.WriteTransactionAsync(async tx =>
                         {
-                            var result = tx.RunAsync(query).Result;;
+                            var result = tx.RunAsync(query);;
                         }).Wait();
                     }
 
@@ -757,7 +765,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
 
                         session.WriteTransactionAsync(async tx =>
                         {
-                            var result = tx.RunAsync(query).Result;;
+                            var result = tx.RunAsync(query);
                         }).Wait();
                     }
 
@@ -775,7 +783,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
 
                         session.WriteTransactionAsync(async tx =>
                         {
-                            var result = tx.RunAsync(query).Result;;
+                            var result = tx.RunAsync(query);
                         }).Wait();
                     }
 
@@ -796,7 +804,7 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos._data
 
                         session.WriteTransactionAsync(async tx =>
                         {
-                            var result = tx.RunAsync(query).Result;;
+                            var result = tx.RunAsync(query);
                         }).Wait();
                     }
 

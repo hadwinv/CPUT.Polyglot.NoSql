@@ -21,6 +21,8 @@ namespace CPUT.Polyglot.NoSql.Translator
         private IMetrics _metrics;
         private ITimer _timer;
 
+        static object _lock = new object();
+
         public Translate(IInterpreter interpreter, ISchema schema, IMetrics metrics)
         {
             _interpreter = interpreter;
@@ -78,7 +80,7 @@ namespace CPUT.Polyglot.NoSql.Translator
             await Task.WhenAll(tasks.ToArray());
 
             foreach (var task in tasks)
-                if(task.Result != null)
+                if (task.Result != null)
                     constructs.Add(task.Result);
 
             return constructs;

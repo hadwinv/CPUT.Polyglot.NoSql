@@ -71,23 +71,6 @@ namespace CPUT.Polyglot.NoSql.DataStores.Repos.Graph
                     Success = true
                 };
             }
-            //try
-            //{
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"Exception - {ex.Message}");
-
-            //    result = new Models.Result
-            //    {
-            //        Source = Common.Helpers.Utils.Database.NEO4J,
-            //        Data = null,
-            //        Status = "Error",
-            //        Message = ex.Message,
-            //        Success = false
-            //    };
-            //}
 
             return result;
         }
