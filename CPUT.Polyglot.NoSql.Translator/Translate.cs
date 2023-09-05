@@ -19,9 +19,7 @@ namespace CPUT.Polyglot.NoSql.Translator
         private ISchema _schema;
 
         private IMetrics _metrics;
-        private ITimer _timer;
 
-        static object _lock = new object();
 
         public Translate(IInterpreter interpreter, ISchema schema, IMetrics metrics)
         {
@@ -29,7 +27,6 @@ namespace CPUT.Polyglot.NoSql.Translator
             _schema = schema;
 
             _metrics = metrics;
-            _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Translator);
 
             //global schemas
             Assistor.USchema = _schema.UnifiedView();
@@ -53,13 +50,16 @@ namespace CPUT.Polyglot.NoSql.Translator
             //get targeted databases
             var targetExpr = (TargetExpr)payload.BaseExpr.ParseTree.Single(x => x.GetType().Equals(typeof(TargetExpr)));
 
+            var _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Translator);
+
             //set up and run query generators
             foreach (StorageExpr storage in targetExpr.Value)
             {
-                tasks.Add(Task.Factory.StartNew(
+                using (var context = _timer.NewContext("Translator:" + storage.Value))
+                {
+                    tasks.Add(Task.Factory.StartNew(
                     () =>
                     {
-                        using var context = _timer.NewContext("Translator:" + storage.Value);
                         try
                         {
                             return _interpreter.Run(new Enquiry
@@ -74,8 +74,13 @@ namespace CPUT.Polyglot.NoSql.Translator
                             _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Translator);
                         }
                         return default;
+
+
                     }));
+                }
             }
+
+            
 
             await Task.WhenAll(tasks.ToArray());
 

@@ -7,7 +7,7 @@
 				"name": "pupil",
 				"properties": [
 					{
-						"property": "studentnum",
+						"property": "pupilid",
 						"type": "string"
 					},
 					{

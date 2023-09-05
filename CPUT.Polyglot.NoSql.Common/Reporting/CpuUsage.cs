@@ -10,8 +10,8 @@ namespace CPUT.Polyglot.NoSql.Common.Reporting
     public class CpuUsage
     {
         public static DateTime StartTime = DateTime.UtcNow;
-        private static DateTime _lastMonitorTime = DateTime.UtcNow;
-        private static TimeSpan _oldCpuTime = new TimeSpan(0);
+        //private static DateTime _lastMonitorTime = DateTime.UtcNow;
+        //private static TimeSpan _oldCpuTime = new TimeSpan(0);
         private static TimeSpan _start;
 
         //private double LastMinute { get; set; }
@@ -23,9 +23,9 @@ namespace CPUT.Polyglot.NoSql.Common.Reporting
             var newCpuTime = Process.GetCurrentProcess().TotalProcessorTime - _start;
             //LastMinute = (newCpuTime - _oldCpuTime).TotalSeconds /
             //                     (Environment.ProcessorCount * DateTime.UtcNow.Subtract(_lastMonitorTime).TotalSeconds);
-            _lastMonitorTime = DateTime.UtcNow;
+            //_lastMonitorTime = DateTime.UtcNow;
             Total = newCpuTime.TotalSeconds / (Environment.ProcessorCount * DateTime.UtcNow.Subtract(StartTime).TotalSeconds);
-            _oldCpuTime = newCpuTime;
+            //_oldCpuTime = newCpuTime;
         }
 
         public void Start()

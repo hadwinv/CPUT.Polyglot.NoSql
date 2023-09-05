@@ -7,6 +7,10 @@
 				"name": "user",
 				"properties": [
 					{
+						"property": "user_id",
+						"type": "string"
+					},
+					{
 						"property": "identity_number",
 						"type": "string",
 						"key": true

@@ -20,7 +20,6 @@ namespace CPUT.Polyglot.NoSql.Delegator
         private INeo4jRepo _neo4jRepo;
 
         private IMetrics _metrics;
-        private ITimer _timer;
 
         public Executor(IRedisRepo redisjRepo, ICassandraRepo cassandraRepo, IMongoDbRepo mongoRepo, INeo4jRepo neo4jRepo, IMetrics metrics)
         {
@@ -30,7 +29,6 @@ namespace CPUT.Polyglot.NoSql.Delegator
             _neo4jRepo = neo4jRepo;
 
             _metrics = metrics;
-            _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Executor);
         }
 
         public async Task<List<Models.Result>> Forward(Command command, Output output)
@@ -44,14 +42,16 @@ namespace CPUT.Polyglot.NoSql.Delegator
             {
                 if (target.Success)
                 {
-                    //run tasks
-                    tasks.Add(Task.Factory.StartNew(
-                            () => {
-                                
-                                Models.Result result;
+                    var _timer = _metrics.Provider.Timer.Instance(MetricsRegistry.Calls.Executor);
 
-                                using var context = _timer.NewContext("Executor:" + target.Target);
-                                {
+                    using var context = _timer.NewContext("Executor:" + target.Target);
+                    {
+                        //run tasks
+                        tasks.Add(Task.Factory.StartNew(
+                                () => {
+
+                                    Models.Result result;
+
                                     try
                                     {
                                         result = Action(
@@ -65,7 +65,7 @@ namespace CPUT.Polyglot.NoSql.Delegator
 
                                         result.Executable = target.Result.Query;
                                     }
-                                    catch(Exception ex)
+                                    catch (Exception ex)
                                     {
                                         _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Executor);
 
@@ -78,10 +78,10 @@ namespace CPUT.Polyglot.NoSql.Delegator
                                             Status = "Failed",
                                         };
                                     }
-                                }
 
-                                return result;
-                            }));
+                                    return result;
+                                }));
+                    }
                 }
                 else
                 {

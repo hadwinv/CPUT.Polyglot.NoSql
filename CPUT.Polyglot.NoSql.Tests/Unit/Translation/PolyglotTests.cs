@@ -1,4 +1,5 @@
-﻿using CPUT.Polyglot.NoSql.Common.Helpers;
+﻿using App.Metrics;
+using CPUT.Polyglot.NoSql.Common.Helpers;
 using CPUT.Polyglot.NoSql.Interface;
 using CPUT.Polyglot.NoSql.Interface.Mapper;
 using CPUT.Polyglot.NoSql.Interface.Translator;
@@ -29,6 +30,7 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
     public class PolyglotTests
     {
         private Mock<ICache> _mockCache;
+        private Mock<IMetrics> _mockMetrics;
 
         private ITranslate _translate;
         private IInterpreter _interpreter;
@@ -41,8 +43,9 @@ namespace CPUT.Polyglot.NoSql.Tests.Unit.Translation
 
             _interpreter = new Interpreter();
             _schema = new Schema(_mockCache.Object);
+            _mockMetrics = new Mock<IMetrics>();
 
-            _translate = new Translate(_interpreter, _schema);
+            _translate = new Translate(_interpreter, _schema, _mockMetrics.Object);
         }
 
         [Test]

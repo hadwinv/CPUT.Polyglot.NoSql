@@ -7,6 +7,14 @@
 				"name": "students",
 				"properties": [
 					{
+						"property": "student_id",
+						"type": "string"
+					},
+					{
+						"property": "student_no",
+						"type": "string"
+					},
+					{
 						"property": "student_no",
 						"type": "string"
 					},

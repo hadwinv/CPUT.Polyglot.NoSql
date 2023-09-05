@@ -1,12 +1,17 @@
 ﻿using CPUT.Polyglot.NoSql.Common.Reporting;
 using CPUT.Polyglot.NoSql.Interface.Logic;
 using CPUT.Polyglot.NoSql.Models;
+using CPUT.Polyglot.NoSql.Models.Views.Bindings;
+using CsvHelper;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Superpower;
 using Superpower.Model;
+using System.Formats.Asn1;
+using System.Globalization;
 using static CPUT.Polyglot.NoSql.Common.Helpers.Utils;
 using static MongoDB.Bson.Serialization.Serializers.SerializerHelper;
+using Result = CPUT.Polyglot.NoSql.Models.Result;
 
 namespace CPUT.Polyglot.NoSql.Console
 {
@@ -26,8 +31,16 @@ namespace CPUT.Polyglot.NoSql.Console
         {
             try
             {
+                var applyGloabalTags = false;
+
                 var @base = @"C:\metrics\";
-                var subdirectory = @"data\";
+
+                var subdirectory = string.Empty;
+
+                if (!applyGloabalTags)
+                    subdirectory = @"data\";
+                else
+                    subdirectory = @"data\cumulative";
 
                 if (@base != @"C:\")
                     foreach (System.IO.FileInfo file in new System.IO.DirectoryInfo(@base).GetFiles()) file.Delete();
@@ -40,8 +53,8 @@ namespace CPUT.Polyglot.NoSql.Console
                 var busy = false;
 
                 var resetMetrics = false;
-                var writeResultTofile = false;
-                var applyGloabalTags = true;
+                var writeResultTofile = true;
+                
 
                 foreach (var registry in _registeries.Values.Where(x => x.Active).OrderBy(x => x.No))
                 {
@@ -59,7 +72,7 @@ namespace CPUT.Polyglot.NoSql.Console
                     if (writeResultTofile)
                     {
                         //write  native query
-                        var gquery = string.Format(directory + "Test {0} - ({1}) Unified Query.json", registry.No, registry.Command);
+                        var gquery = string.Format(directory + "Test {0} - {1} unified query.txt", registry.No, registry.Command.ToLower());
 
                         //write file
                         File.WriteAllText(gquery, registry.Script);
@@ -74,20 +87,32 @@ namespace CPUT.Polyglot.NoSql.Console
                             if(writeResultTofile)
                             {
                                 //write  native query
-                                var nquery = string.Format(directory + "Test {0} -({1}) ({2}) Native Query.json", registry.No, registry.Command, Enum.GetName(typeof(Database), result.Source));
+                                var nquery = string.Format(directory + "Test {0} - {1} native {2} query.txt", registry.No, registry.Command.ToLower(), Enum.GetName(typeof(Database), result.Source).ToLower());
 
                                 //write file
                                 File.WriteAllText(nquery, result.Executable);
 
-                                var output = string.Format(directory + "Test {0} -({1}) ({2}) Results.json", registry.No, registry.Command, Enum.GetName(typeof(Database), result.Source));
+                                var output = string.Format(directory + "Test {0} - {1} results {2}.csv", registry.No, registry.Command.ToLower(), Enum.GetName(typeof(Database), result.Source).ToLower());
+
+                                using var writer = new StreamWriter(output);
+                                using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 
                                 if (result.Data != null && result.Data.Count > 0)
                                 {
-                                    if (result != null && result.Data.Count > 0)
-                                        File.WriteAllText(output, JsonConvert.SerializeObject(result.Data));
+                                    csv.WriteHeader<ResultsModel>();
+                                    csv.NextRecord();
+                                    foreach (var data in result.Data)
+                                    {
+                                        csv.WriteRecord(data);
+                                        csv.NextRecord();
+                                    }
                                 }
                                 else
-                                    File.WriteAllText(output, JsonConvert.SerializeObject(result));
+                                {
+                                    csv.WriteRecord(result);
+                                    csv.NextRecord();
+                                }
+                              
                             }
                             
                             database = result.Source;
@@ -155,6 +180,8 @@ namespace CPUT.Polyglot.NoSql.Console
                 CreateMoreThanOneTarget(ref testno);
 
                 #endregion
+
+                CreateSyntaxAndSemanticeQueryError(ref testno);
             }
             catch (Exception ex)
             {
@@ -164,7 +191,7 @@ namespace CPUT.Polyglot.NoSql.Console
 
         private void CreateRedisOnly(ref int testno)
         {
-            //get all data from database
+            //get all data from database 1
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -184,7 +211,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using filter based on key
+            //get data using filter based on key 2
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -205,7 +232,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using filter based on non-key
+            //get data using filter based on non-key 3
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -226,7 +253,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data applying multiple filters
+            //get data applying multiple filters 4
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -247,12 +274,12 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify existing data
+            //modify existing data 5
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
                 No = testno,
-                Command = "Fetch",
+                Command = "Modify",
                 Description = "modify existing data",
                 Target = "Redis",
                 ExecutionTimes = 1,
@@ -263,12 +290,12 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modifies existing data where the target field is deemed complex
+            //modifies existing data where the target field is deemed complex 6
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
                 No = testno,
-                Command = "Fetch",
+                Command = "Modify",
                 Description = "modifies existing data where the target field is deemed complex",
                 Target = "Redis",
                 ExecutionTimes = 1,
@@ -279,12 +306,12 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //insert data including with key
+            //insert data including with key 7
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
                 No = testno,
-                Command = "Fetch",
+                Command = "Add",
                 Description = "insert data including key",
                 Target = "Redis",
                 ExecutionTimes = 1,
@@ -294,12 +321,12 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //insert data to excluding non-key
+            //insert data to excluding non-key 8
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
                 No = testno,
-                Command = "Fetch",
+                Command = "Add",
                 Description = "insert data excluding non-key",
                 Target = "Redis",
                 ExecutionTimes = 1,
@@ -312,7 +339,7 @@ namespace CPUT.Polyglot.NoSql.Console
 
         private void CreateCassandraOnly(ref int testno)
         {
-            //get all data from database
+            //get all data from database 9
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -332,7 +359,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using filter on clustered key
+            //get data using filter on clustered key 10
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -353,7 +380,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true,
             });
 
-            //get data using more than one filter with AND clause specified
+            //get data using more than one filter with AND clause specified 11
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -374,7 +401,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using more than one filter with OR clause specified
+            //get data using more than one filter with OR clause specified 12
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -395,7 +422,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get x amount of records
+            //get x amount of records 13
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -416,7 +443,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //sort data retrieval on non-clustered columns
+            //sort data retrieval on non-clustered columns 14
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -438,7 +465,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //sort data retrieval on clustered column
+            //sort data retrieval on clustered column 15
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -460,7 +487,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from source with filter on index key
+            //get data from source with filter on index key 16
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -481,7 +508,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from source with filter on non-index key
+            //get data from source with filter on non-index key 17
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -502,7 +529,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using SUM function
+            //aggregate data using SUM function 18
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -518,7 +545,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using AVG function
+            //aggregate data using AVG function 19
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -534,7 +561,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using COUNT function
+            //aggregate data using COUNT function 20
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -550,7 +577,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using MIN function 
+            //aggregate data using MIN function  21
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -566,7 +593,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //retrieves data from source with MAX
+            //retrieves data from source with MAX 22
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -582,7 +609,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s)  with filter on clustered index
+            //modify field(s)  with filter on clustered index 23
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -598,7 +625,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with filter on indexed field
+            //modify field(s) with filter on indexed field 24
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -615,7 +642,7 @@ namespace CPUT.Polyglot.NoSql.Console
             });
 
 
-            //modify field(s) with filter on non-index
+            //modify field(s) with filter on non-index 25
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -631,7 +658,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //add field(s) with clustered index provided
+            //add field(s) with clustered index provided 26
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -651,7 +678,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //add field(s) with no clustered index provided
+            //add field(s) with no clustered index provided 27
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -674,7 +701,7 @@ namespace CPUT.Polyglot.NoSql.Console
 
         private void CreateMongoDBOnly(ref int testno)
         {
-            //get all data from database
+            //get all data from database 28
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -694,7 +721,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using single filter
+            //get data using single filter 29
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -715,7 +742,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true,
             });
 
-            //get data using more than one filter with an AND specified
+            //get data using more than one filter with an AND specified 30
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -736,7 +763,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get x amount of records
+            //get x amount of records 31
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -757,7 +784,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get and sort data by field
+            //get and sort data by field 32
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -778,7 +805,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using fileter and sort by field
+            //get data using fileter and sort by field 33
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -800,7 +827,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using multiple filters with AND specified, sorted by field
+            //get data using multiple filters with AND specified, sorted by field 34
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -822,7 +849,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //retrieves data with multiple filters using OR filter on and sorted by column
+            //retrieves data with multiple filters using OR filter on and sorted by column 35
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -844,7 +871,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data with OR/AND in filters and sort by column
+            //get data with OR/AND in filters and sort by column 36
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -866,7 +893,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using SUM function
+            //aggregate data using SUM function 37
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -882,7 +909,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using AVG function
+            //aggregate data using AVG function 38
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -898,7 +925,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using COUNT function
+            //aggregate data using COUNT function 39
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -914,7 +941,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using MIN function 
+            //aggregate data using MIN function 40
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -930,7 +957,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //retrieves data from source with MAX
+            //retrieves data from source with MAX 41
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -946,7 +973,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with single filter
+            //modify field(s) with single filter 42
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -962,7 +989,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with muliple filters
+            //modify field(s) with muliple filters 43
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -978,7 +1005,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //add field(s) 
+            //add field(s) 44
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1002,7 +1029,7 @@ namespace CPUT.Polyglot.NoSql.Console
 
         private void CreateNeo4jDBOnly(ref int testno)
         {
-            //get all data from database
+            //get all data from database 45
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1023,7 +1050,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 6 out of 7 the nodes
+            //get data without filter referencing 6 out of 7 the nodes 46
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1044,7 +1071,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 5 out of 7 the nodes
+            //get data without filter referencing 5 out of 7 the nodes 47
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1064,7 +1091,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 5 out of 7 the nodes with optional match
+            //get data without filter referencing 5 out of 7 the nodes with optional match 48
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1084,7 +1111,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 4 out of 7 the nodes with optional match
+            //get data without filter referencing 4 out of 7 the nodes with optional match 49
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1104,7 +1131,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 3 out of 7 the nodes
+            //get data without filter referencing 3 out of 7 the nodes 50
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1124,7 +1151,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 3 out of 7 the nodes, part 1
+            //get data without filter referencing 3 out of 7 the nodes, part 1 51
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1142,7 +1169,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 3 out of 7 the nodes, part 2
+            //get data without filter referencing 3 out of 7 the nodes, part 2 52
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1160,7 +1187,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data without filter referencing 1 out of 7 the nodes
+            //get data without filter referencing 1 out of 7 the nodes 53
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1178,7 +1205,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data using single filter 
+            //get data using single filter 54
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1196,7 +1223,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data with AND specified in filter 
+            //get data with AND specified in filter  55
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1214,7 +1241,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data with OR specified in filter 
+            //get data with OR specified in filter 56
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1233,7 +1260,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get and sort data using filter
+            //get and sort data using filter 57
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1253,7 +1280,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using SUM function
+            //aggregate data using SUM function 58
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1269,7 +1296,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using AVG function
+            //aggregate data using AVG function 59
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1285,7 +1312,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using COUNT function
+            //aggregate data using COUNT function 60
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1301,7 +1328,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using MIN function 
+            //aggregate data using MIN function 61
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1317,7 +1344,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //retrieves data from source with MAX
+            //retrieves data from source with MAX 62
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1333,7 +1360,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with single filter
+            //modify field(s) with single filter 63
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1349,7 +1376,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with muliple filters
+            //modify field(s) with muliple filters 64
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1365,7 +1392,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //add field(s) 
+            //add field(s)  65
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1388,7 +1415,7 @@ namespace CPUT.Polyglot.NoSql.Console
 
         private void CreateMoreThanOneTarget(ref int testno)
         {
-            //get data from all target databases source without filters restrict to 1000 records
+            //get data from all target databases source without filters restrict to 1000 records 66
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1409,7 +1436,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from all target databases source with single filter
+            //get data from all target databases source with single filter 67
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1430,7 +1457,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from all target databases source with multiple filters using AND
+            //get data from all target databases source with multiple filters using AND 68
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1451,7 +1478,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from all target databases source with multiple filters using OR
+            //get data from all target databases source with multiple filters using OR 69
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1470,9 +1497,9 @@ namespace CPUT.Polyglot.NoSql.Console
                           FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M'}
                           TARGET { redis, cassandra, mongodb, neo4j }",
                 Active = true
-            });
+            }); 
 
-            //get data from all target databases source with multiple filters using OR
+            //get data from all target databases source with multiple filters using OR 70
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1493,7 +1520,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from all target databases source with sorting specified
+            //get data from all target databases source with sorting specified 71
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1515,7 +1542,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using SUM function
+            //aggregate data using SUM function 72
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1531,7 +1558,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using AVG function
+            //aggregate data using AVG function 73
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1547,7 +1574,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using COUNT function
+            //aggregate data using COUNT function 74
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1563,7 +1590,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //aggregate data using MIN function 
+            //aggregate data using MIN function 75
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1579,7 +1606,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //retrieves data from source with MAX
+            //retrieves data from source with MAX 76
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1595,7 +1622,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get students where results are more than 50
+            //get students where results are more than 50 77
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1612,7 +1639,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get students where results are less than 50
+            //get students where results are less than 50 78
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1630,7 +1657,7 @@ namespace CPUT.Polyglot.NoSql.Console
             });
 
 
-            //get data where results between 20 and 70
+            //get data where results between 20 and 70 79
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1647,7 +1674,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data where results symbol equals 'A' or 'B' where filter is in not in the selection
+            //get data where results symbol equals 'A' or 'B' where filter is in not in the selection 80
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1665,7 +1692,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data where results symbol equals 'A' or 'B' where filter is in in the selection
+            //get data where results symbol equals 'A' or 'B' where filter is in in the selection 81
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1683,7 +1710,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with single filter
+            //modify field(s) with single filter 82
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1699,7 +1726,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) with muliple filters where some properties are not support by target dabases
+            //modify field(s) with muliple filters where some properties are not support by target dabases 83
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1720,7 +1747,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) where filter is not support by target databases
+            //modify field(s) where filter is not support by target databases 84
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1742,7 +1769,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //modify field(s) on where targeted field i a date
+            //modify field(s) on where targeted field i a date 85
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1758,7 +1785,7 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //add field(s)
+            //add field(s) 86
             testno++;
             _registeries.Add(testno, new RegisteryModel
             {
@@ -1782,6 +1809,102 @@ namespace CPUT.Polyglot.NoSql.Console
                            TARGET { redis, cassandra, mongodb, neo4j  }",
                 Active = true
             });
+        }
+
+        private void CreateSyntaxAndSemanticeQueryError(ref int testno)
+        {
+            //Fetch data where restriction is placed before data model 87
+            testno++;
+            _registeries.Add(testno, new RegisteryModel
+            {
+                No = testno,
+                Command = "Fetch",
+                Description = "Fetch data where restriction is placed before data model",
+                Target = "ALL",
+                ExecutionTimes = 1,
+                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+                                  s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+                                  s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+                                  s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+                                  s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+                                  s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+                          RESTRICT_TO { 1000 }
+                          DATA_MODEL { student AS s}
+                          TARGET { redis, cassandra, mongodb, neo4j }",
+                Active = true
+            });
+
+            //Fetch query contains a dangling comma in query 88
+            testno++;
+            _registeries.Add(testno, new RegisteryModel
+            {
+                No = testno,
+                Command = "Fetch",
+                Description = "Fetch query contains a dangling comma in query",
+                Target = "ALL",
+                ExecutionTimes = 1,
+                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, }
+                          DATA_MODEL { student AS s}
+                          TARGET { redis, cassandra, mongodb, neo4j }",
+                Active = true
+            });
+
+            //Fetch query containing a property not defined in the unified schema  89
+            testno++;
+            _registeries.Add(testno, new RegisteryModel
+            {
+                No = testno,
+                Command = "Fetch",
+                Description = "Fetch query contains a dangling comma in query",
+                Target = "ALL",
+                ExecutionTimes = 1,
+                Script = @"FETCH { s.title,s.idnumber,s.newproperty1,s.newproperty2 }
+                          DATA_MODEL { student AS s}
+                          TARGET { redis, cassandra, mongodb, neo4j }",
+                Active = true
+            });
+
+            //modify field(s) on where filter is placed before properties 90
+            testno++;
+            _registeries.Add(testno, new RegisteryModel
+            {
+                No = testno,
+                Command = "Modify",
+                Description = "modify field(s) on where filter is placed before properties",
+                Target = "ALL",
+                ExecutionTimes = 1,
+                Script = @"MODIFY { student }
+                           FILTER_ON { identifier = '10000' }
+                           PROPERTIES { name = 'Tony'}
+                           TARGET { redis, cassandra, mongodb, neo4j }",
+                Active = true
+            });
+
+            //add incorrectly formated query 90
+            testno++;
+            _registeries.Add(testno, new RegisteryModel
+            {
+                No = testno,
+                Command = "Add",
+                Description = "add incorrectly formated query",
+                Target = "ALL",
+                ExecutionTimes = 1,
+                Script = @"
+                           PROPERTIES { 
+                                        identifier='" + new Random().Next(1000000, 9999999).ToString() + @"', 
+                                        idnumber = '" + new Random().Next(100000000, 999999900).ToString() + @"', 
+                                        surname = 'Banner', 
+                                        name = 'Bruce', 
+                                        initial = 'BB',
+                                        gender = 'M',
+                                        title = 'Mr',
+                                        preferredname = 'Hulk'
+                                        }
+                           ADD { student }
+                           TARGET { redis, cassandra, mongodb, neo4j  }",
+                Active = true
+            });
+
         }
     }
 }
