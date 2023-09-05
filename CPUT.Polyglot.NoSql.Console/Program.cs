@@ -14,6 +14,7 @@ namespace CPUT.Polyglot.NoSql.Console
         public static void Main(string[] args)
         {
             var dataload = false;
+            var runttests = true;
 
             var host = CreateHostBuilder(args).Build();
             
@@ -34,11 +35,14 @@ namespace CPUT.Polyglot.NoSql.Console
             if (dataload)
                 executionBuilder.Setup();
 
-            //create test scenarios
-            executionBuilder.Create();
+            if(runttests)
+            {
+                //create test scenarios
+                executionBuilder.Create();
 
-            //execute tests
-            executionBuilder.Run();
+                //execute tests
+                executionBuilder.Run();
+            }
 
             System.Console.ReadKey();
         }

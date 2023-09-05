@@ -158,22 +158,22 @@ namespace CPUT.Polyglot.NoSql.Console
             var testno = 0;
             try
             {
-                #region "Single Targets"
+                //#region "Single Targets"
 
-                //redis test cases
-                CreateRedisOnly(ref testno);
+                ////redis test cases
+                //CreateRedisOnly(ref testno);
 
-                //cassandra test cases
-                CreateCassandraOnly(ref testno);
+                ////cassandra test cases
+                //CreateCassandraOnly(ref testno);
 
-                //mongodb test cases
-                CreateMongoDBOnly(ref testno);
+                ////mongodb test cases
+                //CreateMongoDBOnly(ref testno);
 
 
-                //neo4j test cases
-                CreateNeo4jDBOnly(ref testno);
+                ////neo4j test cases
+                //CreateNeo4jDBOnly(ref testno);
 
-                #endregion
+                //#endregion
 
                 #region "Multiple Targets"
 
@@ -181,7 +181,7 @@ namespace CPUT.Polyglot.NoSql.Console
 
                 #endregion
 
-                CreateSyntaxAndSemanticeQueryError(ref testno);
+                //CreateSyntaxAndSemanticeQueryError(ref testno);
             }
             catch (Exception ex)
             {
@@ -1436,379 +1436,379 @@ namespace CPUT.Polyglot.NoSql.Console
                 Active = true
             });
 
-            //get data from all target databases source with single filter 67
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source with single filter",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                                  s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                                  s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                                  s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                                  s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                                  s.register.date }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.idnumber = '67101803610'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data from all target databases source with single filter 67
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source with single filter",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+            //                      s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+            //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+            //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+            //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+            //                      s.register.date }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.idnumber = '67101803610'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get data from all target databases source with multiple filters using AND 68
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source with multiple filters using AND",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                                  s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                                  s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                                  s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                                  s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                                  s.register.date }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.idnumber = '67101803610' AND s.gender = 'F'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data from all target databases source with multiple filters using AND 68
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source with multiple filters using AND",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+            //                      s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+            //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+            //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+            //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+            //                      s.register.date }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.idnumber = '67101803610' AND s.gender = 'F'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get data from all target databases source with multiple filters using OR 69
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source with multiple filters using AND",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                                  s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                                  s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                                  s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                                  s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                                  s.register.date }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            }); 
+            ////get data from all target databases source with multiple filters using OR 69
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source with multiple filters using AND",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+            //                      s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+            //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+            //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+            //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+            //                      s.register.date }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //}); 
 
-            //get data from all target databases source with multiple filters using OR 70
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source with multiple filters using AND",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                                  s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                                  s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                                  s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                                  s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                                  s.register.date }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M' AND s.register.studentno = '979883209'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data from all target databases source with multiple filters using OR 70
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source with multiple filters using AND",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+            //                      s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+            //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+            //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+            //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+            //                      s.register.date }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M' AND s.register.studentno = '979883209'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get data from all target databases source with sorting specified 71
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source with sorting specified",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
-                                  s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
-                                  s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
-                                  s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
-                                  s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
-                                  s.register.date }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M' AND s.register.studentno = '979883209'}
-                          ORDER_BY { s.surname, s.idnumber} 
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data from all target databases source with sorting specified 71
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source with sorting specified",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname, s.dateofbirth, s.gender, s.address.streetno,
+            //                      s.address.street,s.address.postalcode,s.address.postaladdress,s.address.city,s.address.country.code,s.address.country.name,
+            //                      s.contact.email, s.contact.mobile,s.register.studentno, s.register.faculty.code, s.register.faculty.name, 
+            //                      s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, 
+            //                      s.register.subject.cost, s.register.subject.duration, s.register.username,s.register.password, s.register.type, s.register.ipaddress,
+            //                      s.register.date }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.idnumber = '67101803610' OR s.gender = 'M' AND s.register.studentno = '979883209'}
+            //              ORDER_BY { s.surname, s.idnumber} 
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //aggregate data using SUM function 72
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "aggregate data using SUM function",
-                Target = "Neo4j",
-                ExecutionTimes = 1,
-                Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NSUM(s.transcript.result) }
-                          DATA_MODEL { student AS s }
-                          FILTER_ON { s.idnumber = '21708702176'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////aggregate data using SUM function 72
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "aggregate data using SUM function",
+            //    Target = "Neo4j",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NSUM(s.transcript.result) }
+            //              DATA_MODEL { student AS s }
+            //              FILTER_ON { s.idnumber = '21708702176'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //aggregate data using AVG function 73
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "aggregate data using AVG function",
-                Target = "Neo4j",
-                ExecutionTimes = 1,
-                Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NAVG(s.transcript.result) }
-                          DATA_MODEL { student AS s }
-                          FILTER_ON { s.idnumber = '21708702176'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////aggregate data using AVG function 73
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "aggregate data using AVG function",
+            //    Target = "Neo4j",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NAVG(s.transcript.result) }
+            //              DATA_MODEL { student AS s }
+            //              FILTER_ON { s.idnumber = '21708702176'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //aggregate data using COUNT function 74
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "aggregate data using COUNT function",
-                Target = "Neo4j",
-                ExecutionTimes = 1,
-                Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NCOUNT(s.transcript.result) }
-                          DATA_MODEL { student AS s }
-                          FILTER_ON { s.idnumber = '21708702176'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////aggregate data using COUNT function 74
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "aggregate data using COUNT function",
+            //    Target = "Neo4j",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NCOUNT(s.transcript.result) }
+            //              DATA_MODEL { student AS s }
+            //              FILTER_ON { s.idnumber = '21708702176'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //aggregate data using MIN function 75
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "aggregate data using MIN function ",
-                Target = "Neo4j",
-                ExecutionTimes = 1,
-                Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NMIN(s.transcript.result) }
-                          DATA_MODEL { student AS s }
-                          FILTER_ON { s.idnumber = '21708702176'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////aggregate data using MIN function 75
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "aggregate data using MIN function ",
+            //    Target = "Neo4j",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NMIN(s.transcript.result) }
+            //              DATA_MODEL { student AS s }
+            //              FILTER_ON { s.idnumber = '21708702176'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //retrieves data from source with MAX 76
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "aggregate data using MAX function ",
-                Target = "Neo4j",
-                ExecutionTimes = 1,
-                Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NMAX(s.transcript.result) }
-                          DATA_MODEL { student AS s }
-                          FILTER_ON { s.idnumber = '21708702176'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////retrieves data from source with MAX 76
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "aggregate data using MAX function ",
+            //    Target = "Neo4j",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH {s.idnumber, s.initial, s.name, s.surname, NMAX(s.transcript.result) }
+            //              DATA_MODEL { student AS s }
+            //              FILTER_ON { s.idnumber = '21708702176'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get students where results are more than 50 77
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source without filters restrict to 1000 records",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
-                                  s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.transcript.result > 50}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get students where results are more than 50 77
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source without filters restrict to 1000 records",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
+            //                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.transcript.result > 50}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get students where results are less than 50 78
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data from all target databases source without filters restrict to 1000 records",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
-                                  s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.transcript.result < 50}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get students where results are less than 50 78
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data from all target databases source without filters restrict to 1000 records",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
+            //                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.transcript.result < 50}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
 
-            //get data where results between 20 and 70 79
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data where results between 20 and 70",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
-                                  s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.transcript.result >= 20 AND s.transcript.result <= 70}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data where results between 20 and 70 79
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data where results between 20 and 70",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
+            //                      s.register.date,s.transcript.subject, s.transcript.result, s.transcript.symbol }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.transcript.result >= 20 AND s.transcript.result <= 70}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get data where results symbol equals 'A' or 'B' where filter is in not in the selection 80
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data where results symbol equals 'A' OR 'B' where filter is in not in the selection",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
-                                   s.register.faculty.code, s.register.faculty.name, 
-                                   s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name  }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.transcript.symbol = 'A' OR s.transcript.symbol = 'B'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data where results symbol equals 'A' or 'B' where filter is in not in the selection 80
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data where results symbol equals 'A' OR 'B' where filter is in not in the selection",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
+            //                       s.register.faculty.code, s.register.faculty.name, 
+            //                       s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name  }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.transcript.symbol = 'A' OR s.transcript.symbol = 'B'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //get data where results symbol equals 'A' or 'B' where filter is in in the selection 81
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Fetch",
-                Description = "get data where results symbol equals 'A' or 'B' where filter is in in the selection",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
-                                   s.register.faculty.code, s.register.faculty.name, 
-                                   s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, s.transcript.symbol  }
-                          DATA_MODEL { student AS s}
-                          FILTER_ON { s.transcript.symbol = 'A' OR s.transcript.symbol = 'B'}
-                          TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////get data where results symbol equals 'A' or 'B' where filter is in in the selection 81
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Fetch",
+            //    Description = "get data where results symbol equals 'A' or 'B' where filter is in in the selection",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"FETCH { s.title,s.idnumber,s.preferredname,s.initial,s.name, s.surname,
+            //                       s.register.faculty.code, s.register.faculty.name, 
+            //                       s.register.course.code, s.register.course.name, s.register.subject.code, s.register.subject.name, s.transcript.symbol  }
+            //              DATA_MODEL { student AS s}
+            //              FILTER_ON { s.transcript.symbol = 'A' OR s.transcript.symbol = 'B'}
+            //              TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //modify field(s) with single filter 82
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Modify",
-                Description = "modify field(s) with single filter",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"MODIFY { student }
-                           PROPERTIES { name = 'Mary', surname = 'Poppins', initial = 'MP'}
-                           FILTER_ON { idnumber = '85208201670'}
-                           TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////modify field(s) with single filter 82
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Modify",
+            //    Description = "modify field(s) with single filter",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"MODIFY { student }
+            //               PROPERTIES { name = 'Mary', surname = 'Poppins', initial = 'MP'}
+            //               FILTER_ON { idnumber = '85208201670'}
+            //               TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //modify field(s) with muliple filters where some properties are not support by target dabases 83
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Modify",
-                Description = "modify field(s) with muliple filters where some properties are not support by target dabases",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"MODIFY { student }
-                           PROPERTIES { name = 'Clark', 
-                                        surname = 'Kent', 
-                                        initial = 'Mel',
-                                        title = 'MR',
-                                        preferredname = 'Superman'
-                                      }
-                           FILTER_ON { idnumber = '75602501070'}
-                           TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////modify field(s) with muliple filters where some properties are not support by target dabases 83
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Modify",
+            //    Description = "modify field(s) with muliple filters where some properties are not support by target dabases",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"MODIFY { student }
+            //               PROPERTIES { name = 'Clark', 
+            //                            surname = 'Kent', 
+            //                            initial = 'Mel',
+            //                            title = 'MR',
+            //                            preferredname = 'Superman'
+            //                          }
+            //               FILTER_ON { idnumber = '75602501070'}
+            //               TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //modify field(s) where filter is not support by target databases 84
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Modify",
-                Description = "modify field(s) where filter is not support by target databases",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"MODIFY { student }
-                           PROPERTIES { name = 'Clark', 
-                                        surname = 'Kent', 
-                                        initial = 'Mel',
-                                        gender = 'M',
-                                        title = 'MR',
-                                        preferredname = 'Superman'
-                                      }
-                           FILTER_ON { identifier = '10000' }
-                           TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////modify field(s) where filter is not support by target databases 84
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Modify",
+            //    Description = "modify field(s) where filter is not support by target databases",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"MODIFY { student }
+            //               PROPERTIES { name = 'Clark', 
+            //                            surname = 'Kent', 
+            //                            initial = 'Mel',
+            //                            gender = 'M',
+            //                            title = 'MR',
+            //                            preferredname = 'Superman'
+            //                          }
+            //               FILTER_ON { identifier = '10000' }
+            //               TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //modify field(s) on where targeted field i a date 85
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Modify",
-                Description = "modify field(s) where filter is not support by target databases",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"MODIFY { student }
-                           PROPERTIES { dateofbirth ='1970/10/13'}
-                           FILTER_ON { identifier = '10000' }
-                           TARGET { redis, cassandra, mongodb, neo4j }",
-                Active = true
-            });
+            ////modify field(s) on where targeted field i a date 85
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Modify",
+            //    Description = "modify field(s) where filter is not support by target databases",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"MODIFY { student }
+            //               PROPERTIES { dateofbirth ='1970/10/13'}
+            //               FILTER_ON { identifier = '10000' }
+            //               TARGET { redis, cassandra, mongodb, neo4j }",
+            //    Active = true
+            //});
 
-            //add field(s) 86
-            testno++;
-            _registeries.Add(testno, new RegisteryModel
-            {
-                No = testno,
-                Command = "Add",
-                Description = "add field(s)",
-                Target = "ALL",
-                ExecutionTimes = 1,
-                Script = @"ADD { student }
-                           PROPERTIES { 
-                                        identifier='" + new Random().Next(1000000, 9999999).ToString() + @"', 
-                                        idnumber = '" + new Random().Next(100000000, 999999900).ToString() + @"', 
-                                        surname = 'Banner', 
-                                        name = 'Bruce', 
-                                        initial = 'BB',
-                                        gender = 'M',
-                                        title = 'Mr',
-                                        dateofbirth ='1970/10/13'
-                                        preferredname = 'Hulk'
-                                        }
-                           TARGET { redis, cassandra, mongodb, neo4j  }",
-                Active = true
-            });
+            ////add field(s) 86
+            //testno++;
+            //_registeries.Add(testno, new RegisteryModel
+            //{
+            //    No = testno,
+            //    Command = "Add",
+            //    Description = "add field(s)",
+            //    Target = "ALL",
+            //    ExecutionTimes = 1,
+            //    Script = @"ADD { student }
+            //               PROPERTIES { 
+            //                            identifier='" + new Random().Next(1000000, 9999999).ToString() + @"', 
+            //                            idnumber = '" + new Random().Next(100000000, 999999900).ToString() + @"', 
+            //                            surname = 'Banner', 
+            //                            name = 'Bruce', 
+            //                            initial = 'BB',
+            //                            gender = 'M',
+            //                            title = 'Mr',
+            //                            dateofbirth ='1970/10/13'
+            //                            preferredname = 'Hulk'
+            //                            }
+            //               TARGET { redis, cassandra, mongodb, neo4j  }",
+            //    Active = true
+            //});
         }
 
         private void CreateSyntaxAndSemanticeQueryError(ref int testno)

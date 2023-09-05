@@ -11,6 +11,10 @@
 						"type": "string"
 					},
 					{
+						"property": "studentnum",
+						"type": "string"
+					},
+					{
 						"property": "idnum",
 						"type": "string"
 					},

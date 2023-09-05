@@ -69,7 +69,7 @@ namespace CPUT.Polyglot.NoSql.Translator
                                 Database = GetDatabaseTarget(storage.Value),
                             });
                         }
-                        catch
+                        catch(Exception ex)
                         {
                             _metrics.Measure.Counter.Increment(MetricsRegistry.Errors.Translator);
                         }
